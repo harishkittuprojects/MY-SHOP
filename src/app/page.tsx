@@ -9,8 +9,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
-
 export default function Home() {
   const jsonLd = {
     "@context": "https://schema.org",

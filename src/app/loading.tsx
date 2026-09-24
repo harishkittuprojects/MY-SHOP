@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import Image from "next/image";
 
 export default function Loading() {
@@ -14,16 +13,16 @@ export default function Loading() {
       <div className="flex flex-col items-center gap-2">
         <div className="relative w-48 h-16">
           <Image 
-            src="/madur-logo-2026.png" 
-            alt="MADUR.IN Logo" 
+            src="/mobile-logo.png" 
+            alt="MY SHOP Logo" 
             fill 
             className="object-contain animate-pulse"
             priority
             sizes="150px"
           />
         </div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-[1em] pl-[1em]">
-          Loading Freshness
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.5em] pl-[0.5em]">
+          Loading Store...
         </p>
       </div>
     </div>

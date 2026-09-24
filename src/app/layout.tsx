@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 import ClientLayout from "@/components/layout/ClientLayout";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://my-shop.vercel.app'),
   title: {
     default: "MY SHOP | Buy Latest Flagship Smartphones & 5G Mobiles",
     template: "%s | MY SHOP Mobiles",
@@ -63,8 +64,6 @@ export const metadata: Metadata = {
     google: "BCfi7DVg3MgGcY_x3QC_bbFyRk7gWn57vAtC-w4uC54",
   },
 };
-
-export const dynamic = 'force-dynamic';
 
 export default function RootLayout({
   children,
