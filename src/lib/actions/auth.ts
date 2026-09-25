@@ -44,6 +44,46 @@ export async function directGuestLoginAction(name?: string) {
   }
 }
 
+export async function phoneLoginAction(phone: string, name?: string) {
+  try {
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: "Please enter a valid 10-digit mobile number" };
+    }
+    const formattedPhone = `+91${cleanPhone}`;
+    const userIdentifier = `${formattedPhone}@myshop.local`;
+    
+    try {
+      await mysql.query(
+        "INSERT INTO users (id, name, email, phone, role) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE phone = VALUES(phone)",
+        [`user_${cleanPhone}`, name || `User ${cleanPhone.slice(-4)}`, userIdentifier, formattedPhone, "customer"]
+      );
+    } catch (dbErr) {
+      // Local fallback
+    }
+
+    const token = jwt.sign(
+      { email: userIdentifier, phone: formattedPhone, sub: formattedPhone, name: name || `Customer ${cleanPhone.slice(-4)}` },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const cookieStore = await cookies();
+    cookieStore.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
+    return { success: true, phone: formattedPhone };
+  } catch (error: any) {
+    console.error("Phone login error:", error);
+    return { success: false, error: error.message || "Failed to log in with phone" };
+  }
+}
+
 export async function sendOtpAction(email: string) {
   try {
     // Generate 6-digit OTP

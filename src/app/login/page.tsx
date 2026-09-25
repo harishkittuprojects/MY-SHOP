@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faKey, faArrowRight, faTriangleExclamation, faCheckCircle, faBolt, faMobileAlt } from "@fortawesome/free-solid-svg-icons";
-import { sendOtpAction, verifyOtpAction, directGuestLoginAction } from "@/lib/actions/auth";
+import { faTriangleExclamation, faCheckCircle, faBolt } from "@fortawesome/free-solid-svg-icons";
+import { sendOtpAction, verifyOtpAction, directGuestLoginAction, phoneLoginAction } from "@/lib/actions/auth";
 import { googleLoginAction } from "@/lib/actions/google-auth";
 
 declare global {
@@ -18,14 +18,90 @@ declare global {
 function LoginContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
+  const router = useRouter();
+
+  const [mode, setMode] = useState<"phone" | "email">("phone");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [step, setStep] = useState<"input" | "otp">("input");
+  const [isFocused, setIsFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInstantLoading, setIsInstantLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const router = useRouter();
+  const [countdown, setCountdown] = useState(30);
+
+  // Timer for OTP resend
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (step === "otp" && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [step, countdown]);
+
+  const isFormValid = mode === "phone" ? phone.length === 10 : /\S+@\S+\.\S+/.test(email);
+
+  const handleContinue = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    if (mode === "phone") {
+      // In phone mode, send/generate OTP
+      setSuccess(`Verification OTP sent to +91 ${phone}`);
+      setStep("otp");
+      setCountdown(30);
+      setIsLoading(false);
+    } else {
+      const res = await sendOtpAction(email);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setSuccess(`Verification code sent to ${email}`);
+        setStep("otp");
+        setCountdown(30);
+      }
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    if (!otp || otp.length < 4) {
+      setError("Please enter the verification code.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (mode === "phone") {
+      // Complete phone login
+      const res = await phoneLoginAction(phone);
+      if (res.success) {
+        router.push(redirect);
+        router.refresh();
+      } else {
+        setError(res.error || "Login failed");
+        setIsLoading(false);
+      }
+    } else {
+      const res = await verifyOtpAction(email, otp);
+      if (res.error) {
+        setError(res.error);
+        setIsLoading(false);
+      } else {
+        router.push(redirect);
+        router.refresh();
+      }
+    }
+  };
 
   const handleDirectLogin = async () => {
     setIsInstantLoading(true);
@@ -40,7 +116,7 @@ function LoginContent() {
         setIsInstantLoading(false);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to sign in directly");
+      setError(err.message || "Failed to sign in");
       setIsInstantLoading(false);
     }
   };
@@ -65,23 +141,20 @@ function LoginContent() {
     if (!googleBtnGroup || !window.google) return;
     
     googleBtnGroup.innerHTML = "";
-    
     const containerWidth = googleBtnGroup.offsetWidth || 280;
     window.google.accounts.id.renderButton(googleBtnGroup, {
       theme: "outline",
       size: "large",
       width: Math.min(containerWidth, 400),
       text: "continue_with",
-      shape: "pill",
+      shape: "rectangular",
     });
   }, []);
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-
     const initializeGoogle = () => {
       if (!window.google) return;
-
       if (!window.google_initialized) {
         window.google.accounts.id.initialize({
           client_id: clientId,
@@ -91,7 +164,6 @@ function LoginContent() {
         });
         window.google_initialized = true;
       }
-
       setTimeout(renderGoogleButton, 100);
     };
 
@@ -112,184 +184,247 @@ function LoginContent() {
     }
   }, [handleGoogleCallback, renderGoogleButton, step]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    setSuccess("");
-
-    if (!email) {
-      setError("Please enter your email address.");
-      setIsLoading(false);
-      return;
-    }
-
-    const res = await sendOtpAction(email);
-
-    if (res.error) {
-      setError(res.error);
-    } else {
-      setSuccess("We've sent a verification code to your email.");
-      setStep("otp");
-    }
-    
-    setIsLoading(false);
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    if (!otp) {
-      setError("Please enter the verification code.");
-      setIsLoading(false);
-      return;
-    }
-
-    const res = await verifyOtpAction(email, otp);
-
-    if (res.error) {
-      setError(res.error);
-      setIsLoading(false);
-    } else {
-      router.push(redirect);
-      router.refresh();
-    }
-  };
-
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-slate-900 py-12 px-4 relative overflow-hidden">
-      {/* Decorative background blur */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-      <div className="max-w-md w-full relative z-10">
-        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl border border-gray-100 relative overflow-hidden">
-          
-          <div className="text-center mb-6 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center text-xl mx-auto mb-3 shadow-md">
-              <FontAwesomeIcon icon={faMobileAlt} />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-1">My Shop Mobiles</h1>
-            <p className="text-gray-500 font-bold text-xs">Fast Sign-In &amp; Instant Cart Access</p>
-          </div>
-
-          {/* ⚡ DIRECT 1-CLICK INSTANT LOGIN BUTTON */}
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-amber-500/10 border border-amber-500/20 text-center">
-            <p className="text-xs font-black text-slate-800 mb-2.5">
-              ⚡ Instant 1-Click Access (No Email / OTP needed)
+    <div className="min-h-[82vh] flex items-center justify-center bg-gray-50/70 py-10 px-4">
+      <div className="w-full max-w-[440px] bg-white rounded-2xl p-6 sm:p-10 shadow-[0_6px_30px_rgba(0,0,0,0.06)] border border-gray-100">
+        
+        {step === "input" ? (
+          <div>
+            {/* Header matching exact user image */}
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
+              Log in for the best experience
+            </h1>
+            <p className="text-sm text-gray-500 font-normal mt-1 mb-8">
+              {mode === "phone" ? "Enter your phone number to continue" : "Enter your email to continue"}
             </p>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-5 flex items-start gap-2 border border-red-100 text-xs font-semibold">
+                <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleContinue}>
+              {mode === "phone" ? (
+                /* Phone Number Input with Floating Notch Label */
+                <div className="relative mb-2">
+                  <div
+                    className={`relative border-2 ${
+                      isFocused || phone.length > 0 ? "border-[#2874f0]" : "border-gray-300"
+                    } rounded-md transition-colors flex items-center px-3.5 py-3.5 bg-white`}
+                  >
+                    {/* Floating notched label */}
+                    <label className="absolute -top-2.5 left-3 bg-white px-1.5 text-xs font-semibold text-[#2874f0] leading-none pointer-events-none select-none">
+                      Phone Number
+                    </label>
+
+                    {/* Country Code Prefix */}
+                    <div className="flex items-center gap-1.5 text-gray-900 font-bold text-base pr-3 mr-3 border-r border-gray-300 select-none flex-shrink-0">
+                      <span>+91</span>
+                      <svg className="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+
+                    {/* Phone Input */}
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      value={phone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setPhone(val);
+                        setError("");
+                      }}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      placeholder=""
+                      autoFocus
+                      className="w-full bg-transparent border-none outline-none text-base text-gray-900 font-medium tracking-wide placeholder:text-gray-300"
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* Email Input with Floating Notch Label */
+                <div className="relative mb-2">
+                  <div
+                    className={`relative border-2 ${
+                      isFocused || email.length > 0 ? "border-[#2874f0]" : "border-gray-300"
+                    } rounded-md transition-colors flex items-center px-3.5 py-3.5 bg-white`}
+                  >
+                    <label className="absolute -top-2.5 left-3 bg-white px-1.5 text-xs font-semibold text-[#2874f0] leading-none pointer-events-none select-none">
+                      Email-ID
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                      }}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      placeholder="name@example.com"
+                      autoFocus
+                      className="w-full bg-transparent border-none outline-none text-base text-gray-900 font-medium placeholder:text-gray-300"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mode switch link */}
+              <div className="flex justify-end mt-2 mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "phone" ? "email" : "phone");
+                    setError("");
+                    setIsFocused(true);
+                  }}
+                  className="text-sm font-semibold text-[#2874f0] hover:underline"
+                >
+                  {mode === "phone" ? "Use Email-ID" : "Use Phone Number"}
+                </button>
+              </div>
+
+              {/* Legal Terms & Privacy Disclaimer */}
+              <p className="text-xs text-gray-500 leading-relaxed mb-8">
+                By continuing, you confirm that you are above 18 years of age, and you agree to the My Shop&apos;s{" "}
+                <Link href="/terms" className="text-[#2874f0] hover:underline">
+                  Terms of Use
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="text-[#2874f0] hover:underline">
+                  Privacy Policy
+                </Link>
+              </p>
+
+              {/* Continue Button */}
+              <button
+                type="submit"
+                disabled={!isFormValid || isLoading}
+                className={`w-full py-3.5 rounded-md font-bold text-sm tracking-wide text-white transition-all shadow-sm ${
+                  isFormValid && !isLoading
+                    ? "bg-[#2874f0] hover:bg-[#1a64dc] active:scale-[0.99] cursor-pointer"
+                    : "bg-[#bdbdbd] cursor-not-allowed"
+                }`}
+              >
+                {isLoading ? "Processing..." : "Continue"}
+              </button>
+            </form>
+          </div>
+        ) : (
+          /* Step 2: OTP Verification */
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
+              Verify with OTP
+            </h1>
+            <div className="flex items-center justify-between text-sm text-gray-500 mt-1 mb-8">
+              <span>Sent to {mode === "phone" ? `+91 ${phone}` : email}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("input");
+                  setOtp("");
+                  setError("");
+                  setSuccess("");
+                }}
+                className="text-xs font-bold text-[#2874f0] hover:underline uppercase"
+              >
+                Change
+              </button>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-5 flex items-start gap-2 border border-red-100 text-xs font-semibold">
+                <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-5 flex items-start gap-2 border border-green-100 text-xs font-semibold">
+                <FontAwesomeIcon icon={faCheckCircle} className="mt-0.5" />
+                <p>{success}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyOtp}>
+              <div className="relative mb-6">
+                <div className="relative border-2 border-[#2874f0] rounded-md px-4 py-3 bg-white">
+                  <label className="absolute -top-2.5 left-3 bg-white px-1.5 text-xs font-semibold text-[#2874f0] leading-none pointer-events-none select-none">
+                    Enter Verification OTP
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => {
+                      setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                      setError("");
+                    }}
+                    placeholder="• • • • • •"
+                    autoFocus
+                    className="w-full bg-transparent border-none outline-none text-xl text-center text-gray-900 font-black tracking-[0.4em] placeholder:text-gray-300"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mb-8 text-xs text-gray-500">
+                <span>Didn&apos;t receive OTP?</span>
+                {countdown > 0 ? (
+                  <span className="font-semibold text-gray-400">Resend in {countdown}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleContinue}
+                    className="font-bold text-[#2874f0] hover:underline"
+                  >
+                    Resend OTP
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={otp.length === 0 || isLoading}
+                className={`w-full py-3.5 rounded-md font-bold text-sm tracking-wide text-white transition-all shadow-sm ${
+                  otp.length > 0 && !isLoading
+                    ? "bg-[#2874f0] hover:bg-[#1a64dc] active:scale-[0.99] cursor-pointer"
+                    : "bg-[#bdbdbd] cursor-not-allowed"
+                }`}
+              >
+                {isLoading ? "Verifying..." : "Verify & Continue"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ⚡ Demo Instant 1-Click Login Option */}
+        <div className="mt-8 pt-5 border-t border-gray-100 text-center">
+          <p className="text-[11px] text-gray-400 font-medium mb-3 uppercase tracking-wider">
+            Or Sign In With
+          </p>
+
+          <div className="flex flex-col gap-2.5">
+            {/* Google One-Tap */}
+            <div className="flex justify-center min-h-[44px]">
+              <div id="googleBtnGroup" className="w-full flex justify-center"></div>
+            </div>
+
+            {/* Instant Demo Access Button */}
             <button
               onClick={handleDirectLogin}
               disabled={isInstantLoading}
-              className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider disabled:opacity-50"
+              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-2.5 px-4 rounded-md border border-gray-200 transition-all text-xs flex items-center justify-center gap-2 active:scale-95"
             >
-              <FontAwesomeIcon icon={faBolt} className="text-base" />
-              <span>{isInstantLoading ? "Entering Store..." : "Direct 1-Click Login"}</span>
+              <FontAwesomeIcon icon={faBolt} className="text-amber-500 text-sm" />
+              <span>{isInstantLoading ? "Entering..." : "Quick 1-Click Guest Sign In"}</span>
             </button>
           </div>
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Or use email code</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3.5 rounded-xl mb-4 flex items-start gap-2.5 border border-red-100 text-xs font-bold">
-              <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5" />
-              <p>{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="bg-green-50 text-green-600 p-3.5 rounded-xl mb-4 flex items-start gap-2.5 border border-green-100 text-xs font-bold">
-              <FontAwesomeIcon icon={faCheckCircle} className="mt-0.5" />
-              <p>{success}</p>
-            </div>
-          )}
-
-          {step === "email" ? (
-            <form onSubmit={handleSendOtp} className="relative z-10">
-              <div className="mb-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 mb-1.5 block">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <FontAwesomeIcon icon={faEnvelope} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-slate-900 transition-colors" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-gray-200 focus:border-slate-900 focus:bg-white rounded-xl py-3.5 pl-11 pr-4 text-black text-sm font-bold outline-none transition-all"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
-              >
-                <span>{isLoading ? "Sending Code..." : "Send Verification Code"}</span>
-                {!isLoading && <FontAwesomeIcon icon={faArrowRight} />}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="relative z-10">
-              <div className="mb-4">
-                <div className="flex justify-between items-end mb-1.5 ml-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">
-                    Enter 6-Digit Code
-                  </label>
-                  <button 
-                    type="button" 
-                    onClick={() => { setStep("email"); setOtp(""); setSuccess(""); setError(""); }}
-                    className="text-[10px] font-bold text-indigo-600 hover:underline uppercase"
-                  >
-                    Change Email
-                  </button>
-                </div>
-                <div className="relative group">
-                  <FontAwesomeIcon icon={faKey} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-slate-900 transition-colors" />
-                  <input
-                    type="text"
-                    required
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="w-full bg-slate-50 border border-gray-200 focus:border-slate-900 focus:bg-white rounded-xl py-3.5 pl-11 pr-4 text-black font-black text-center tracking-[0.4em] outline-none transition-all"
-                    placeholder="------"
-                    maxLength={6}
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
-              >
-                <span>{isLoading ? "Verifying..." : "Verify & Enter"}</span>
-                {!isLoading && <FontAwesomeIcon icon={faArrowRight} />}
-              </button>
-            </form>
-          )}
-
-          <div className="mt-6 text-center relative z-10 border-t border-gray-100 pt-4">
-            <div className="flex items-center justify-center min-h-[44px]">
-              <div id="googleBtnGroup" className="w-[280px] sm:w-[350px]"></div>
-            </div>
-
-            <div className="mt-4">
-              <Link href="/products" className="text-xs font-bold text-gray-500 hover:text-slate-900 hover:underline">
-                ← Continue browsing phones as Guest
-              </Link>
-            </div>
-          </div>
         </div>
+
       </div>
     </div>
   );
@@ -297,11 +432,13 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-[80vh] flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2874f0]"></div>
+        </div>
+      }
+    >
       <LoginContent />
     </Suspense>
   );
