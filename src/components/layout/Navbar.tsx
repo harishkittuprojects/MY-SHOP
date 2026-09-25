@@ -103,17 +103,8 @@ export default function Navbar() {
       </div>
 
       <div className={`container transition-all duration-300 flex items-center justify-between gap-4 relative ${isScrolled ? "py-1" : "py-1 md:py-2"}`}>
-        {/* Left Section: Mobile Menu Toggle & Logo (Aligned Left) */}
-        <div className="flex items-center gap-2 sm:gap-3 z-50">
-          <button
-            className="p-1.5 -ml-1 text-[#222222] md:hidden hover:text-secondary transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
-          </button>
-
-          {/* Logo */}
+        {/* Left Section: Logo Alone (Totally Aligned Left) */}
+        <div className="flex items-center z-50">
           <Link 
             href="/" 
             className="flex items-center p-0 m-0 leading-none transition-transform active:scale-95"
@@ -157,9 +148,8 @@ export default function Navbar() {
           <Link href="/contact" className="hover:text-gray-600 font-medium">Contact</Link>
         </div>
 
-        {/* Actions - ACCOUNT ON RIGHT ON MOBILE, CART+ACCOUNT ON DESKTOP */}
-        <div className="flex items-center gap-4 md:gap-6 z-50">
-          
+        {/* Actions - ACCOUNT & MENU ON RIGHT ON MOBILE, CART+ACCOUNT ON DESKTOP */}
+        <div className="flex items-center gap-3 sm:gap-4 md:gap-6 z-50">
           {user ? (
             <Link href="/account" className="flex items-center gap-2 text-[#222222] hover:text-primary transition-colors">
               <div className="w-8 h-8 md:w-8 md:h-8 rounded-full bg-secondary text-white flex items-center justify-center">
@@ -175,6 +165,15 @@ export default function Navbar() {
               <span className="hidden md:block text-sm font-black uppercase tracking-widest">Sign In</span>
             </Link>
           )}
+
+          {/* Mobile Menu Toggle Button (Beside Profile) */}
+          <button
+            className="p-1.5 text-[#222222] md:hidden hover:text-secondary transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
+          </button>
 
           {/* Cart Icon - HIDDEN ON MOBILE HEADER, MOVED TO MENU */}
           <Link href="/cart" className="hidden md:block relative p-2 transition-colors text-[#222222] hover:text-gray-600">
