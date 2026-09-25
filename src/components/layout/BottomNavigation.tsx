@@ -196,20 +196,15 @@ export default function BottomNavigation() {
           </Link>
         </nav>
 
-        {/* Clean White WhatsApp Capsule (Yellow background removed) */}
+        {/* Only WhatsApp Circular Icon Button (No white background or text) */}
         <a 
           href={whatsappUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="bg-white hover:bg-gray-50 active:scale-95 transition-all rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-gray-200/90 flex-shrink-0 min-h-[58px]"
+          className="w-13 h-13 sm:w-14 sm:h-14 w-[54px] h-[54px] rounded-full bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(37,211,102,0.45)] flex-shrink-0 transition-transform"
           aria-label="Order on WhatsApp"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-sm flex-shrink-0">
-            <FontAwesomeIcon icon={faWhatsapp} className="text-base sm:text-lg" />
-          </div>
-          <span className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight pr-1">
-            WhatsApp
-          </span>
+          <FontAwesomeIcon icon={faWhatsapp} className="text-2xl sm:text-3xl" />
         </a>
       </div>
     </div>
