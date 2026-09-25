@@ -117,27 +117,20 @@ export default function Navbar() {
           {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-3 p-0 m-0 leading-none z-10 transition-transform active:scale-95"
+            className="flex items-center p-0 m-0 leading-none z-10 transition-transform active:scale-95"
           >
-            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden shadow-md flex-shrink-0 bg-slate-900 border border-slate-700">
-              <Image 
-                src="/mobile-logo.png" 
-                alt="My Shop Mobiles Logo" 
-                fill
-                sizes="(max-width: 768px) 48px, 64px"
-                className="object-cover"
-                priority
-                loading="eager"
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="font-black text-lg md:text-xl tracking-tight text-slate-900 uppercase">
-                MY SHOP
-              </span>
-              <span className="text-[10px] md:text-xs font-black tracking-widest text-indigo-600 uppercase -mt-0.5">
-                MOBILES &amp; GADGETS
-              </span>
-            </div>
+            <Image 
+              src="/my-shop-logo.png" 
+              alt="My Shop Logo" 
+              width={160}
+              height={160}
+              sizes="(max-width: 768px) 52px, 64px"
+              className={`w-auto object-contain select-none transition-all duration-300 ${
+                isScrolled ? "h-11 md:h-13" : "h-13 md:h-15"
+              }`}
+              priority
+              loading="eager"
+            />
           </Link>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInstagram, faWhatsapp, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope, faMapMarkerAlt, faPhoneAlt, faMobileAlt } from "@fortawesome/free-solid-svg-icons";
@@ -12,11 +13,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
           <div className="flex flex-col items-start">
-            <Link href="/" className="inline-flex items-center gap-2 mb-4 text-2xl font-black tracking-wider text-white">
-              <span className="w-9 h-9 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black">
-                <FontAwesomeIcon icon={faMobileAlt} />
+            <Link href="/" className="inline-flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-lg">
+                <Image 
+                  src="/my-shop-logo.png" 
+                  alt="My Shop Logo" 
+                  width={44} 
+                  height={44} 
+                  className="object-contain" 
+                />
+              </div>
+              <span className="text-2xl font-black tracking-wider text-white">
+                MY SHOP
               </span>
-              <span>MY SHOP <span className="text-amber-400 font-extrabold text-sm uppercase px-2 py-0.5 rounded bg-white/10">Mobiles</span></span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Your premier destination for the latest flagship smartphones, genuine accessories, smartwatches, and next-generation 5G devices with official brand warranty.

@@ -34,16 +34,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "MADUR.IN | Farm Fresh Grocery & Dairy Delivery",
-    description: "Order fresh milk, vegetables, groceries, and traditional food items online with home delivery in Hyderabad.",
-    url: "https://madur.in",
-    siteName: "MADUR.IN",
+    title: "MY SHOP | Buy Latest Flagship Smartphones, 5G Mobiles & Smart Gadgets",
+    description: "Explore the latest smartphones from Apple iPhone, Samsung Galaxy, Google Pixel, and OnePlus with official warranty and 0% No Cost EMI.",
+    url: "https://myshop.com",
+    siteName: "MY SHOP",
     images: [
       {
-        url: "/logo-final.png",
-        width: 800,
-        height: 600,
-        alt: "MADUR.IN Logo",
+        url: "/my-shop-logo.png",
+        width: 500,
+        height: 500,
+        alt: "MY SHOP Logo",
       },
     ],
     locale: "en_IN",
@@ -51,14 +51,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MADUR.IN | Farm Fresh Grocery & Dairy Delivery",
-    description: "Order fresh milk, vegetables, groceries, and traditional food items online with home delivery in Hyderabad.",
-    images: ["/logo-final.png"],
+    title: "MY SHOP | Buy Latest Flagship Smartphones, 5G Mobiles & Smart Gadgets",
+    description: "Explore the latest smartphones from Apple iPhone, Samsung Galaxy, Google Pixel, and OnePlus with official warranty and 0% No Cost EMI.",
+    images: ["/my-shop-logo.png"],
   },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/logo-final.png",
+    apple: "/my-shop-logo.png",
   },
   verification: {
     google: "BCfi7DVg3MgGcY_x3QC_bbFyRk7gWn57vAtC-w4uC54",

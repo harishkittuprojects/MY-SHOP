@@ -11,14 +11,14 @@ export default function Loading() {
       </div>
       
       <div className="flex flex-col items-center gap-2">
-        <div className="relative w-48 h-16">
+        <div className="relative w-28 h-28">
           <Image 
-            src="/mobile-logo.png" 
+            src="/my-shop-logo.png" 
             alt="MY SHOP Logo" 
             fill 
             className="object-contain animate-pulse"
             priority
-            sizes="150px"
+            sizes="112px"
           />
         </div>
         <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.5em] pl-[0.5em]">
