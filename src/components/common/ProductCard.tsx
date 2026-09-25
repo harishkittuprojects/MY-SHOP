@@ -61,6 +61,21 @@ export default function ProductCard({ product }: { product: Product }) {
     });
   };
 
+  const handleBuyNow = (quantity: number, selectedUnit: string, price: number) => {
+    if (isOutOfStock) return;
+    addToCart({ 
+      ...product, 
+      quantity, 
+      selectedUnit,
+      price,
+      image: displayImage,
+      category: displayCategory
+    });
+    setIsModalOpen(false);
+    setIsDetailOpen(false);
+    router.push("/cart");
+  };
+
   return (
     <>
       <motion.div 
@@ -181,6 +196,7 @@ export default function ProductCard({ product }: { product: Product }) {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onConfirm={handleAddToCart}
+            onBuyNow={handleBuyNow}
             product={{
               ...product,
               image: displayImage,
@@ -191,6 +207,7 @@ export default function ProductCard({ product }: { product: Product }) {
             isOpen={isDetailOpen}
             onClose={() => setIsDetailOpen(false)}
             onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
             product={{
               ...product,
               image: displayImage,

@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus, faTimes, faCheckCircle, faBox } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus, faTimes, faCheckCircle, faBox, faBolt, faCartPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface Product {
   id: string;
@@ -20,10 +21,12 @@ interface QuantityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (quantity: number, selectedUnit: string, price: number) => void;
+  onBuyNow?: (quantity: number, selectedUnit: string, price: number) => void;
   product: Product;
 }
 
-export default function QuantityModal({ isOpen, onClose, onConfirm, product }: QuantityModalProps) {
+export default function QuantityModal({ isOpen, onClose, onConfirm, onBuyNow, product }: QuantityModalProps) {
+  const router = useRouter();
   const normalizeImageUrl = (url: string) => {
     if (!url) return "/mobile-logo.png";
     if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("/")) return url;
@@ -98,6 +101,16 @@ export default function QuantityModal({ isOpen, onClose, onConfirm, product }: Q
 
   const handleConfirm = () => {
     onConfirm(quantity, selectedUnit, currentTotalPrice);
+    onClose();
+  };
+
+  const handleBuyNow = () => {
+    if (onBuyNow) {
+      onBuyNow(quantity, selectedUnit, currentTotalPrice);
+    } else {
+      onConfirm(quantity, selectedUnit, currentTotalPrice);
+      router.push("/cart");
+    }
     onClose();
   };
 
@@ -218,14 +231,24 @@ export default function QuantityModal({ isOpen, onClose, onConfirm, product }: Q
                   </p>
                 </div>
 
-                {/* Action Button */}
-                <button
-                  onClick={handleConfirm}
-                  className="w-full bg-primary hover:bg-primary/90 text-black font-black py-4 md:py-4.5 rounded-xl md:rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl shadow-primary/20 text-[10px] md:text-xs uppercase tracking-widest mt-2 md:mt-4"
-                >
-                  <FontAwesomeIcon icon={faCheckCircle} />
-                  Confirm Add to Cart
-                </button>
+                {/* Action Buttons: Add to Cart and Buy Now */}
+                <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 mt-2 md:mt-4">
+                  <button
+                    onClick={handleConfirm}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-black font-black py-3.5 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20 text-[10px] md:text-xs uppercase tracking-widest"
+                  >
+                    <FontAwesomeIcon icon={faCartPlus} />
+                    Add to Cart
+                  </button>
+
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 bg-secondary hover:bg-[#255732] text-white font-black py-3.5 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-secondary/20 text-[10px] md:text-xs uppercase tracking-widest"
+                  >
+                    <FontAwesomeIcon icon={faBolt} />
+                    Buy Now
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const category = searchParams.get('category');
   const search = searchParams.get('search');
   const limit = searchParams.get('limit');
+  const isPopular = searchParams.get('is_popular');
 
   try {
     let sql = `
@@ -21,8 +22,6 @@ export async function GET(request: Request) {
     try {
       await mysql.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS description TEXT`);
     } catch (e) { /* ignore */ }
-    
-    const isPopular = searchParams.get('is_popular');
 
     if (category) {
       sql += ` AND c.name = ?`;
@@ -73,7 +72,18 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('API Products Error:', error);
     // Fallback on total failure (like connection error)
-    return NextResponse.json(limit ? staticProducts.slice(0, parseInt(limit)) : staticProducts);
+    let filtered = [...staticProducts];
+    if (category) {
+      filtered = filtered.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
+    }
+    if (search) {
+      const s = search.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(s) || p.description.toLowerCase().includes(s));
+    }
+    if (isPopular) {
+      filtered = filtered.filter(p => p.is_popular);
+    }
+    return NextResponse.json(limit ? filtered.slice(0, parseInt(limit)) : filtered);
   }
 }
 

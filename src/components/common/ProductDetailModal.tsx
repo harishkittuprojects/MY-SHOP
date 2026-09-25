@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faShoppingCart, faShoppingBag, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faShoppingCart, faShoppingBag, faInfoCircle, faBolt, faCartPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface ProductDetailModalProps {
   isOpen: boolean;
@@ -20,9 +20,10 @@ interface ProductDetailModalProps {
     category: string;
   };
   onAddToCart: (quantity: number, unit: string, price: number) => void;
+  onBuyNow?: (quantity: number, unit: string, price: number) => void;
 }
 
-export default function ProductDetailModal({ isOpen, onClose, product, onAddToCart }: ProductDetailModalProps) {
+export default function ProductDetailModal({ isOpen, onClose, product, onAddToCart, onBuyNow }: ProductDetailModalProps) {
   if (!product) return null;
 
   return (
@@ -116,15 +117,30 @@ export default function ProductDetailModal({ isOpen, onClose, product, onAddToCa
                   </div>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-gray-100 flex gap-4">
+                <div className="mt-auto pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => {
                       onClose();
                       onAddToCart(1, product.unit, product.price);
                     }}
-                    className="flex-1 bg-secondary text-white font-black py-5 rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-3 text-xs uppercase tracking-widest"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-black font-black py-4 rounded-xl md:rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-widest shadow-md shadow-primary/20"
                   >
-                    <FontAwesomeIcon icon={faShoppingCart} />
+                    <FontAwesomeIcon icon={faCartPlus} />
+                    Add to Cart
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      if (onBuyNow) {
+                        onBuyNow(1, product.unit, product.price);
+                      } else {
+                        onAddToCart(1, product.unit, product.price);
+                      }
+                    }}
+                    className="flex-1 bg-secondary text-white font-black py-4 rounded-xl md:rounded-2xl shadow-xl hover:bg-[#255732] transition-all active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
+                  >
+                    <FontAwesomeIcon icon={faBolt} />
                     Buy Now
                   </button>
                 </div>

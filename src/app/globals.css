@@ -69,3 +69,18 @@ nextjs-portal,
   display: none !important;
 }
 
+/* Swiper Hero White & Green Pagination */
+.swiper-pagination-bullet {
+  background: #ffffff !important;
+  opacity: 0.6 !important;
+  transition: all 0.3s ease !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #34d399 !important;
+  opacity: 1 !important;
+  width: 28px !important;
+  border-radius: 9999px !important;
+}
+
+
