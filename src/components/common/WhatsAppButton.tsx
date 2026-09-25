@@ -13,7 +13,7 @@ export default function WhatsAppButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-all hover:scale-110 active:scale-95 group"
+      className="hidden md:flex fixed bottom-6 right-6 z-[60] bg-green-500 text-white w-14 h-14 rounded-full items-center justify-center shadow-lg hover:bg-green-600 transition-all hover:scale-110 active:scale-95 group"
       aria-label="Chat on WhatsApp"
     >
       <FontAwesomeIcon icon={faWhatsapp} className="text-3xl" />
