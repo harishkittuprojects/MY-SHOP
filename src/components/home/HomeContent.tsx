@@ -100,6 +100,51 @@ export default function HomeContent() {
   return (
     <div className="flex flex-col gap-0 md:gap-12 pb-0 md:pb-20">
       <Hero />
+
+      {/* Quick Brand Categories Rail (Top Categories Section) */}
+      <section className="bg-white border-b border-gray-100 py-3 sm:py-4 md:py-6 shadow-sm">
+        <div className="container">
+          <div className="flex items-center justify-between mb-2 md:mb-4 px-1">
+            <h2 className="text-base sm:text-xl md:text-2xl font-black flex items-center gap-2 md:gap-3 text-slate-900 tracking-tight">
+              <span className="w-1.5 sm:w-2 h-5 sm:h-7 bg-secondary rounded-full"></span>
+              Top Brands &amp; Categories
+            </h2>
+            <Link 
+              href="/categories" 
+              className="text-xs sm:text-sm font-bold text-secondary hover:underline flex items-center gap-1.5"
+            >
+              All Categories <FontAwesomeIcon icon={faArrowRight} size="xs" />
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${encodeURIComponent(cat.name)}`}
+                className="flex flex-col items-center gap-2 group flex-shrink-0 active:scale-95 transition-transform"
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl bg-slate-50 border border-gray-200/80 group-hover:border-secondary group-hover:shadow-md transition-all p-2 flex items-center justify-center overflow-hidden relative shadow-sm">
+                  {cat.image_url || cat.image ? (
+                    <Image
+                      src={normalizeImageUrl(cat.image_url || cat.image)}
+                      alt={cat.name}
+                      fill
+                      className="object-contain p-1.5 group-hover:scale-110 transition-transform duration-300"
+                      sizes="(max-width: 768px) 80px, 96px"
+                    />
+                  ) : (
+                    <FontAwesomeIcon icon={faBox} className="text-gray-300 text-2xl" />
+                  )}
+                </div>
+                <span className="text-[11px] sm:text-xs md:text-sm font-bold text-slate-800 text-center max-w-[72px] sm:max-w-[88px] leading-tight line-clamp-1 group-hover:text-secondary transition-colors">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
       
       {/* Popular Products - Exact Madur.in layout */}
       <section className="bg-secondary/5 pt-2 pb-2 md:py-16">
@@ -158,7 +203,7 @@ export default function HomeContent() {
             <span className="w-2 h-8 bg-secondary rounded-full"></span>
             Shop by Category
           </h2>
-          <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline">
+          <Link href="/categories" className="text-secondary font-bold flex items-center gap-2 hover:underline">
             View All <FontAwesomeIcon icon={faArrowRight} size="xs" />
           </Link>
         </div>
