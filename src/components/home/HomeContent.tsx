@@ -100,56 +100,9 @@ export default function HomeContent() {
   return (
     <div className="flex flex-col gap-0 md:gap-12 pb-0 md:pb-20">
       <Hero />
-
-      {/* Trust Badges Bar */}
-      <section className="bg-gray-50 border-y border-gray-200 py-6">
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                <FontAwesomeIcon icon={faShieldAlt} className="text-xl" />
-              </div>
-              <div>
-                <p className="font-bold text-xs md:text-sm text-[#222]">100% Genuine</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Official Brand Warranty</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                <FontAwesomeIcon icon={faTruckFast} className="text-xl" />
-              </div>
-              <div>
-                <p className="font-bold text-xs md:text-sm text-[#222]">Fast Delivery</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Express doorstep dispatch</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                <FontAwesomeIcon icon={faSyncAlt} className="text-xl" />
-              </div>
-              <div>
-                <p className="font-bold text-xs md:text-sm text-[#222]">Easy Exchange</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Best value for old phones</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                <FontAwesomeIcon icon={faCreditCard} className="text-xl" />
-              </div>
-              <div>
-                <p className="font-bold text-xs md:text-sm text-[#222]">No Cost EMI</p>
-                <p className="text-[10px] md:text-xs text-gray-500">On all major credit cards</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       
-      {/* Featured Products */}
-      <section className="bg-secondary/5 pt-4 pb-4 md:py-16">
+      {/* Popular Products - Exact Madur.in layout */}
+      <section className="bg-secondary/5 pt-2 pb-2 md:py-16">
         <div className="container">
           {/* Mobile Search Bar */}
           <div className="md:hidden mt-1.5 mb-3">
@@ -168,22 +121,19 @@ export default function HomeContent() {
             </form>
           </div>
 
-          <div className="flex items-center justify-between mb-4 md:mb-10">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black flex items-center gap-3 text-[#222222]">
-                <span className="w-2 h-8 bg-secondary rounded-full"></span>
-                Trending Smartphones &amp; Devices
-              </h2>
-              <p className="text-xs md:text-sm text-gray-500 ml-5 mt-0.5">Explore the latest flagship releases and bestsellers</p>
-            </div>
+          <div className="flex items-center justify-between mb-2 md:mb-10">
+            <h2 className="text-2xl font-black flex items-center gap-3 text-[#222222]">
+              <span className="w-2 h-8 bg-secondary rounded-full"></span>
+              Popular Products
+            </h2>
             <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline text-sm md:text-base">
-              See All Phones <FontAwesomeIcon icon={faArrowRight} size="xs" />
+              See all Products <FontAwesomeIcon icon={faArrowRight} size="xs" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 mb-4 md:mb-12">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 mb-3 md:mb-12">
             {isLoading ? (
-                [...Array(8)].map((_, i) => <div key={i} className="h-80 bg-white/50 animate-pulse rounded-3xl"></div>)
+                [...Array(4)].map((_, i) => <div key={i} className="h-80 bg-white/50 animate-pulse rounded-3xl"></div>)
             ) : (Array.isArray(products) ? products : []).map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -194,31 +144,28 @@ export default function HomeContent() {
               href="/products" 
               className="bg-secondary text-secondary-foreground font-black px-5 py-2.5 md:px-10 md:py-5 text-xs md:text-base rounded-xl md:rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 md:gap-3"
             >
-              EXPLORE ALL 5G SMARTPHONES
+              VIEW ALL PRODUCTS
               <FontAwesomeIcon icon={faArrowRight} className="text-xs md:text-base" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Categories Grid */}
+      {/* Categories Grid - Exact Madur.in layout */}
       <section className="container">
-        <div className="flex items-center justify-between mb-4 md:mb-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-black flex items-center gap-3 text-[#222222]">
-              <span className="w-2 h-8 bg-secondary rounded-full"></span>
-              Shop by Smartphone Brand
-            </h2>
-            <p className="text-xs md:text-sm text-gray-500 ml-5 mt-0.5">Find the perfect smartphone from top global brands</p>
-          </div>
+        <div className="flex items-center justify-between mb-2 md:mb-8">
+          <h2 className="text-2xl font-black flex items-center gap-3 text-[#222222]">
+            <span className="w-2 h-8 bg-secondary rounded-full"></span>
+            Shop by Category
+          </h2>
           <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline">
-            View All Brands <FontAwesomeIcon icon={faArrowRight} size="xs" />
+            View All <FontAwesomeIcon icon={faArrowRight} size="xs" />
           </Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
           {isLoading ? (
-            [...Array(8)].map((_, i) => <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl"></div>)
+            [...Array(4)].map((_, i) => <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl"></div>)
           ) : (Array.isArray(categories) ? categories : []).map((cat) => (
             <Link 
               href={`/products?category=${encodeURIComponent(cat.name)}`} 
@@ -250,49 +197,45 @@ export default function HomeContent() {
           ))}
         </div>
       </section>
-
-      {/* Flagship Spotlight Section */}
-      <section className="container pt-4 pb-4 md:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 items-center bg-slate-900 rounded-[2.5rem] p-6 md:p-14 text-white overflow-hidden relative">
-          <div className="relative aspect-square md:aspect-auto md:h-[450px] rounded-2xl overflow-hidden shadow-2xl">
+      {/* The Journey Section - Exact Madur.in layout */}
+      <section className="container py-8 md:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="relative aspect-square rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-gray-100">
             <Image 
-              src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1200"
-              alt="Next Gen Smartphones"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
+              src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1200" 
+              alt="The Journey of MY SHOP" 
+              fill 
               className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-            <div className="absolute bottom-4 left-4 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 max-w-xs">
-              <p className="font-black text-amber-400 text-xl mb-1">Premium Flagships</p>
-              <p className="text-xs text-white/90 font-medium">Equipped with Apple A18 Pro &amp; Snapdragon 8 Elite processors.</p>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute bottom-6 left-6 right-6 text-white p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg">
+              <p className="font-black text-secondary text-xl mb-1">Quality First</p>
+              <p className="text-xs text-[#222222] font-bold">100% Genuine smartphones with official brand warranty.</p>
             </div>
           </div>
 
           <div>
-            <span className="text-xs font-black uppercase tracking-widest text-amber-400 mb-2 block">
-              Official Authorized Retailer
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 leading-tight text-white">
-              Upgrade to the Future of <span className="text-amber-400">Mobile Innovation</span>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-8 leading-tight text-[#222222]">
+              The Journey of <span className="text-secondary">MY SHOP</span>
             </h2>
-            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8">
-              Experience lightning-fast 5G speeds, cutting-edge AI camera computational photography, and revolutionary battery longevity. Guaranteed genuine with manufacturer warranty and hassle-free returns.
+            <p className="text-[#222222] text-lg leading-relaxed mb-4 md:mb-8">
+              My Shop is born out of a passion for genuine technology and seamless connectivity. We bring the latest flagship and 5G smartphones directly to your doorstep with guaranteed official warranty and express delivery.
             </p>
             
-            <div className="grid grid-cols-2 gap-4 mb-6 md:mb-8">
-              <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                <h4 className="font-black text-2xl md:text-3xl text-amber-400 mb-1">0%</h4>
-                <p className="text-xs font-bold text-gray-300 uppercase tracking-wider">No Cost EMI Options</p>
+            <div className="grid grid-cols-2 gap-4 mb-6 md:mb-10">
+              <div className="bg-accent p-6 rounded-2xl border-l-4 border-secondary shadow-sm">
+                <h4 className="font-black text-3xl text-secondary mb-1">100%</h4>
+                <p className="text-xs font-bold text-[#222222] uppercase tracking-wider">Original &amp; Sealed</p>
               </div>
-              <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                <h4 className="font-black text-2xl md:text-3xl text-amber-400 mb-1">100%</h4>
-                <p className="text-xs font-bold text-gray-300 uppercase tracking-wider">Original &amp; Sealed</p>
+              <div className="bg-accent p-6 rounded-2xl border-l-4 border-secondary shadow-sm">
+                <h4 className="font-black text-3xl text-secondary mb-1">Express</h4>
+                <p className="text-xs font-bold text-[#222222] uppercase tracking-wider">Doorstep Delivery</p>
               </div>
             </div>
 
-            <Link href="/products" className="group bg-amber-400 text-slate-950 font-black px-8 py-4 rounded-xl shadow-xl hover:bg-amber-300 transition-all flex items-center gap-3 w-fit">
-              SHOP FLAGSHIP PHONES
+            <Link href="/about" className="group bg-secondary text-secondary-foreground font-black px-10 py-5 rounded-2xl shadow-xl hover:opacity-90 transition-all flex items-center gap-3 w-fit">
+              READ FULL STORY
               <FontAwesomeIcon icon={faArrowRight} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
