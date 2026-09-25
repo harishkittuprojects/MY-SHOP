@@ -196,18 +196,18 @@ export default function BottomNavigation() {
           </Link>
         </nav>
 
-        {/* Mustard Yellow WhatsApp Capsule */}
+        {/* Clean White WhatsApp Capsule (Yellow background removed) */}
         <a 
           href={whatsappUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="bg-[#dfa735] hover:bg-[#d09825] active:scale-95 transition-all rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_25px_rgba(223,167,53,0.4)] flex-shrink-0 min-h-[58px]"
+          className="bg-white hover:bg-gray-50 active:scale-95 transition-all rounded-full px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-gray-200/90 flex-shrink-0 min-h-[58px]"
           aria-label="Order on WhatsApp"
         >
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-sm flex-shrink-0">
             <FontAwesomeIcon icon={faWhatsapp} className="text-base sm:text-lg" />
           </div>
-          <span className="font-black text-[#0f172a] text-xs sm:text-sm tracking-tight pr-1">
+          <span className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight pr-1">
             WhatsApp
           </span>
         </a>
