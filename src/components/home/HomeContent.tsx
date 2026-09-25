@@ -98,13 +98,13 @@ export default function HomeContent() {
   };
 
   return (
-    <div className="flex flex-col gap-0 md:gap-12 pb-0 md:pb-20">
+    <div className="flex flex-col gap-6 sm:gap-8 md:gap-14 pb-16 md:pb-24">
       <Hero />
 
       {/* Quick Brand Categories Rail (Top Categories Section) */}
-      <section className="bg-white border-b border-gray-100 py-3 sm:py-4 md:py-6 shadow-sm">
+      <section className="bg-white border-b border-gray-100 py-4 sm:py-5 md:py-8 shadow-sm">
         <div className="container">
-          <div className="flex items-center justify-between mb-2 md:mb-4 px-1">
+          <div className="flex items-center justify-between mb-3 md:mb-5 px-1">
             <h2 className="text-base sm:text-xl md:text-2xl font-black flex items-center gap-2 md:gap-3 text-slate-900 tracking-tight">
               <span className="w-1.5 sm:w-2 h-5 sm:h-7 bg-secondary rounded-full"></span>
               Top Brands &amp; Categories
@@ -147,10 +147,10 @@ export default function HomeContent() {
       </section>
       
       {/* Popular Products - Exact Madur.in layout */}
-      <section className="bg-secondary/5 pt-2 pb-2 md:py-16">
+      <section className="bg-secondary/5 py-8 md:py-16">
         <div className="container">
           {/* Mobile Search Bar */}
-          <div className="md:hidden mt-1.5 mb-3">
+          <div className="md:hidden mb-6">
             <form 
               onSubmit={handleSearch}
               className="flex items-center bg-white border border-secondary/20 rounded-xl px-4 py-3 shadow-md"
@@ -166,17 +166,17 @@ export default function HomeContent() {
             </form>
           </div>
 
-          <div className="flex items-center justify-between mb-2 md:mb-10">
-            <h2 className="text-2xl font-black flex items-center gap-3 text-[#222222]">
-              <span className="w-2 h-8 bg-secondary rounded-full"></span>
+          <div className="flex items-center justify-between mb-4 md:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-2.5 md:gap-3 text-[#222222]">
+              <span className="w-1.5 sm:w-2 h-6 sm:h-8 bg-secondary rounded-full"></span>
               Popular Products
             </h2>
-            <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline text-sm md:text-base">
+            <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline text-xs sm:text-sm md:text-base">
               See all Products <FontAwesomeIcon icon={faArrowRight} size="xs" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 mb-3 md:mb-12">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-8 mb-6 md:mb-12">
             {isLoading ? (
                 [...Array(4)].map((_, i) => <div key={i} className="h-80 bg-white/50 animate-pulse rounded-3xl"></div>)
             ) : (Array.isArray(products) ? products : []).map(product => (
@@ -184,10 +184,10 @@ export default function HomeContent() {
             ))}
           </div>
 
-          <div className="flex justify-center mt-2">
+          <div className="flex justify-center mt-4">
             <Link 
               href="/products" 
-              className="bg-secondary text-secondary-foreground font-black px-5 py-2.5 md:px-10 md:py-5 text-xs md:text-base rounded-xl md:rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 md:gap-3"
+              className="bg-secondary text-secondary-foreground font-black px-6 py-3 md:px-10 md:py-5 text-xs md:text-base rounded-xl md:rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 md:gap-3"
             >
               VIEW ALL PRODUCTS
               <FontAwesomeIcon icon={faArrowRight} className="text-xs md:text-base" />
@@ -197,13 +197,13 @@ export default function HomeContent() {
       </section>
 
       {/* Categories Grid - Exact Madur.in layout */}
-      <section className="container">
-        <div className="flex items-center justify-between mb-2 md:mb-8">
-          <h2 className="text-2xl font-black flex items-center gap-3 text-[#222222]">
-            <span className="w-2 h-8 bg-secondary rounded-full"></span>
+      <section className="container py-8 md:py-16">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-2.5 md:gap-3 text-[#222222]">
+            <span className="w-1.5 sm:w-2 h-6 sm:h-8 bg-secondary rounded-full"></span>
             Shop by Category
           </h2>
-          <Link href="/categories" className="text-secondary font-bold flex items-center gap-2 hover:underline">
+          <Link href="/categories" className="text-secondary font-bold flex items-center gap-2 hover:underline text-xs sm:text-sm md:text-base">
             View All <FontAwesomeIcon icon={faArrowRight} size="xs" />
           </Link>
         </div>

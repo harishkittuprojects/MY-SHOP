@@ -82,10 +82,10 @@ export default function ProductCard({ product }: { product: Product }) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className={`group bg-white rounded-xl md:rounded-3xl p-1.5 md:p-3.5 border border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] transition-all flex flex-col h-full relative ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
+        className={`group bg-white rounded-2xl md:rounded-3xl p-2.5 sm:p-3 md:p-4 border border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] transition-all flex flex-col h-full relative ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
       >
         {/* Product Image */}
-        <div className="relative aspect-square w-full rounded-lg md:rounded-2xl overflow-hidden bg-accent/50 mb-1.5 md:mb-3.5 border border-gray-50">
+        <div className="relative aspect-square w-full rounded-xl md:rounded-2xl overflow-hidden bg-accent/50 mb-2 md:mb-3.5 border border-gray-50">
           {imgSrc ? (
             <Image 
               src={imgSrc} 
