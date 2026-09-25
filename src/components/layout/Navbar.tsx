@@ -119,10 +119,10 @@ export default function Navbar() {
             href="/" 
             className="flex items-center gap-3 p-0 m-0 leading-none z-10 transition-transform active:scale-95"
           >
-            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden shadow-md flex-shrink-0 bg-slate-900 border border-slate-700">
+            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden shadow-sm flex-shrink-0 bg-slate-900 border border-slate-700">
               <Image 
                 src="/mobile-logo.png" 
-                alt="My Shop Mobiles Logo" 
+                alt="Madur Mobiles Logo" 
                 fill
                 sizes="(max-width: 768px) 48px, 64px"
                 className="object-cover"
@@ -131,38 +131,38 @@ export default function Navbar() {
               />
             </div>
             <div className="flex flex-col text-left">
-              <span className="font-black text-lg md:text-xl tracking-tight text-slate-900 uppercase">
-                MY SHOP
+              <span className="font-black text-xl md:text-2xl tracking-tight text-slate-900 uppercase">
+                MADUR <span className="text-emerald-700">MOBILES</span>
               </span>
-              <span className="text-[10px] md:text-xs font-black tracking-widest text-indigo-600 uppercase -mt-0.5">
-                MOBILES &amp; GADGETS
+              <span className="text-[9px] md:text-[10px] font-bold tracking-widest text-emerald-700 uppercase -mt-0.5">
+                FLAGSHIPS &amp; 5G GADGETS
               </span>
             </div>
           </Link>
         </div>
 
-        {/* Desktop Search Bar (Swiggy Style) - HIDDEN ON MOBILE */}
+        {/* Desktop Search Bar (Madur Style) - HIDDEN ON MOBILE */}
         <form 
           onSubmit={handleSearch}
-          className="hidden lg:flex flex-1 max-w-md mx-4 items-center bg-white border border-black/10 rounded-lg px-4 py-2 shadow-sm"
+          className="hidden lg:flex flex-1 max-w-md mx-4 items-center bg-gray-50 border border-green-200/80 rounded-xl px-4 py-2 shadow-sm focus-within:border-emerald-600 focus-within:bg-white transition-all"
         >
-          <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-3" />
+          <FontAwesomeIcon icon={faSearch} className="text-emerald-700 mr-3" />
           <input
             type="text"
-            placeholder="Search iPhone, Samsung, Pixel, Smartwatches..."
-            className="bg-transparent border-none outline-none w-full text-sm text-[#222222] placeholder:text-gray-400"
+            placeholder="Search iPhone 16 Pro, Galaxy S25, Pixel 9, Smartwatches..."
+            className="bg-transparent border-none outline-none w-full text-sm text-[#182C20] placeholder:text-gray-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </form>
 
         {/* Desktop Links - HIDDEN ON MOBILE */}
-        <div className="hidden md:flex items-center gap-8 text-[#222222]">
-          <Link href="/" className="hover:text-gray-600 font-medium">Home</Link>
-          <Link href="/products" className="hover:text-gray-600 font-medium text-secondary font-bold">Products</Link>
-          <Link href="/services" className="hover:text-gray-600 font-medium">Services</Link>
-          <Link href="/about" className="hover:text-gray-600 font-medium">About</Link>
-          <Link href="/contact" className="hover:text-gray-600 font-medium">Contact</Link>
+        <div className="hidden md:flex items-center gap-7 text-[#182C20]">
+          <Link href="/" className="hover:text-emerald-700 font-semibold transition-colors">Home</Link>
+          <Link href="/products" className="hover:text-emerald-700 font-bold text-emerald-700 transition-colors">Smartphones</Link>
+          <Link href="/categories" className="hover:text-emerald-700 font-semibold transition-colors">Brands</Link>
+          <Link href="/about" className="hover:text-emerald-700 font-semibold transition-colors">About Store</Link>
+          <Link href="/contact" className="hover:text-emerald-700 font-semibold transition-colors">Support</Link>
         </div>
 
         {/* Actions - ACCOUNT ON RIGHT ON MOBILE, CART+ACCOUNT ON DESKTOP */}

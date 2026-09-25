@@ -7,10 +7,10 @@ export async function GET() {
     // Fallback if empty
     if (slides.length === 0) {
       return NextResponse.json([
-        { image_url: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1920", title: "iPhone 16 Pro Series", subtitle: "Built for Apple Intelligence" },
-        { image_url: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=1920", title: "Galaxy S25 Ultra", subtitle: "Epic Galaxy AI in Your Hands" },
-        { image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=1920", title: "Google Pixel 9 Pro", subtitle: "Engineered by Google, Powered by Gemini" },
-        { image_url: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&q=80&w=1920", title: "Next-Gen 5G Powerhouses", subtitle: "Best Deals & No Cost EMI" },
+        { image_url: "/products/cow-milk-v1.png", title: "Pure Desi Cow Milk", subtitle: "Delivered fresh every morning in glass bottles" },
+        { image_url: "/products/groundnut-oil-v1.png", title: "Wood-Pressed Oils", subtitle: "Traditional wooden ghani cold-pressed extraction" },
+        { image_url: "/products/mango-pickle-v1.png", title: "Authentic Andhra Pickles", subtitle: "Handcrafted using traditional recipes and pure oil" },
+        { image_url: "/products/ghee-v1.png", title: "Bilona Desi Cow Ghee", subtitle: "Pure golden aroma prepared from curd" },
       ]);
     }
     return NextResponse.json(slides);

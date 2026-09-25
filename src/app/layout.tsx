@@ -15,18 +15,18 @@ const geistMono = Geist_Mono({
 import ClientLayout from "@/components/layout/ClientLayout";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://my-shop.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://madur.in'),
   title: {
-    default: "MY SHOP | Buy Latest Flagship Smartphones & 5G Mobiles",
-    template: "%s | MY SHOP Mobiles",
+    default: "MADUR | 100% Pure Farm-Fresh Milk, Wood-Pressed Oils & Organic Groceries",
+    template: "%s | MADUR Farm Fresh",
   },
-  description: "Shop certified brand-new smartphones from Apple iPhone, Samsung Galaxy, Google Pixel, OnePlus with 1-Year Official Warranty, Instant Exchange & No Cost EMI.",
-  keywords: ["smartphones", "buy mobile online", "iPhone 16", "Samsung Galaxy S25", "5G mobiles", "smartwatches", "mobile accessories"],
-  authors: [{ name: "My Shop Mobile Team" }],
-  creator: "My Shop",
-  publisher: "My Shop",
+  description: "Direct farm-to-table delivery across Hyderabad. Fresh cow & buffalo milk in glass bottles, wood-pressed oils, authentic pickles, and organic produce.",
+  keywords: ["madur", "madur.in", "farm fresh milk hyderabad", "wood pressed oil", "cold pressed oil", "A2 cow milk", "desi ghee", "organic vegetables hyderabad", "traditional pickles"],
+  authors: [{ name: "Madur Team" }],
+  creator: "Madur",
+  publisher: "Madur Farm Fresh",
   formatDetection: {
-    email: false,
+    email: true,
     address: true,
     telephone: true,
   },
