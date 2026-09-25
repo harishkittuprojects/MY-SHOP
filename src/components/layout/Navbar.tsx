@@ -103,21 +103,20 @@ export default function Navbar() {
       </div>
 
       <div className={`container transition-all duration-300 flex items-center justify-between gap-4 relative ${isScrolled ? "py-1" : "py-1 md:py-2"}`}>
-        {/* Mobile Left Section (Menu) */}
-        <div className="flex items-center md:hidden z-50">
+        {/* Left Section: Mobile Menu Toggle & Logo (Aligned Left) */}
+        <div className="flex items-center gap-2 sm:gap-3 z-50">
           <button
-            className="p-2 text-[#222222]"
+            className="p-1.5 -ml-1 text-[#222222] md:hidden hover:text-secondary transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation menu"
           >
             <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
           </button>
-        </div>
 
-        <div className="flex items-center flex-1 md:flex-initial justify-center md:justify-start">
           {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center p-0 m-0 leading-none z-10 transition-transform active:scale-95"
+            className="flex items-center p-0 m-0 leading-none transition-transform active:scale-95"
           >
             <Image 
               src="/my-shop-logo.png" 
