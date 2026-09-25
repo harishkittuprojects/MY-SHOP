@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">1. Information We Collect</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              At MADUR.IN, we respect your privacy. To provide our farm-to-home services, we collect:
+              At MY SHOP, we respect your privacy. To provide seamless shopping and delivery services, we collect:
             </p>
             <ul className="list-disc pl-5 text-gray-600 space-y-2 mt-4 text-sm">
               <li><strong>Contact Details:</strong> Your name, email address, and phone number.</li>
@@ -39,10 +39,10 @@ export default function PrivacyPage() {
               We use your information exclusively to:
             </p>
             <ul className="list-disc pl-5 text-gray-600 space-y-2 mt-4 text-sm">
-              <li>Process and deliver your fresh grocery and milk orders.</li>
-              <li>Manage your subscriptions and send delivery notifications.</li>
-              <li>Communicate updates about our farm products or special offers.</li>
-              <li>Improve our logistics and customer support.</li>
+              <li>Process and deliver your smartphone and electronics orders.</li>
+              <li>Send delivery updates and tracking notifications.</li>
+              <li>Provide customer support and warranty assistance.</li>
+              <li>Improve our logistics and platform experience.</li>
             </ul>
           </section>
 
@@ -54,23 +54,23 @@ export default function PrivacyPage() {
           </section>
 
           <section className="mb-10">
-            <h2 className="text-2xl font-black mb-4">4. Subscriptions & Payment Information</h2>
+            <h2 className="text-2xl font-black mb-4">4. Payment Information</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              When you subscribe to our plans, your payment information is handled by secure, external payment gateways. MADUR.IN does not store your full card details on our servers.
+              When you place an order, your payment information is handled by secure, external payment gateways. MY SHOP does not store your full card details on our servers.
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">5. Your Choices</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              You can update your delivery preferences or unsubscribe from our promotional communications at any time through your account settings or by contacting our support.
+              You can update your delivery preferences or contact our support team at any time through your account settings.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-black mb-4">6. Contact for Privacy Concerns</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              If you have any questions regarding your data, please contact our DP officer at <strong>info@madur.in</strong>.
+              If you have any questions regarding your data, please contact our support team.
             </p>
           </section>
         </div>

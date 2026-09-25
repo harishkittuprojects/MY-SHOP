@@ -143,8 +143,8 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
               ) : (
                 <tr className="hover:bg-gray-50/50">
                   <td className="px-6 py-5">
-                     <p className="font-black text-gray-800 text-sm">{order.isSubscription ? "Fresh Milk Subscription" : "Farm Fresh Grocery Items"}</p>
-                     <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">{order.isSubscription ? order.plan_details : "Assorted Selection"}</p>
+                     <p className="font-black text-gray-800 text-sm">Smartphones & Gadgets Order</p>
+                     <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">Order #{order.id}</p>
                   </td>
                   <td className="px-6 py-5 text-center font-bold text-gray-600">1</td>
                   <td className="px-6 py-5 text-right font-bold text-gray-600">₹{order.total_amount}</td>

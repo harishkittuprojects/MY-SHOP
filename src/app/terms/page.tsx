@@ -24,50 +24,50 @@ export default function TermsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-600 leading-relaxed">
-              By accessing and using MADUR.IN, you agree to comply with and be bound by these Terms and Conditions. Our services include the delivery of farm-fresh milk, organic vegetables, groceries, and traditional food products. If you do not agree with any part of these terms, please refrain from using our platform.
+              By accessing and using MY SHOP, you agree to comply with and be bound by these Terms and Conditions. Our services include the sale and delivery of latest flagship smartphones, 5G devices, mobile accessories, and electronic gadgets. If you do not agree with any part of these terms, please refrain from using our platform.
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">2. Service Description</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              MADUR.IN provides a platform for customers to order fresh farm products. We ensure high-quality standards for our dairy and produce. Our delivery area is currently limited to specific regions in Hyderabad.
+              MY SHOP provides a platform for customers to order brand new genuine smartphones and accessories. We ensure 100% authenticity and official brand warranty for all listed devices.
             </p>
             <ul className="list-disc pl-5 text-gray-600 space-y-2 mt-4 text-sm">
-              <li><strong>Daily Milk Subscription:</strong> Subscribers receive fresh milk daily at their doorstep.</li>
-              <li><strong>Product Availability:</strong> Seasonal vegetables and artisanal products are subject to availability.</li>
-              <li><strong>Pricing:</strong> Prices may vary based on market conditions, specially for fresh produce.</li>
+              <li><strong>Original Products:</strong> All products are 100% authentic with manufacturer warranty.</li>
+              <li><strong>Product Availability:</strong> Flagship models and accessories are subject to stock availability.</li>
+              <li><strong>Pricing:</strong> Prices are inclusive of applicable taxes and competitive market rates.</li>
             </ul>
           </section>
 
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">3. User Responsibilities</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              You are responsible for providing accurate delivery information (Name, Phone Number, Address, etc.). For milk subscriptions, please ensure a safe and accessible place for delivery.
+              You are responsible for providing accurate delivery information (Name, Phone Number, Shipping Address, etc.) to ensure smooth and secure parcel delivery.
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">4. Payments, Cancellations and Refunds</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              Payments for one-time orders and subscriptions must be made through our secure platform. Subscription cancellations require at least 24 hours notice to take effect for the next delivery cycle.
+              Payments for orders must be made securely via available payment methods. Order cancellations are permitted before dispatch.
             </p>
             <p className="text-gray-600 leading-relaxed text-sm mt-4 font-bold">
-              Refund Policy: Refunds will be issued within 7 days only if the product is damaged.
+              Return & Refund Policy: Returns and replacements are covered under brand warranty and policy within 7 days for defective items.
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-2xl font-black mb-4">5. Quality Assurance</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              We take immense pride in our "Purity, Freshness, and Healthy Living" promise. If any product does not meet your expectations, please contact our support team within 6 hours of delivery for fresh items.
+              We guarantee authentic boxed devices with original seals intact. If you receive a tampered package, please contact our support team immediately upon delivery.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-black mb-4">6. Contact Us</h2>
             <p className="text-gray-600 leading-relaxed text-sm">
-              For any queries regarding these terms, please contact us at <strong>info@madur.in</strong> or call <strong>+91 7416750834</strong>.
+              For any queries regarding these terms, please contact our customer support team.
             </p>
           </section>
         </div>

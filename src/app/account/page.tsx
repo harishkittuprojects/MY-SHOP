@@ -84,38 +84,17 @@ export default function AccountPage() {
         setUser(session.user);
 
         // Fetch user's orders
-        const orderRes = await fetch(`/api/orders?email=${encodeURIComponent(session.user.email)}`, { 
-          signal: controller.signal,
-          cache: "no-store" 
-        });
-        if (orderRes.ok) {
-          const orderData = await orderRes.json();
-          if (Array.isArray(orderData)) setOrders(orderData);
-        }
-
-        // Fetch user's subscriptions
-        const subRes = await fetch(`/api/subscriptions?email=${encodeURIComponent(session.user.email)}`, { signal: controller.signal });
-        if (subRes.ok) {
-          const subData = await subRes.json();
-
-          if (Array.isArray(subData) && subData.length > 0) {
-            // Fetch deliveries for these subscriptions
-            const subIds = subData.map((s: any) => s.id).join(',');
-            
-            const delRes = await fetch(`/api/deliveries?subscription_ids=${subIds}`, { signal: controller.signal });
-            if (delRes.ok) {
-              const delData = await delRes.json();
-              const enrichedSubs = subData.map((sub: any) => ({
-                ...sub,
-                deliveries: Array.isArray(delData) ? delData.filter((d: any) => d.subscription_id === sub.id) : []
-              }));
-              setSubscriptions(enrichedSubs);
-            } else {
-              setSubscriptions(subData.map(s => ({ ...s, deliveries: [] })));
-            }
-          } else {
-            setSubscriptions([]);
+        try {
+          const orderRes = await fetch(`/api/orders?email=${encodeURIComponent(session.user.email)}`, { 
+            signal: controller.signal,
+            cache: "no-store" 
+          });
+          if (orderRes.ok) {
+            const orderData = await orderRes.json();
+            if (Array.isArray(orderData)) setOrders(orderData);
           }
+        } catch (e) {
+          setOrders([]);
         }
 
       } catch (err: any) {
@@ -201,124 +180,6 @@ export default function AccountPage() {
             <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl border border-gray-100">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-inner">
-                    <FontAwesomeIcon icon={faClock} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-black text-gray-800">Milk Subscription Logs</h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                      Daily tracking for your active plans
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {Array.isArray(subscriptions) && subscriptions.length > 0 ? (
-                <div className="space-y-8 mb-16">
-                  {subscriptions.map((sub) => (
-                    <div key={sub.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                      <div className="p-6 bg-accent/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                          <h4 className="font-black text-lg text-gray-800 uppercase tracking-tight">{sub.plan_details}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider ${sub.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-                              {sub.status}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                              {sub.quantity}L per day
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total Deliveries</p>
-                          <p className="text-2xl font-black text-primary leading-none">{sub.deliveries?.length || 0}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="px-6 py-4 bg-white border-y border-gray-100 flex items-center justify-between sm:justify-end gap-4">
-                        <div className="flex flex-col sm:items-end">
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Paid</span>
-                          <span className="text-xl font-black text-primary">₹{sub.amount_paid || 0}</span>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            setSelectedOrder({
-                              id: sub.id,
-                              user_email: sub.customer_email || user.email,
-                              shipping_address: sub.address || "Subscription Address",
-                              created_at: sub.created_at,
-                              payment_method: 'Online Payment',
-                              status: sub.status,
-                              total_amount: sub.amount_paid || 0,
-                              isSubscription: true,
-                              plan_details: sub.plan_details
-                            });
-                            setIsInvoiceOpen(true);
-                          }}
-                          className="text-[10px] bg-primary/10 border border-primary/20 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-colors"
-                        >
-                          View Invoice
-                        </button>
-                      </div>
-
-                      <div className="p-6">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Last 7 Deliveries</p>
-                        <div className="grid grid-cols-7 gap-2">
-                          {[...Array(7)].map((_, i) => {
-                            const date = new Date();
-                            date.setDate(date.getDate() - i);
-                            const dateStr = date.toISOString().split('T')[0];
-                            const delivery = Array.isArray(sub.deliveries) ? sub.deliveries.find(d => {
-                              const dbDate = d.delivery_date ? String(d.delivery_date).split('T')[0] : '';
-                              return dbDate === dateStr;
-                            }) : null;
-                            const isToday = i === 0;
-
-                            return (
-                              <div key={i} className="flex flex-col items-center gap-2">
-                                <div className={`w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
-                                  delivery 
-                                    ? 'bg-secondary text-secondary-foreground shadow-md' 
-                                    : 'bg-accent/30 text-gray-300'
-                                } ${isToday ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
-                                  <FontAwesomeIcon icon={delivery ? faCheckCircle : faClock} className={delivery ? 'text-lg' : 'text-xs'} />
-                                </div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase">{isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        {Array.isArray(sub.deliveries) && sub.deliveries.length > 0 && (
-                          <div className="mt-6 pt-6 border-t border-gray-50">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Full Delivery History</p>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 scrollbar-hide">
-                              {sub.deliveries.map((del) => (
-                                <div key={del.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                                    <span className="text-xs font-bold text-gray-700">{new Date(del.delivery_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                  </div>
-                                  <span className="text-xs font-black text-secondary uppercase tracking-widest">Delivered: {del.quantity_delivered}L</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-
-                <div className="bg-accent/10 rounded-3xl p-8 text-center mb-16 border-2 border-dashed border-accent/30">
-                  <FontAwesomeIcon icon={faClock} className="text-3xl text-gray-300 mb-4" />
-                  <p className="text-sm font-bold text-gray-500 italic">No active milk subscriptions found for your email.</p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary shadow-inner">
                     <FontAwesomeIcon icon={faBoxOpen} />
                   </div>
@@ -378,7 +239,7 @@ export default function AccountPage() {
                   </div>
                   <h3 className="text-2xl font-black text-gray-800 mb-3 tracking-tight">No orders yet</h3>
                   <p className="text-gray-500 font-bold mb-10 max-w-sm mx-auto leading-relaxed">
-                    You haven't purchased anything yet. Start exploring our farm-fresh products and fill up your cart!
+                    You haven&apos;t ordered any smartphones or gadgets yet. Explore the latest flagship phones, 5G devices, and smart accessories!
                   </p>
                   
                   <Link 

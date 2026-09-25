@@ -29,9 +29,9 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY created_at DESC';
     const subs = await mysql.query(query, params);
-    return NextResponse.json(subs);
+    return NextResponse.json(subs || []);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 

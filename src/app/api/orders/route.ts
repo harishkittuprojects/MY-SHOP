@@ -18,24 +18,31 @@ export async function GET(request: Request) {
     const orders = (await mysql.query(query, params)) as any[];
     
     // Fetch items for each order
-    const ordersWithItems = await Promise.all(orders.map(async (order) => {
-      const items = await mysql.query(`
-        SELECT oi.*, p.name, p.unit 
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
-        WHERE oi.order_id = ?
-      `, [order.id]);
-      
-      return {
-        ...order,
-        items
-      };
+    const ordersWithItems = await Promise.all((orders || []).map(async (order) => {
+      try {
+        const items = await mysql.query(`
+          SELECT oi.*, p.name, p.unit 
+          FROM order_items oi
+          JOIN products p ON oi.product_id = p.id
+          WHERE oi.order_id = ?
+        `, [order.id]);
+        
+        return {
+          ...order,
+          items: items || []
+        };
+      } catch {
+        return {
+          ...order,
+          items: []
+        };
+      }
     }));
 
     return NextResponse.json(ordersWithItems);
   } catch (error) {
     console.error('Fetch orders error:', error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 

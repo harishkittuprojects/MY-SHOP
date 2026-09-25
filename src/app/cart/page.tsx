@@ -48,7 +48,7 @@ export default function CartPage() {
       <div className="container pt-32 pb-24 flex flex-col items-center justify-center text-center">
         <div className="text-8xl mb-8 opacity-20">🛒</div>
         <h2 className="text-3xl font-black mb-4">Your cart is empty</h2>
-        <p className="text-gray-500 mb-10 max-w-sm">Looks like you haven't added anything to your cart yet. Fresh milk and organic veggies are waiting!</p>
+        <p className="text-gray-500 mb-10 max-w-sm">Looks like you haven't added anything to your cart yet. Latest smartphones and gadgets are waiting!</p>
         <Link 
           href="/" 
           className="bg-secondary text-white font-black px-10 py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all active:scale-95 flex items-center gap-3"
