@@ -124,23 +124,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Search Bar (Swiggy Style) - HIDDEN ON MOBILE */}
-        <form 
-          onSubmit={handleSearch}
-          className="hidden lg:flex flex-1 max-w-md mx-4 items-center bg-white border border-black/10 rounded-lg px-4 py-2 shadow-sm"
-        >
-          <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-3" />
-          <input
-            type="text"
-            placeholder="Search iPhone, Samsung, Pixel, Smartwatches..."
-            className="bg-transparent border-none outline-none w-full text-sm text-[#222222] placeholder:text-gray-400"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
-
-        {/* Desktop Links - HIDDEN ON MOBILE */}
-        <div className="hidden md:flex items-center gap-8 text-[#222222]">
+        {/* Desktop Navigation Links */}
+        <div className="hidden md:flex items-center gap-6 lg:gap-8 text-[#222222]">
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
           <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
           <Link href="/services" className={`hover:text-gray-600 font-medium ${pathname === "/services" ? "text-secondary font-bold" : ""}`}>Services</Link>
@@ -148,42 +133,58 @@ export default function Navbar() {
           <Link href="/contact" className={`hover:text-gray-600 font-medium ${pathname === "/contact" ? "text-secondary font-bold" : ""}`}>Contact</Link>
         </div>
 
-        {/* Actions - ACCOUNT & MENU ON RIGHT ON MOBILE, CART+ACCOUNT ON DESKTOP */}
-        <div className="flex items-center gap-3 sm:gap-4 md:gap-6 z-50">
+        {/* Actions Area - SEARCH BAR BESIDE PROFILE SYMBOL, MENU & CART */}
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 z-50">
+          {/* Search Bar - Directly beside Profile Symbol */}
+          <form 
+            onSubmit={handleSearch}
+            className="flex items-center bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all focus-within:ring-2 focus-within:ring-secondary/30 focus-within:border-secondary focus-within:bg-white w-28 sm:w-48 md:w-56 lg:w-64 shadow-xs"
+          >
+            <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-1.5 sm:mr-2 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="bg-transparent border-none outline-none w-full text-[11px] sm:text-xs md:text-sm text-slate-800 placeholder:text-slate-400 font-medium"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
+
+          {/* Profile Symbol */}
           {user ? (
-            <Link href="/account" className="flex items-center gap-2 text-[#222222] hover:text-primary transition-colors">
-              <div className="w-8 h-8 md:w-8 md:h-8 rounded-full bg-secondary text-white flex items-center justify-center">
-                <FontAwesomeIcon icon={faUser} className="text-sm" />
+            <Link href="/account" className="flex items-center gap-1.5 sm:gap-2 text-[#222222] hover:text-primary transition-colors flex-shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
+                <FontAwesomeIcon icon={faUser} className="text-xs sm:text-sm" />
               </div>
-              <span className="hidden md:block text-sm font-black uppercase tracking-widest">Account</span>
+              <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Account</span>
             </Link>
           ) : (
-            <Link href="/login" className="flex items-center gap-2 text-[#222222] hover:text-primary transition-colors">
-              <div className="w-8 h-8 md:w-8 md:h-8 rounded-full bg-secondary text-white flex items-center justify-center">
-                <FontAwesomeIcon icon={faUser} className="text-sm" />
+            <Link href="/login" className="flex items-center gap-1.5 sm:gap-2 text-[#222222] hover:text-primary transition-colors flex-shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
+                <FontAwesomeIcon icon={faUser} className="text-xs sm:text-sm" />
               </div>
-              <span className="hidden md:block text-sm font-black uppercase tracking-widest">Sign In</span>
+              <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Sign In</span>
             </Link>
           )}
 
-          {/* Mobile Menu Toggle Button (Beside Profile) */}
+          {/* Mobile Menu Toggle Button */}
           <button
             className="p-1.5 text-[#222222] md:hidden hover:text-secondary transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle navigation menu"
           >
-            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
+            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-lg sm:text-xl" />
           </button>
 
           {/* Cart Icon - ALWAYS VISIBLE IN HEADER */}
           <Link 
             href="/cart" 
-            className="relative p-2 transition-colors text-[#222222] hover:text-secondary flex items-center justify-center active:scale-95"
+            className="relative p-1.5 sm:p-2 transition-colors text-[#222222] hover:text-secondary flex items-center justify-center active:scale-95 flex-shrink-0"
             aria-label="View Cart"
           >
-            <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
+            <FontAwesomeIcon icon={faShoppingCart} className="text-lg sm:text-xl" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+              <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
                 {cartCount}
               </span>
             )}
