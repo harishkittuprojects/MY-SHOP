@@ -15,7 +15,8 @@ import {
   faList, 
   faTableCells,
   faGripVertical,
-  faSliders
+  faSliders,
+  faStar
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
@@ -395,13 +396,61 @@ function Content() {
             </div>
           </div>
 
+          {/* Mobile Top Quick Comparison Rail (Matching Top of Reference Screenshot) */}
+          <div className="block md:hidden mb-4 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-stretch gap-2.5 min-w-max">
+              {products.slice(0, 6).map((item) => {
+                const orig = item.original_price || Math.round(item.price * 1.18);
+                const disc = Math.round(((orig - item.price) / orig) * 100);
+                const bank = Math.round(item.price * 0.92);
+
+                return (
+                  <Link
+                    key={`quick-${item.id}`}
+                    href={`/products?category=Mobiles%20%26%20Accessories&search=${encodeURIComponent(item.name)}`}
+                    className="w-56 bg-white rounded-xl border border-slate-200 p-2.5 flex items-start gap-2.5 shadow-xs active:scale-95 transition-transform"
+                  >
+                    <div className="relative w-14 h-20 flex-shrink-0 bg-white rounded flex items-center justify-center">
+                      <Image
+                        src={item.image_url || item.image || "/mobile-logo.png"}
+                        alt={item.name}
+                        fill
+                        className="object-contain p-0.5"
+                        unoptimized
+                      />
+                      <div className="absolute bottom-0 left-0 bg-[#388e3c] text-white text-[8px] font-black px-1 rounded flex items-center gap-0.5">
+                        <span>{item.rating || 4}</span>
+                        <FontAwesomeIcon icon={faStar} className="text-[6px]" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[11px] font-bold text-slate-900 truncate mb-0.5">
+                        {item.name}
+                      </h4>
+                      <div className="flex items-baseline gap-1 text-[10px] mb-0.5">
+                        <span className="text-[#388e3c] font-black">↓{disc}%</span>
+                        <span className="text-slate-400 line-through text-[9px]">₹{Math.floor(orig).toLocaleString("en-IN")}</span>
+                        <span className="font-black text-slate-900">₹{Math.floor(item.price).toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="text-[10px] text-[#2874f0] font-black truncate">
+                        <span className="italic">wow!</span> ₹{bank.toLocaleString("en-IN")}
+                      </div>
+                      <div className="text-[9px] text-slate-500">with Bank offer</div>
+                      <div className="text-[9px] text-slate-700 font-medium">Get It by Tomorrow</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Product Items Display */}
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-3 md:gap-8">
-               {[...Array(6)].map((_, i) => <div key={i} className="h-60 md:h-80 bg-gray-100 animate-pulse rounded-2xl md:rounded-[2.5rem]"></div>)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
+               {[...Array(6)].map((_, i) => <div key={i} className="h-44 md:h-80 bg-gray-100 animate-pulse rounded-2xl"></div>)}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className={getLayoutGridClass()}>
+            <div className={`bg-white md:bg-transparent rounded-2xl md:rounded-none overflow-hidden ${getLayoutGridClass()}`}>
               {(Array.isArray(filteredProducts) ? filteredProducts : []).map((product) => (
                 <div key={product.id} className="h-full">
                   <ProductCard product={product} viewMode={viewStyle} />
