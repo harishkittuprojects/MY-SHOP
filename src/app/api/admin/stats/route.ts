@@ -1,100 +1,93 @@
 import { NextResponse } from 'next/server';
-import mysql from '@/lib/mysql';
+import { ProductsDB, OrdersDB, CustomersDB } from '@/lib/db';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const customDate = searchParams.get('date');
-
   try {
-    console.log('Fetching dashboard stats...');
-    
-    // Stats fetched via standard MySQL queries
+    const products = await ProductsDB.getAll();
+    const orders = await OrdersDB.getAll();
+    const customers = await CustomersDB.getAll();
 
-    // 1. Product Count
-    const prodResults: any = await mysql.query('SELECT COUNT(*) as count FROM products');
-    const prodCount = prodResults[0]?.count || 0;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterdayDate = new Date(Date.now() - 86400000);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
 
-    // 2. Active Subscriptions (Resilient Case-Insensitive Check)
-    const subResults: any = await mysql.query("SELECT COUNT(*) as count FROM subscriptions WHERE LOWER(TRIM(status)) = 'active'");
-    const activeSubCount = subResults[0]?.count || 0;
+    // Compute Metrics
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => (o.order_status || '').toLowerCase() === 'pending').length;
+    const completedOrders = orders.filter(o => ['delivered', 'completed'].includes((o.order_status || '').toLowerCase())).length;
+    const cancelledOrders = orders.filter(o => (o.order_status || '').toLowerCase() === 'cancelled').length;
 
-    // 3. Completed Deliveries
-    const delResults: any = await mysql.query("SELECT COUNT(*) as count FROM deliveries WHERE LOWER(TRIM(status)) = 'delivered'");
-    const deliveryCount = delResults[0]?.count || 0;
+    const totalProducts = products.length;
+    const lowStockProducts = products.filter(p => (Number(p.stock_quantity) || 0) <= 5).length;
+    const outOfStockProducts = products.filter(p => (Number(p.stock_quantity) || 0) <= 0 || !p.is_available).length;
+    const totalCustomers = customers.length;
 
-    // 4. Revenue Today — from paid orders + subscriptions created today
-    const revenueTodayResults: any = await mysql.query(
-      "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE payment_status = 'paid' AND DATE(created_at) = CURDATE()"
-    );
-    const subRevToday: any = await mysql.query(
-      "SELECT COALESCE(SUM(amount_paid), 0) as total FROM subscriptions WHERE DATE(created_at) = CURDATE() AND amount_paid IS NOT NULL AND amount_paid > 0"
-    );
-    const todayRevenue = (parseFloat(revenueTodayResults[0]?.total) || 0) + (parseFloat(subRevToday[0]?.total) || 0);
+    let totalRevenue = 0;
+    let todayOrdersCount = 0;
+    let todayRevenue = 0;
+    let yesterdayRevenue = 0;
 
-    // 5. Revenue Yesterday
-    const revenueYesterdayResults: any = await mysql.query(
-      "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE payment_status = 'paid' AND DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)"
-    );
-    const subRevYesterday: any = await mysql.query(
-      "SELECT COALESCE(SUM(amount_paid), 0) as total FROM subscriptions WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND amount_paid IS NOT NULL AND amount_paid > 0"
-    );
-    const yesterdayRevenue = (parseFloat(revenueYesterdayResults[0]?.total) || 0) + (parseFloat(subRevYesterday[0]?.total) || 0);
-
-    // 6. Recent Subscriptions
-    const recentSubs = await mysql.query(
-      "SELECT * FROM subscriptions ORDER BY created_at DESC LIMIT 5"
-    );
-
-    console.log(`Stats fetched: Prods:${prodCount}, Subs:${activeSubCount}, Recent:${Array.isArray(recentSubs) ? recentSubs.length : 0}`);
-
-    // 7. Custom Date Revenue (if provided)
-    let customRevenue = null;
-    if (customDate) {
-      const customOrderResults: any = await mysql.query(
-        "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE payment_status = 'paid' AND DATE(created_at) = ?",
-        [customDate]
-      );
-      const customSubResults: any = await mysql.query(
-        "SELECT COALESCE(SUM(amount_paid), 0) as total FROM subscriptions WHERE DATE(created_at) = ? AND amount_paid IS NOT NULL AND amount_paid > 0",
-        [customDate]
-      );
-      customRevenue = (parseFloat(customOrderResults[0]?.total) || 0) + (parseFloat(customSubResults[0]?.total) || 0);
+    // Daily breakdown for last 7 days chart
+    const last7DaysMap: Record<string, { date: string; sales: number; orders: number }> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      const dStr = d.toISOString().split('T')[0];
+      const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      last7DaysMap[dStr] = { date: label, sales: 0, orders: 0 };
     }
 
-    // 8. One-off Orders
-    const pendingOrdersResult: any = await mysql.query("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'");
-    const completedOrdersResult: any = await mysql.query("SELECT COUNT(*) as count FROM orders WHERE status = 'completed' OR status = 'delivered'");
-    
-    const pendingOrders = pendingOrdersResult[0]?.count || 0;
-    const completedOrdersValue = completedOrdersResult[0]?.count || 0;
+    orders.forEach(o => {
+      const amount = Number(o.total_amount) || 0;
+      const isCancelled = (o.order_status || '').toLowerCase() === 'cancelled';
+      
+      if (!isCancelled) {
+        totalRevenue += amount;
+      }
 
-    // 9. Recent Orders
-    const recentOrdersRaw = await mysql.query(
-      "SELECT * FROM orders ORDER BY created_at DESC LIMIT 5"
-    );
-    const recentOrders = (recentOrdersRaw as any[]).map(o => ({
-      ...o,
-      items: typeof o.items === 'string' ? JSON.parse(o.items || '[]') : o.items
-    }));
+      const orderDate = (o.created_at || '').split('T')[0];
+
+      if (orderDate === todayStr) {
+        todayOrdersCount++;
+        if (!isCancelled) todayRevenue += amount;
+      } else if (orderDate === yesterdayStr) {
+        if (!isCancelled) yesterdayRevenue += amount;
+      }
+
+      if (last7DaysMap[orderDate] && !isCancelled) {
+        last7DaysMap[orderDate].sales += amount;
+        last7DaysMap[orderDate].orders += 1;
+      }
+    });
+
+    const recentOrders = orders.slice(0, 8);
+    const chartData = Object.values(last7DaysMap);
 
     return NextResponse.json({
-      products: prodCount,
-      activeSubscriptions: activeSubCount,
-      completedDeliveries: deliveryCount,
+      success: true,
+      counts: {
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        cancelledOrders,
+        totalProducts,
+        lowStockProducts,
+        outOfStockProducts,
+        totalCustomers,
+        totalRevenue,
+        todayOrders: todayOrdersCount,
+        todayRevenue,
+        yesterdayRevenue,
+      },
+      chartData,
+      recentOrders,
+      products: totalProducts,
+      pendingOrders,
+      completedOrders,
       todayRevenue,
       yesterdayRevenue,
-      recentSubs,
-      customRevenue,
-      pendingOrders,
-      completedOrders: completedOrdersValue,
-      recentOrders
     });
   } catch (error: any) {
-    console.error('Stats API Error @ [GET /api/admin/stats]:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch stats', 
-      details: error.message || String(error),
-      errorCode: error.code || 'UNKNOWN'
-    }, { status: 500 });
+    console.error('Stats API Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch stats' }, { status: 500 });
   }
 }

@@ -1,141 +1,198 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock, faArrowRight, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLock, faEnvelope, faShieldAlt, faArrowRight, faStore, faKey } from "@fortawesome/free-solid-svg-icons";
 
 export default function AdminLoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    const isAdmin = sessionStorage.getItem("isAdminAuthenticated");
-    if (isAdmin === "true") {
-      router.push("/admin");
-    }
-  }, [router]);
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("admin123");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    setLoading(true);
+    setError(null);
 
-    // Use credentials from .env or fallback to project standards
-    const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@madur.in").toUpperCase();
-    const adminPassword = "admin123"; // Synced with .env
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (formData.email.toUpperCase() === adminEmail && formData.password === adminPassword) {
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Invalid administrator credentials");
+      }
+
       sessionStorage.setItem("isAdminAuthenticated", "true");
+      sessionStorage.setItem("adminUser", JSON.stringify(data.admin));
+      localStorage.setItem("isAdminAuthenticated", "true");
+      localStorage.setItem("adminUser", JSON.stringify(data.admin));
+
       router.push("/admin");
-    } else {
-      setError("Invalid admin credentials. Please try again.");
-      setIsLoading(false);
+    } catch (err: any) {
+      setError(err.message || "Failed to authenticate");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container py-24 flex items-center justify-center min-h-[80vh]">
-      <div className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-2xl border border-gray-100 max-w-lg w-full relative overflow-hidden">
-        {/* Decorative background element */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans text-slate-800">
+      {/* Background Accent Shapes */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-100/60 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-100/60 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20"></div>
 
-        <div className="text-center mb-10 relative">
-          <Link href="/" className="text-4xl font-black inline-block mb-6 tracking-tighter hover:scale-105 transition-transform">
-            <span className="bg-primary text-primary-foreground px-4 py-1 rounded-2xl shadow-lg">MADUR</span>
-            <span className="text-secondary">.IN</span>
-          </Link>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="h-[2px] w-8 bg-primary/20"></div>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Admin Access</span>
-            <div className="h-[2px] w-8 bg-primary/20"></div>
+      <div className="w-full max-w-md relative z-10">
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-600 text-white font-black text-2xl shadow-xl shadow-emerald-600/20 mb-4">
+            MS
           </div>
-          <h2 className="text-3xl font-black text-gray-800">Owner Portal</h2>
-          <p className="text-gray-500 text-sm mt-3">Secure access to your farm-fresh dashboard</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Admin Portal</h1>
+          <p className="text-slate-500 text-sm mt-1">Sign in to manage products, orders, inventory & store settings</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl mb-8 flex items-center gap-3 animate-shake">
-            <FontAwesomeIcon icon={faTriangleExclamation} />
-            <p className="text-xs font-bold">{error}</p>
-          </div>
-        )}
+        {/* Login Box */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl">
+          {error && (
+            <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center gap-3">
+              <span className="text-base">⚠️</span>
+              <p className="font-medium">{error}</p>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative">
-          <div className="flex flex-col gap-2">
-            <label className="text-[11px] font-black text-gray-400 ml-1 uppercase tracking-widest">Administrator Email</label>
-            <div className="relative group">
-              <FontAwesomeIcon 
-                icon={faEnvelope} 
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" 
-              />
-              <input 
-                type="email" 
-                required
-                placeholder="admin@madur.in"
-                className="w-full bg-accent/30 border-2 border-transparent rounded-[1.25rem] py-5 pl-14 pr-6 text-sm font-bold shadow-inner outline-none focus:border-primary/20 focus:bg-white focus:ring-4 ring-primary/5 transition-all"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                Admin Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <FontAwesomeIcon icon={faEnvelope} />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Password
+                </label>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <FontAwesomeIcon icon={faLock} />
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Sign In to Admin Panel</span>
+                    <FontAwesomeIcon icon={faArrowRight} />
+                  </>
+                )}
+              </button>
+
+              {/* 1-Click Quick Auto Fill & Login */}
+              <button
+                type="button"
+                disabled={loading}
+                onClick={async () => {
+                  setEmail("admin@example.com");
+                  setPassword("admin123");
+                  setLoading(true);
+                  setError(null);
+                  try {
+                    const res = await fetch("/api/admin/auth", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: "admin@example.com", password: "admin123" }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) throw new Error(data.error || "Login failed");
+                    sessionStorage.setItem("isAdminAuthenticated", "true");
+                    sessionStorage.setItem("adminUser", JSON.stringify(data.admin));
+                    localStorage.setItem("isAdminAuthenticated", "true");
+                    localStorage.setItem("adminUser", JSON.stringify(data.admin));
+                    router.push("/admin");
+                  } catch (err: any) {
+                    setError(err.message || "Failed to authenticate");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>⚡ 1-Click Auto Fill & Instant Login</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Quick Auto-Fill Selector */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">
+              Quick Auto-Fill Options
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@example.com");
+                  setPassword("admin123");
+                }}
+                className="flex-1 py-2 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <FontAwesomeIcon icon={faKey} className="text-emerald-600 text-xs" />
+                <span>Auto-Fill Admin</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-[11px] font-black text-gray-400 ml-1 uppercase tracking-widest flex justify-between">
-              Owner Password
-              <Link href="#" className="text-primary hover:underline lowercase tracking-normal">Need assistance?</Link>
-            </label>
-            <div className="relative group">
-              <FontAwesomeIcon 
-                icon={faLock} 
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" 
-              />
-              <input 
-                type="password" 
-                required
-                placeholder="••••••••"
-                className="w-full bg-accent/30 border-2 border-transparent rounded-[1.25rem] py-5 pl-14 pr-6 text-sm font-bold shadow-inner outline-none focus:border-primary/20 focus:bg-white focus:ring-4 ring-primary/5 transition-all"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className="group bg-primary text-black font-black py-5 rounded-[1.25rem] shadow-[0_10px_30px_-10px_rgba(var(--primary-rgb),0.5)] hover:shadow-[0_15px_40px_-10px_rgba(var(--primary-rgb),0.6)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3 mt-4 disabled:opacity-70"
+        {/* Back to store */}
+        <div className="mt-6 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-emerald-700 text-xs font-semibold transition-colors"
           >
-            {isLoading ? "AUTHENTICATING..." : "ENTER DASHBOARD"}
-            <FontAwesomeIcon icon={faArrowRight} className="group-hover:translate-x-1 transition-transform" />
-          </button>
-        </form>
-
-        <div className="mt-12 text-center pt-8 border-t border-gray-100">
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-            Protected by <span className="text-gray-800">Madur Security</span>
-          </p>
+            <FontAwesomeIcon icon={faStore} />
+            <span>Return to Customer Website</span>
+          </Link>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }

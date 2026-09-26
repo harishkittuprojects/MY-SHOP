@@ -1,528 +1,789 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faEdit, faTrash, faArrowLeft, faSearch, faImages, faBox, faStar, faTimes } from "@fortawesome/free-solid-svg-icons";
-
+import {
+  faPlus,
+  faEdit,
+  faTrash,
+  faSearch,
+  faCloudUploadAlt,
+  faTimes,
+  faBoxOpen,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Product {
   id: string;
   name: string;
   category_id: string;
-  unit: string;
+  category_name?: string;
+  sub_category?: string;
   price: number;
-  original_price?: number;
+  original_price: number;
+  stock_quantity: number;
+  sku: string;
   image_url: string;
+  images?: string[];
   description: string;
-  is_out_of_stock: boolean;
-  is_popular?: boolean;
-  categories?: { name: string };
+  unit: string;
+  is_available: boolean;
+  is_featured: boolean;
+  is_popular: boolean;
+  variants?: any[];
 }
 
 interface Category {
   id: string;
   name: string;
+  sub_categories?: string[];
 }
 
-const AVAILABLE_UNITS = [
-  "1 kg",
-  "500 grms",
-  "250 grms",
-  "1 litre",
-  "500 ml",
-  "250 ml",
-  "1 bunch"
-];
-
 export default function AdminProductsPage() {
-  const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
-    category_id: "",
-    unit: "",
+    category_id: "mobiles-accessories",
+    category_name: "Mobiles & Accessories",
+    sub_category: "Mobile",
     price: 0,
     original_price: 0,
+    stock_quantity: 15,
+    sku: "",
     image_url: "",
+    images: [],
     description: "",
-    is_out_of_stock: false,
-    is_popular: false
+    unit: "",
+    is_available: true,
+    is_featured: false,
+    is_popular: false,
+    variants: [],
   });
-  const [uploading, setUploading] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        fetch("/api/productList", { cache: "no-store" }),
+        fetch("/api/categoryList", { cache: "no-store" }),
+      ]);
+
+      const [prods, cats] = await Promise.all([prodRes.json(), catRes.json()]);
+      setProducts(Array.isArray(prods) ? prods : []);
+      setCategories(Array.isArray(cats) ? cats : []);
+    } catch (err) {
+      console.error("Fetch products error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
-    setIsAuthorized(true);
   }, []);
 
-  async function fetchData() {
-    setIsLoading(true);
-    try {
-      const [catRes, prodRes] = await Promise.all([
-        fetch("/api/categoryList"),
-        fetch("/api/productList")
-      ]);
-      
-      const catData = await catRes.json();
-      const prodData = await prodRes.json();
-      
-      setCategories(Array.isArray(catData) ? catData : []);
-      // Map MySQL 'category_name' to the expected 'categories.name' structure if needed
-      const mappedProducts = (Array.isArray(prodData) ? prodData : []).map((p: any) => ({
-        ...p,
-        categories: { name: p.category_name },
-        is_out_of_stock: !p.is_available
-      }));
-      setProducts(mappedProducts);
-
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-  
-  const normalizeImageUrl = (url: string) => {
-    if (!url) return "/logo.png";
-    if (url.startsWith("http") || url.startsWith("data:")) return url;
-    if (url.startsWith("/uploads/")) return url;
-    const prodUrl = "https://madur.in";
-    return url.startsWith("/") ? `${prodUrl}${url}` : `${prodUrl}/${url}`;
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setUploading(true);
-      if (!e.target.files || e.target.files.length === 0) return;
-
-      const file = e.target.files[0];
-
-      // Show local preview immediately
-      const localPreview = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, image_url: localPreview }));
-
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadFormData
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Upload failed");
-      }
-
-      const { publicUrl } = await response.json();
-      // Replace preview with the actual saved URL
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
-    } catch (error: any) {
-      console.error("Error uploading image:", error);
-      alert(`Error uploading image: ${error.message}`);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const payload = { 
-        ...formData,
-        id: editingProduct?.id 
-      };
-      
-      const response = await fetch("/api/productList", {
-        method: editingProduct ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) throw new Error("Failed to save product");
-
-      setIsModalOpen(false);
-      setEditingProduct(null);
-      setFormData({ name: "", category_id: "", unit: "1 litre", price: 0, original_price: 0, image_url: "", description: "", is_out_of_stock: false, is_popular: false });
-      fetchData();
-    } catch (error: any) {
-      console.error("Error saving product:", error);
-      alert(error.message || "Error saving product!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      try {
-        const response = await fetch(`/api/productList?id=${id}`, {
-          method: "DELETE"
-        });
-        if (!response.ok) throw new Error("Failed to delete");
-        fetchData();
-      } catch (err) {
-        alert("Error deleting product!");
-      }
-    }
-  };
-
-  const openModal = (product: Product | null = null) => {
-    if (product) {
-      // Sanitize units to only include allowed ones
-      const sanitizedUnit = product.unit 
-        ? product.unit.split(',')
-            .map(u => u.trim())
-            .filter(u => AVAILABLE_UNITS.includes(u))
-            .join(', ')
-        : "";
-
-      setFormData({
-        name: product.name,
-        category_id: product.category_id,
-        unit: sanitizedUnit,
-        price: product.price,
-        original_price: product.original_price || 0,
-        image_url: product.image_url,
-        description: product.description,
-        is_out_of_stock: product.is_out_of_stock || false,
-        is_popular: product.is_popular || false
-      });
-    } else {
-      setEditingProduct(null);
-      setFormData({ name: "", category_id: categories[0]?.id || "", unit: "1litre", price: 0, original_price: 0, image_url: "", description: "", is_out_of_stock: false, is_popular: false });
-    }
+  const handleOpenAddModal = () => {
+    setIsEditing(false);
+    const defaultCat = categories[0]?.id || "mobiles-accessories";
+    const defaultCatName = categories[0]?.name || "Mobiles & Accessories";
+    setFormData({
+      name: "",
+      category_id: defaultCat,
+      category_name: defaultCatName,
+      sub_category: "Mobile",
+      price: 0,
+      original_price: 0,
+      stock_quantity: 20,
+      sku: `SKU-${Date.now().toString().slice(-6)}`,
+      image_url: "",
+      images: [],
+      description: "",
+      unit: "1 Unit",
+      is_available: true,
+      is_featured: false,
+      is_popular: false,
+      variants: [],
+    });
     setIsModalOpen(true);
   };
 
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-accent/30">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const handleOpenEditModal = (product: Product) => {
+    setIsEditing(true);
+    setFormData({
+      ...product,
+      images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image_url],
+    });
+    setIsModalOpen(true);
+  };
 
-  const filteredProducts = (Array.isArray(products) ? products : []).filter(p => 
-    (p.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.categories?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    setUploadingImage(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const base64Data = await base64Promise;
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: base64Data,
+            folder: "myshop/products",
+            alt_text: formData.name || "Product Image",
+          }),
+        });
+
+        const data = await res.json();
+        if (data.url) {
+          setFormData((prev) => {
+            const currentImages = prev.images || [];
+            const newImages = [...currentImages, data.url];
+            return {
+              ...prev,
+              images: newImages,
+              image_url: prev.image_url || data.url,
+            };
+          });
+        }
+      }
+    } catch (err) {
+      alert("Failed to upload image to Cloudinary.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setFormData((prev) => {
+      const updated = (prev.images || []).filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        images: updated,
+        image_url: updated.length > 0 ? updated[0] : "",
+      };
+    });
+  };
+
+  const handleSetPrimaryImage = (url: string) => {
+    setFormData((prev) => ({ ...prev, image_url: url }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.price) {
+      alert("Please enter product name and price");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const cat = categories.find((c) => c.id === formData.category_id);
+      const payload = {
+        ...formData,
+        category_name: cat ? cat.name : formData.category_name,
+        price: Number(formData.price),
+        original_price: Number(formData.original_price) || Number(formData.price),
+        stock_quantity: Number(formData.stock_quantity) || 0,
+      };
+
+      let res;
+      if (isEditing) {
+        res = await fetch("/api/productList", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch("/api/productList", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (!res.ok) throw new Error("Failed to save product");
+
+      setIsModalOpen(false);
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message || "Operation failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/productList?id=${productToDelete.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete product");
+      setIsDeleteModalOpen(false);
+      setProductToDelete(null);
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message || "Failed to delete");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch =
+      (p.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.sku || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === "all" ||
+      p.category_id === selectedCategory ||
+      p.category_name === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="min-h-screen bg-accent/30 p-4 md:p-8">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm">
-              <FontAwesomeIcon icon={faArrowLeft} />
-            </Link>
-            <h1 className="text-3xl font-black">Manage Products</h1>
-          </div>
-          <button 
-            onClick={() => openModal()}
-            className="bg-primary text-black font-black px-6 py-3 rounded-xl shadow-lg hover:opacity-90 transition-all flex items-center gap-2 active:scale-95"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Add Product
-          </button>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Product Catalog</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Manage your store items, multi-image Cloudinary gallery, pricing, and stock levels
+          </p>
+        </div>
+        <button
+          onClick={handleOpenAddModal}
+          className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer active:scale-95"
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          <span>Add New Product</span>
+        </button>
+      </div>
+
+      {/* Filters & Search Toolbar */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-xs">
+        <div className="relative w-full sm:w-80">
+          <FontAwesomeIcon
+            icon={faSearch}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+          />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search products by name, SKU..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+          />
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <div className="p-8 border-b">
-            <div className="relative w-full md:w-96">
-              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                className="w-full bg-accent/50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm outline-none focus:ring-2 ring-primary"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium text-xs px-3.5 py-2 focus:outline-none focus:border-emerald-600 cursor-pointer"
+          >
+            <option value="all">All Categories ({products.length})</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
+      {/* Products Table Card */}
+      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
+        {loading ? (
+          <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-slate-500 text-xs font-semibold">Loading product catalog...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
+            <FontAwesomeIcon icon={faBoxOpen} className="text-slate-300 text-4xl mb-2" />
+            <p className="text-slate-800 font-bold text-base">No products found</p>
+            <p className="text-slate-500 text-xs max-w-sm">
+              Try adjusting your search criteria or add a new product.
+            </p>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-accent/50 text-gray-500 text-xs font-black uppercase tracking-widest">
-                  <th className="px-8 py-5">Product</th>
-                  <th className="px-8 py-5">Category</th>
-                  <th className="px-8 py-5">DP Price</th>
-                  <th className="px-8 py-5">Original</th>
-                  <th className="px-8 py-5">Unit</th>
-                  <th className="px-8 py-5">Status</th>
-                  <th className="px-8 py-5 text-right">Actions</th>
+                <tr className="border-b border-slate-100 bg-slate-50/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th className="py-3.5 px-4">Product</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Price</th>
+                  <th className="py-3.5 px-4">Stock</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Badges</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {isLoading ? (
-                   <tr><td colSpan={5} className="py-20 text-center text-gray-400">Loading products...</td></tr>
-                ) : filteredProducts.length === 0 ? (
-                   <tr><td colSpan={5} className="py-20 text-center text-gray-400">No products found.</td></tr>
-                ) : (Array.isArray(filteredProducts) ? filteredProducts : []).map((product) => (
-                  <tr key={product.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-12 h-12 rounded-xl overflow-hidden shadow-sm shrink-0 bg-accent/20">
-                          {product.image_url ? (
-                            <Image src={normalizeImageUrl(product.image_url)} alt={product.name} fill className="object-cover" unoptimized />
-                          ) : (
-                            <FontAwesomeIcon icon={faBox} className="absolute inset-0 m-auto text-gray-300" />
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {filteredProducts.map((p) => {
+                  const isOutOfStock = (p.stock_quantity || 0) <= 0 || !p.is_available;
+                  const isLowStock = !isOutOfStock && (p.stock_quantity || 0) <= 5;
+
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shrink-0 flex items-center justify-center">
+                            {p.image_url ? (
+                              <Image
+                                src={p.image_url}
+                                alt={p.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <FontAwesomeIcon icon={faBoxOpen} className="text-slate-300" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-slate-900 text-sm truncate max-w-xs">{p.name}</h3>
+                            <p className="text-[11px] text-slate-500 font-mono">SKU: {p.sku || p.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-700">
+                        {p.category_name || p.category_id}
+                        {p.sub_category && (
+                          <span className="block text-[10px] text-slate-400 font-normal">
+                            {p.sub_category}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-900">₹{p.price?.toLocaleString("en-IN")}</div>
+                        {p.original_price > p.price && (
+                          <div className="text-[11px] text-slate-400 line-through">
+                            ₹{p.original_price?.toLocaleString("en-IN")}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`font-bold text-xs ${
+                            isOutOfStock
+                              ? "text-rose-600"
+                              : isLowStock
+                              ? "text-amber-600"
+                              : "text-emerald-700"
+                          }`}
+                        >
+                          {p.stock_quantity || 0} units
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            p.is_available
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-rose-50 text-rose-700 border-rose-200"
+                          }`}
+                        >
+                          {p.is_available ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {p.is_featured && (
+                            <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
+                              Featured
+                            </span>
+                          )}
+                          {p.is_popular && (
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                              Popular
+                            </span>
                           )}
                         </div>
-                        <span className="font-bold text-gray-800 flex items-center gap-2">
-                          {product.name}
-                          {product.is_popular && <FontAwesomeIcon icon={faStar} className="text-yellow-400 text-[10px]" />}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className="bg-secondary/10 text-secondary font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
-                        {product.categories?.name}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5 font-black text-primary text-lg">₹{product.price}</td>
-                    <td className="px-8 py-5 font-bold text-gray-400">
-                      {product.original_price ? (
-                        <span className="line-through text-xs">₹{product.original_price}</span>
-                      ) : "-"}
-                    </td>
-                    <td className="px-8 py-5 font-bold text-sm">{product.unit}</td>
-                    <td className="px-8 py-5">
-                      {product.is_out_of_stock ? (
-                        <span className="bg-red-100 text-red-600 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
-                          Out of Stock
-                        </span>
-                      ) : (
-                        <span className="bg-green-100 text-green-600 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
-                          In Stock
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end gap-3">
-                        <button 
-                          onClick={() => openModal(product)}
-                          className="w-10 h-10 rounded-xl hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center border border-transparent hover:border-blue-100"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(product.id)}
-                          className="w-10 h-10 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center border border-transparent hover:border-red-100"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEditModal(p)}
+                            className="p-2 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 transition-colors cursor-pointer"
+                            title="Edit product"
+                          >
+                            <FontAwesomeIcon icon={faEdit} className="text-xs" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setProductToDelete(p);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors border border-rose-200 cursor-pointer"
+                            title="Delete product"
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        </div>
+        )}
       </div>
 
+      {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-hidden">
-          <div className="bg-white rounded-[2rem] md:rounded-[3rem] max-w-2xl w-full shadow-2xl animate-in zoom-in-95 duration-200 relative flex flex-col max-h-[90vh]">
-            <div className="overflow-y-auto p-6 md:p-10 scrollbar-hide">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all z-20"
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
-            <h2 className="text-2xl font-black mb-6">{editingProduct ? "Edit Product" : "New Product"}</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Product Name</label>
-                  <input 
-                    type="text" required
-                    className="w-full bg-accent/50 border-none rounded-2xl py-4 px-6 font-bold outline-none focus:ring-4 ring-primary/20"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-8">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {isEditing ? "Edit Product" : "Add New Product"}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Synchronized with Supabase and Cloudinary
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-900 flex items-center justify-center cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Product Title & SKU */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Product Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Apple iPhone 16 Pro Max 256GB"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
-                  <select 
-                    className="w-full bg-accent/50 border-none rounded-2xl py-4 px-6 font-bold outline-none focus:ring-4 ring-primary/20 appearance-none"
-                    value={formData.category_id}
-                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
-                  >
-                    {(Array.isArray(categories) ? categories : []).map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                  </select>
-
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    SKU Code
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    placeholder="SKU-IPH16"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">DP Price (Selling ₹)</label>
-                  <input 
-                    type="number" required
-                    min="0"
-                    step="0.01"
-                    className="w-full bg-accent/50 border-none rounded-2xl py-4 px-6 font-bold outline-none focus:ring-4 ring-primary/20"
-                    value={formData.price === 0 ? "" : formData.price}
-                    placeholder="0"
-                    onFocus={(e) => e.target.select()}
+              {/* Category & Subcategory */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category_id}
                     onChange={(e) => {
-                      const val = parseFloat(e.target.value);
-                      setFormData({...formData, price: isNaN(val) ? 0 : val});
+                      const cat = categories.find((c) => c.id === e.target.value);
+                      setFormData({
+                        ...formData,
+                        category_id: e.target.value,
+                        category_name: cat?.name || "",
+                      });
                     }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600 cursor-pointer"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Sub-Category
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.sub_category}
+                    onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                    placeholder="e.g. Mobile, Chargers, Storage"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Original Price (MRP ₹)</label>
-                  <input 
+              </div>
+
+              {/* Pricing & Stock */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Selling Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Original MRP (₹)
+                  </label>
+                  <input
                     type="number"
                     min="0"
-                    step="0.01"
-                    className="w-full bg-accent/50 border-none rounded-2xl py-4 px-6 font-bold outline-none focus:ring-4 ring-primary/20"
-                    value={formData.original_price === 0 ? "" : formData.original_price}
-                    placeholder="Leave empty if no discount"
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value);
-                      setFormData({...formData, original_price: isNaN(val) ? 0 : val});
-                    }}
+                    value={formData.original_price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, original_price: parseFloat(e.target.value) || 0 })
+                    }
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
-                <div className="space-y-4 col-span-1 md:col-span-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Available Quantities / Units (Tick all that apply)</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {AVAILABLE_UNITS.map((unit) => {
-                      const isChecked = formData.unit.split(',').map(u => u.trim()).includes(unit);
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Stock Quantity *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={formData.stock_quantity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })
+                    }
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                  />
+                </div>
+              </div>
+
+              {/* Multiple Images Upload & Cloudinary Gallery */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Product Images (Cloudinary CDN)
+                  </label>
+                  <span className="text-[11px] text-emerald-700 font-semibold">
+                    {uploadingImage ? "Uploading to Cloudinary..." : "Click below to upload"}
+                  </span>
+                </div>
+
+                {/* Upload Button */}
+                <label className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer bg-emerald-50/40 hover:bg-emerald-50 transition-all text-center group">
+                  <FontAwesomeIcon
+                    icon={faCloudUploadAlt}
+                    className="text-2xl text-emerald-600 group-hover:scale-110 transition-transform"
+                  />
+                  <div className="text-xs font-bold text-slate-800">
+                    {uploadingImage ? "Uploading files..." : "Upload Images to Cloudinary"}
+                  </div>
+                  <div className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP, GIF</div>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageFileUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                  />
+                </label>
+
+                {/* Image Thumbnails List */}
+                {formData.images && formData.images.length > 0 && (
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
+                    {formData.images.map((imgUrl, idx) => {
+                      const isPrimary = formData.image_url === imgUrl;
                       return (
-                        <div 
-                          key={unit}
-                          onClick={() => {
-                            const currentUnits = formData.unit ? formData.unit.split(',').map(u => u.trim()) : [];
-                            let newUnits;
-                            if (isChecked) {
-                              newUnits = currentUnits.filter(u => u !== unit);
-                            } else {
-                              newUnits = [...currentUnits, unit];
-                            }
-                            // Sort them according to AVAILABLE_UNITS order for consistency
-                            newUnits.sort((a, b) => AVAILABLE_UNITS.indexOf(a) - AVAILABLE_UNITS.indexOf(b));
-                            setFormData({...formData, unit: newUnits.join(', ')});
-                          }}
-                          className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                            isChecked 
-                              ? "bg-primary/10 border-primary text-black" 
-                              : "bg-accent/30 border-transparent text-gray-500 hover:border-accent"
+                        <div
+                          key={idx}
+                          className={`relative aspect-square rounded-xl overflow-hidden border-2 bg-slate-50 group ${
+                            isPrimary ? "border-emerald-600 shadow-md" : "border-slate-200"
                           }`}
                         >
-                          <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
-                            isChecked ? "bg-primary border-primary text-black" : "border-gray-300"
-                          }`}>
-                            {isChecked && <FontAwesomeIcon icon={faBox} className="text-[10px]" />}
+                          <Image src={imgUrl} alt="Preview" fill className="object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSetPrimaryImage(imgUrl)}
+                              title="Set as Main Cover"
+                              className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(idx)}
+                              title="Remove image"
+                              className="w-6 h-6 rounded-full bg-rose-500 text-white text-xs flex items-center justify-center font-bold"
+                            >
+                              ✕
+                            </button>
                           </div>
-                          <span className="text-xs font-bold uppercase">{unit}</span>
+                          {isPrimary && (
+                            <span className="absolute bottom-1 left-1 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded">
+                              COVER
+                            </span>
+                          )}
                         </div>
                       );
                     })}
                   </div>
-                </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-accent/30 rounded-2xl border-2 border-dashed border-gray-100">
-                  <input 
-                    type="checkbox"
-                    id="is_out_of_stock"
-                    className="w-5 h-5 accent-secondary cursor-pointer"
-                    checked={formData.is_out_of_stock}
-                    onChange={(e) => setFormData({...formData, is_out_of_stock: e.target.checked})}
-                  />
-                  <label htmlFor="is_out_of_stock" className="text-xs font-black text-gray-700 cursor-pointer uppercase tracking-tight">
-                    Mark as Out of Stock
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-yellow-50/50 rounded-2xl border-2 border-dashed border-yellow-200">
-                  <input 
-                    type="checkbox"
-                    id="is_popular"
-                    className="w-5 h-5 accent-yellow-400 cursor-pointer"
-                    checked={formData.is_popular}
-                    onChange={(e) => setFormData({...formData, is_popular: e.target.checked})}
-                  />
-                  <div className="flex items-center gap-2">
-                    <FontAwesomeIcon icon={faStar} className={formData.is_popular ? "text-yellow-400" : "text-gray-300"} />
-                    <label htmlFor="is_popular" className="text-xs font-black text-gray-700 cursor-pointer uppercase tracking-tight">
-                      Featured on Home Page
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
-                <textarea 
-                  className="w-full bg-accent/50 border-none rounded-2xl py-4 px-6 font-bold outline-none focus:ring-4 ring-primary/20 h-24"
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+              {/* Specs & Description */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                  Highlight Specs / Unit
+                </label>
+                <input
+                  type="text"
+                  value={formData.unit}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  placeholder="e.g. 256GB • Natural Titanium • 48MP • 120Hz OLED"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Product Image</label>
-                <div className="flex items-center gap-4">
-                   <div className="relative w-32 h-32 rounded-2xl bg-accent/50 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-200">
-                      {formData.image_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <FontAwesomeIcon icon={faImages} className="text-gray-300 text-3xl" />
-                      )}
-                      {uploading && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent animate-spin rounded-full"></div></div>}
-                   </div>
-                   <label className="flex-1">
-                      <div className="bg-accent hover:bg-accent/70 transition-colors py-6 px-6 rounded-2xl text-center cursor-pointer font-bold text-sm flex flex-col items-center gap-2">
-                        <FontAwesomeIcon icon={faPlus} />
-                        {uploading ? "Uploading..." : "Upload Image"}
-                      </div>
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                   </label>
-                </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                  Full Description
+                </label>
+                <textarea
+                  rows={4}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Detailed product features, specifications, box contents..."
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600 resize-none"
+                />
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <button 
+              {/* Status Toggles */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_available}
+                    onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Active Status</div>
+                    <div className="text-[10px] text-slate-500">Visible to customers</div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_featured}
+                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Featured Product</div>
+                    <div className="text-[10px] text-slate-500">Shown in featured grid</div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_popular}
+                    onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Popular Tag</div>
+                    <div className="text-[10px] text-slate-500">Highlighted on Home</div>
+                  </div>
+                </label>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-gray-100 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
-                  disabled={isLoading || uploading}
-                  className="flex-1 bg-primary text-black font-black py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50"
+                  disabled={submitting}
+                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50"
                 >
-                   {isLoading ? "Saving..." : "Save Product"}
+                  {submitting ? "Saving to Supabase..." : isEditing ? "Update Product" : "Publish Product"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && productToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900">Delete Product?</h3>
+            <p className="text-sm text-slate-500">
+              Are you sure you want to permanently delete <strong>{productToDelete.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={submitting}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20 disabled:opacity-50"
+              >
+                {submitting ? "Deleting..." : "Yes, Delete"}
+              </button>
             </div>
           </div>
         </div>

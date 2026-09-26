@@ -25,7 +25,7 @@ export const formatOrderWhatsAppMessage = (
     ? `*Total Amount:* ₹${Math.floor(subtotal)} + ₹${Math.floor(deliveryCharge)} (Delivery) = ₹${Math.floor(totalAmount)}\n*Payment Method:* Cash on Delivery (TO PAY)`
     : `*Paid Amount:* ₹${Math.floor(totalAmount)}\n*Payment Method:* Paid Online (Prepaid)`;
 
-  return `${title}\n\n*Order/Sub ID:* #${orderId}\n\n*Customer Details:*\n- Name: ${customerData.name}\n- Phone: ${customerData.phone}\n- Email: ${customerData.email}\n\n*Delivery Address:*\n${customerData.address}\n\n*Location:* ${customerData.location || 'Not provided'}\n\n*Items:*\n${itemDetails}\n\n${paymentText}\n\nThank you for shopping with MADUR.IN!`;
+  return `${title}\n\n*Order/Sub ID:* #${orderId}\n\n*Customer Details:*\n- Name: ${customerData.name}\n- Phone: ${customerData.phone}\n- Email: ${customerData.email}\n\n*Delivery Address:*\n${customerData.address}\n\n*Location:* ${customerData.location || 'Not provided'}\n\n*Items:*\n${itemDetails}\n\n${paymentText}\n\nThank you for shopping with MY SHOP!`;
 };
 
 export const sendWhatsAppNotification = (message: string) => {

@@ -1,6 +1,6 @@
 "use server";
 
-import mysql from "@/lib/mysql";
+import { OrdersDB } from "@/lib/db";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
@@ -14,95 +14,56 @@ export async function placeOrderAction(orderData: {
   customer_phone: string;
   customer_email: string;
   location_link?: string;
-  delivery_charge: number;
+  delivery_charge?: number;
+  discount_amount?: number;
   items: {
-    product_id: string;
+    product_id?: string;
+    id?: string;
+    name?: string;
     quantity: number;
     price: number;
     unit?: string;
   }[];
 }) {
   try {
-    // 1. Get user email from session cookie
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
-    
-    if (!token) throw new Error("You must be logged in to place an order.");
-    
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
-    const email = decoded.email.toLowerCase();
+    let email = orderData.customer_email;
 
-    // 2. Ensure Tables Exist (Self-healing)
-    await mysql.query(`
-      CREATE TABLE IF NOT EXISTS orders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_email VARCHAR(255),
-        customer_name VARCHAR(255),
-        customer_name_old VARCHAR(255),
-        customer_phone VARCHAR(20),
-        customer_email VARCHAR(255),
-        shipping_address TEXT,
-        location_link TEXT,
-        total_amount DECIMAL(10, 2),
-        delivery_charge DECIMAL(10, 2) DEFAULT 0.00,
-        payment_method VARCHAR(50),
-        status VARCHAR(20) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    await mysql.query(`
-      CREATE TABLE IF NOT EXISTS order_items (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id INT,
-        product_id INT,
-        quantity INT,
-        price DECIMAL(10, 2),
-        unit VARCHAR(50),
-        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-      )
-    `);
-
-    // Add columns if they missed in migration
     try {
-      await mysql.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_name VARCHAR(255)`);
-      await mysql.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(20)`);
-      await mysql.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255)`);
-      await mysql.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_link TEXT`);
-      await mysql.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10, 2) DEFAULT 0.00`);
-    } catch (e) { /* ignore */ }
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+        if (decoded?.email) email = decoded.email.toLowerCase();
+      }
+    } catch { /* proceed with given email */ }
 
-    // 3. Insert Order
-    const orderResult: any = await mysql.insert('orders', {
-      user_email: email,
-      customer_name: orderData.customer_name,
-      customer_phone: orderData.customer_phone,
-      customer_email: orderData.customer_email,
-      shipping_address: orderData.shipping_address,
-      location_link: orderData.location_link,
-      total_amount: orderData.total_amount,
-      delivery_charge: orderData.delivery_charge,
-      payment_method: orderData.payment_method,
-      status: "pending"
+    const formattedItems = (orderData.items || []).map(i => ({
+      id: i.id || i.product_id,
+      product_id: i.product_id || i.id,
+      name: i.name || 'Product',
+      quantity: Number(i.quantity) || 1,
+      price: Number(i.price) || 0,
+      unit: i.unit || ''
+    }));
+
+    const result = await OrdersDB.create({
+      customer_name: orderData.customer_name || 'Customer',
+      customer_phone: orderData.customer_phone || '',
+      customer_email: email || '',
+      shipping_address: orderData.shipping_address + (orderData.location_link ? ` (Map: ${orderData.location_link})` : ''),
+      items: formattedItems,
+      subtotal: Number(orderData.total_amount) - (Number(orderData.delivery_charge) || 0) + (Number(orderData.discount_amount) || 0),
+      delivery_fee: Number(orderData.delivery_charge) || 0,
+      discount_amount: Number(orderData.discount_amount) || 0,
+      total_amount: Number(orderData.total_amount) || 0,
+      payment_method: orderData.payment_method || 'Online Payment',
+      payment_status: orderData.payment_method?.toLowerCase().includes('cod') ? 'pending' : 'paid',
+      order_status: 'pending',
     });
 
-    const orderId = orderResult.insertId;
-
-    // 3. Insert Order Items
-    for (const item of orderData.items) {
-      await mysql.insert('order_items', {
-        order_id: orderId,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-        unit: item.unit
-      });
-    }
-
-    return { success: true, orderId: orderId.toString() };
+    return { success: true, orderId: result.id };
   } catch (error: any) {
     console.error("Place order action error:", error);
     return { success: false, error: error.message || "Failed to place order." };
   }
 }
-

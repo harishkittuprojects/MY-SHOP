@@ -1,64 +1,48 @@
 import { NextResponse } from 'next/server';
-import mysql from '@/lib/mysql';
+import { OrdersDB } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const email = searchParams.get('email');
+  const status = searchParams.get('status') || undefined;
+  const search = searchParams.get('search') || undefined;
+  const email = searchParams.get('email') || undefined;
 
   try {
-    let query = 'SELECT * FROM orders';
-    const params: any[] = [];
-
+    let orders = await OrdersDB.getAll({ status, search });
     if (email) {
-      query += ' WHERE user_email = ?';
-      params.push(email);
+      orders = orders.filter(o => (o.customer_email || '').toLowerCase() === email.toLowerCase());
     }
-
-    query += ' ORDER BY created_at DESC';
-    const orders = (await mysql.query(query, params)) as any[];
-    
-    // Fetch items for each order
-    const ordersWithItems = await Promise.all((orders || []).map(async (order) => {
-      try {
-        const items = await mysql.query(`
-          SELECT oi.*, p.name, p.unit 
-          FROM order_items oi
-          JOIN products p ON oi.product_id = p.id
-          WHERE oi.order_id = ?
-        `, [order.id]);
-        
-        return {
-          ...order,
-          items: items || []
-        };
-      } catch {
-        return {
-          ...order,
-          items: []
-        };
-      }
-    }));
-
-    return NextResponse.json(ordersWithItems);
-  } catch (error) {
+    return NextResponse.json(orders);
+  } catch (error: any) {
     console.error('Fetch orders error:', error);
-    return NextResponse.json([]);
+    return NextResponse.json({ error: error.message || 'Failed to fetch orders' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const result = await mysql.insert('orders', {
-      user_email: data.user_email,
-      total_amount: data.total_amount,
-      status: data.status || 'pending',
-      items: JSON.stringify(data.items || []),
-      shipping_address: typeof data.shipping_address === 'string' ? data.shipping_address : JSON.stringify(data.shipping_address || {})
-    });
-    return NextResponse.json({ id: (result as any).insertId });
-  } catch (error) {
-    console.error('Order Error:', error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    const order = await OrdersDB.create(data);
+    return NextResponse.json({ success: true, order, id: order.id });
+  } catch (error: any) {
+    console.error('Order Creation Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to create order' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const data = await request.json();
+    const { id, order_status, payment_status } = data;
+    if (!id || !order_status) {
+      return NextResponse.json({ error: 'Order ID and order_status required' }, { status: 400 });
+    }
+
+    const adminName = request.headers.get('x-admin-name') || 'Admin';
+    const updated = await OrdersDB.updateStatus(id, order_status, payment_status, adminName);
+    return NextResponse.json({ success: true, order: updated });
+  } catch (error: any) {
+    console.error('Order Update Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update order' }, { status: 500 });
   }
 }

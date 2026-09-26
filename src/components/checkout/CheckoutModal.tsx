@@ -93,8 +93,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   if (!isOpen) return null;
 
   const handleLocateMe = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
       return;
     }
     setIsLocating(true);
@@ -104,10 +104,11 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         setLocationLink(link);
         setIsLocating(false);
       },
-      () => {
-        alert("Unable to fetch location");
+      (err) => {
+        console.warn("Geolocation warning:", err);
         setIsLocating(false);
-      }
+      },
+      { timeout: 8000, enableHighAccuracy: false }
     );
   };
 
@@ -115,7 +116,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     const customerData = {
       name: customerName,
       phone: customerPhone,
-      email: customerEmail,
+      email: customerEmail || `${customerPhone.replace(/[^0-9]/g, '') || 'customer'}@myshop.com`,
       address: address,
       location: locationLink
     };
@@ -138,7 +139,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       itemsToUse, 
       subtotal, 
       delivery,
-      method === "cod" ? "Cash on Delivery" : "Paid Online"
+      method === "cod" || method === "Cash on Delivery" ? "Cash on Delivery" : "Paid Online"
     );
     sendWhatsAppNotification(message);
   };
@@ -161,8 +162,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: data.currency,
-        name: "Madur.in",
-        description: "Fresh Produce Order",
+        name: "MY SHOP",
+        description: "Order Checkout",
         order_id: data.orderId,
         handler: async function (response: any) {
           setIsLoading(true);
@@ -192,7 +193,6 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             });
             setIsSuccess(true);
             clearCart();
-            // We don't auto-redirect anymore to give time to click WhatsApp
           } else {
             setError("Payment verification failed. Please contact support.");
           }
@@ -208,7 +208,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           email: customerEmail,
           contact: customerPhone,
         },
-        theme: { color: "#2F6B3F" },
+        theme: { color: "#059669" },
       };
 
       const rzp = new window.Razorpay(options);
@@ -222,9 +222,9 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Manual validation to prevent silent HTML5 blocks
-    if (!customerName || !customerEmail || !customerPhone || !address) {
-      setError("Please fill in all required fields (Name, Email, Phone, and Address).");
+    // Validate required checkout fields
+    if (!customerName.trim() || !customerPhone.trim() || !address.trim()) {
+      setError("Please fill in your Name, Phone Number, and Delivery Address.");
       const form = document.querySelector('.custom-scrollbar');
       if (form) form.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -233,61 +233,58 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     setIsLoading(true);
     setError("");
 
-    // Secondary check for session to prevent server action auth errors
-    try {
-      const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
-      const session = await sessionRes.json();
-      if (!session || !session.user) {
-        setError("Your session has expired. Please refresh the page and sign in again.");
-        setIsLoading(false);
-        return;
-      }
-    } catch (e) {
-      console.warn("Session pre-check failed, continuing to server action...");
-    }
+    const emailToUse = customerEmail.trim() || `${customerPhone.replace(/[^0-9]/g, '') || 'customer'}@myshop.com`;
 
     const orderData = {
       total_amount: cartTotal + deliveryCharge,
       delivery_charge: deliveryCharge,
-      shipping_address: address,
+      shipping_address: address.trim(),
       payment_method: paymentMethod,
-      customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_email: customerEmail,
+      customer_name: customerName.trim(),
+      customer_phone: customerPhone.trim(),
+      customer_email: emailToUse,
       location_link: locationLink,
       items: cart.map(item => ({
+        id: item.id,
         product_id: item.id,
+        name: item.name,
         quantity: item.quantity,
         price: item.price,
-        unit: item.selectedUnit
+        unit: item.selectedUnit || (item as any).unit || ''
       }))
     };
 
-    const result = await placeOrderAction(orderData);
+    try {
+      const result = await placeOrderAction(orderData);
 
-    if (result.success) {
-      if (paymentMethod === "Online Payment") {
-        await handleOnlinePayment(result.orderId!);
+      if (result.success && result.orderId) {
+        if (paymentMethod === "Online Payment") {
+          await handleOnlinePayment(result.orderId);
+        } else {
+          setPlacedOrderId(result.orderId);
+          // Freeze all order details before cart clear
+          setFinalizedOrder({
+            items: cart.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              selectedUnit: item.selectedUnit || (item as any).unit
+            })),
+            subtotal: cartTotal,
+            delivery: deliveryCharge,
+            paymentMethod: "cod"
+          });
+          setIsSuccess(true);
+          clearCart();
+          setIsLoading(false);
+        }
       } else {
-        setPlacedOrderId(result.orderId!);
-        // Freeze all order details before cart clear
-        setFinalizedOrder({
-          items: cart.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            selectedUnit: item.selectedUnit || (item as any).unit
-          })),
-          subtotal: cartTotal,
-          delivery: deliveryCharge,
-          paymentMethod: "cod"
-        });
-        setIsSuccess(true);
-        clearCart();
+        setError(result.error || "Failed to place order. Please check your network and try again.");
         setIsLoading(false);
       }
-    } else {
-      setError(result.error || "Failed to place order. Please try again.");
+    } catch (err: any) {
+      console.error("Order submit exception:", err);
+      setError(err?.message || "An unexpected error occurred while placing your order.");
       setIsLoading(false);
     }
   };
@@ -323,7 +320,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
               Your order was placed successfully!
             </h2>
             <p className="text-gray-500 font-bold mb-10 text-sm">
-              Thank you for shopping with Madur.in. Your fresh items are being prepared for delivery.
+              Thank you for shopping with MY SHOP. Your order is being prepared for fast delivery.
               {whatsappSent && <span className="block mt-2 text-secondary animate-pulse text-[10px] uppercase tracking-widest">Redirecting to WhatsApp...</span>}
             </p>
             

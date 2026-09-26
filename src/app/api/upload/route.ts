@@ -1,48 +1,45 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
-
+import { uploadToCloudinary } from '@/lib/cloudinary';
+import { MediaGalleryDB } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const body = await request.json();
+    const { image, fileData, folder = 'myshop', resource_type = 'auto', alt_text = '' } = body;
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    const dataToUpload = image || fileData;
+    if (!dataToUpload) {
+      return NextResponse.json({ error: 'No image or file data provided' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Upload directly to Cloudinary
+    const uploadResult = await uploadToCloudinary(dataToUpload, {
+      folder,
+      resource_type: resource_type as any,
+    });
 
-    // Create unique filename - sanitize the original name
-    const fileExt = path.extname(file.name) || '.jpg';
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase();
-    const fileName = `${Date.now()}-${safeName}`;
+    // Save record to media_gallery table in Supabase
+    const savedRecord = await MediaGalleryDB.save({
+      public_id: uploadResult.public_id,
+      url: uploadResult.url,
+      secure_url: uploadResult.secure_url,
+      format: uploadResult.format,
+      resource_type: uploadResult.resource_type,
+      bytes: uploadResult.bytes,
+      width: uploadResult.width || null,
+      height: uploadResult.height || null,
+      folder: folder,
+      alt_text: alt_text,
+    });
 
-    // Determine upload directory - use /tmp on serverless, public/uploads locally
-    let uploadDir: string;
-    let publicUrl: string;
-
-    // Try writing to public/uploads first
-    try {
-      uploadDir = path.join(process.cwd(), 'public', 'uploads');
-      await mkdir(uploadDir, { recursive: true });
-      const filePath = path.join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      publicUrl = `/uploads/${fileName}`;
-    } catch (fsError: any) {
-      // Fallback: if filesystem write fails (e.g., Hostinger serverless), 
-      // return a base64 data URL so the image still works
-      console.warn('Filesystem write failed, using base64 fallback:', fsError.message);
-      const base64 = buffer.toString('base64');
-      const mimeType = file.type || 'image/jpeg';
-      publicUrl = `data:${mimeType};base64,${base64}`;
-    }
-
-    return NextResponse.json({ publicUrl });
+    return NextResponse.json({
+      success: true,
+      url: uploadResult.secure_url,
+      public_id: uploadResult.public_id,
+      media: savedRecord,
+    });
   } catch (error: any) {
-    console.error('Upload Error:', error);
-    return NextResponse.json({ error: `Failed to upload image: ${error.message}` }, { status: 500 });
+    console.error('API Upload error:', error);
+    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
   }
 }
