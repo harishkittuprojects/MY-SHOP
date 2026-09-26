@@ -30,12 +30,12 @@ export default function AboutPage() {
           </div>
           <div className="flex-1 relative aspect-[4/3] max-w-lg w-full">
             <div className="absolute -inset-4 bg-emerald-500/10 rounded-full blur-3xl opacity-70"></div>
-            <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+            <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-gradient-to-br from-white via-emerald-50/40 to-slate-50 flex items-center justify-center p-4">
               <Image 
-                src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=1200"
-                alt="Smartphone Retail Experience"
+                src="/products/google-pixel-9-pro-xl.png"
+                alt="Google Pixel 9 Pro XL Flagship Smartphone"
                 fill
-                className="object-cover"
+                className="object-contain p-4 drop-shadow-xl hover:scale-105 transition-transform duration-500"
                 unoptimized
               />
             </div>

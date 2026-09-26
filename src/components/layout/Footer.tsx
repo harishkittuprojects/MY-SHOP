@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5 text-sm">
               <li><Link href="/" className="text-gray-400 hover:text-amber-400 transition-colors">Home</Link></li>
               <li><Link href="/products" className="text-gray-400 hover:text-amber-400 transition-colors">All Smartphones &amp; Devices</Link></li>
-              <li><Link href="/categories" className="text-gray-400 hover:text-amber-400 transition-colors">Brands &amp; Categories</Link></li>
+              <li><Link href="/services" className="text-gray-400 hover:text-amber-400 transition-colors">Services</Link></li>
               <li><Link href="/about" className="text-gray-400 hover:text-amber-400 transition-colors">About Our Store</Link></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-amber-400 transition-colors">Customer Support</Link></li>
             </ul>

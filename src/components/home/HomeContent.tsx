@@ -117,27 +117,29 @@ export default function HomeContent() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth">
+          <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-6 md:gap-10 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/products?category=${encodeURIComponent(cat.name)}`}
-                className="flex flex-col items-center gap-2 group flex-shrink-0 active:scale-95 transition-transform"
+                className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-transform"
               >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl bg-slate-50 border border-gray-200/80 group-hover:border-secondary group-hover:shadow-md transition-all p-2 flex items-center justify-center overflow-hidden relative shadow-sm">
-                  {cat.image_url || cat.image ? (
-                    <Image
-                      src={normalizeImageUrl(cat.image_url || cat.image)}
-                      alt={cat.name}
-                      fill
-                      className="object-contain p-1.5 group-hover:scale-110 transition-transform duration-300"
-                      sizes="(max-width: 768px) 80px, 96px"
-                    />
-                  ) : (
-                    <FontAwesomeIcon icon={faBox} className="text-gray-300 text-2xl" />
-                  )}
+                <div className="w-18 h-18 sm:w-22 sm:h-22 md:w-26 md:h-26 rounded-full bg-slate-100/80 border border-slate-200/90 group-hover:border-secondary group-hover:shadow-md transition-all p-2 sm:p-2.5 flex items-center justify-center overflow-hidden relative shadow-xs group-hover:scale-105">
+                  <div className="relative w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-1.5 border border-slate-100">
+                    {cat.image_url || cat.image ? (
+                      <Image
+                        src={normalizeImageUrl(cat.image_url || cat.image)}
+                        alt={cat.name}
+                        fill
+                        className="object-contain p-1 group-hover:scale-110 transition-transform duration-300"
+                        sizes="(max-width: 768px) 80px, 110px"
+                      />
+                    ) : (
+                      <FontAwesomeIcon icon={faBox} className="text-gray-300 text-xl" />
+                    )}
+                  </div>
                 </div>
-                <span className="text-[11px] sm:text-xs md:text-sm font-bold text-slate-800 text-center max-w-[72px] sm:max-w-[88px] leading-tight line-clamp-1 group-hover:text-secondary transition-colors">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 text-center max-w-[85px] sm:max-w-[110px] md:max-w-[120px] leading-tight line-clamp-2 group-hover:text-secondary transition-colors mt-2">
                   {cat.name}
                 </span>
               </Link>

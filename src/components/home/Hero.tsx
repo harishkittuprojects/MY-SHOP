@@ -3,106 +3,161 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade } from "swiper/modules";
+import { Autoplay, EffectFade, Pagination } from "swiper/modules";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faBolt } from "@fortawesome/free-solid-svg-icons";
 
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 
-import { useState, useEffect } from "react";
-
-const defaultBanners = [
-  "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&q=80&w=1920",
+const heroSlides = [
+  {
+    id: "samsung-s25-ultra",
+    brand: "SAMSUNG GALAXY",
+    badgeText: "OFFICIAL FLAGSHIP • GALAXY AI",
+    title: "Galaxy S25 Ultra 5G",
+    tagline: "Epic AI in every shot. Built with Grade 5 Titanium Silver, Snapdragon 8 Elite & S-Pen.",
+    specs: ["Snapdragon 8 Elite", "200MP Quad AI Camera", "Anti-Reflective Gorilla Armor"],
+    price: "₹1,29,999",
+    originalPrice: "₹1,39,999",
+    link: "/products?category=Samsung%20Galaxy",
+    image: "/products/samsung-galaxy-s25-ultra.png"
+  },
+  {
+    id: "iphone-16-pro-max",
+    brand: "APPLE IPHONE",
+    badgeText: "BUILT FOR APPLE INTELLIGENCE",
+    title: "iPhone 16 Pro Max",
+    tagline: "Stunning Desert Titanium with A18 Pro Chip, Camera Control button & Super Retina XDR.",
+    specs: ["A18 Pro with 6-Core GPU", "48MP Fusion Camera", "Grade 5 Titanium Body"],
+    price: "₹1,39,999",
+    originalPrice: "₹1,44,900",
+    link: "/products?category=Apple%20iPhone",
+    image: "/products/iphone-16-pro-max.png"
+  },
+  {
+    id: "pixel-9-pro-xl",
+    brand: "GOOGLE PIXEL",
+    badgeText: "POWERED BY GEMINI ADVANCED",
+    title: "Pixel 9 Pro XL 5G",
+    tagline: "Engineered by Google with Super Actua Display, pro triple camera system and 7 years of updates.",
+    specs: ["Google Tensor G4 Chip", "5x Optical Telephoto", "7 Years of Android Updates"],
+    price: "₹1,04,999",
+    originalPrice: "₹1,14,999",
+    link: "/products?category=Google%20Pixel",
+    image: "/products/google-pixel-9-pro-xl.png"
+  }
 ];
 
 export default function Hero() {
-  const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchHeroImages() {
-      try {
-        const res = await fetch("/api/heroSlides", { cache: "no-store" });
-        if (!res.ok) throw new Error("API Failed");
-        const data = await res.json();
-        
-        if (data && Array.isArray(data) && data.length > 0) {
-          setImages(data.map((img: any) => img.image_url));
-        } else {
-          setImages(defaultBanners);
-        }
-      } catch (error) {
-        setImages(defaultBanners);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchHeroImages();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="w-full aspect-[16/9] bg-white flex items-center justify-center text-secondary font-black uppercase tracking-[0.5em]">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    <section className="relative w-full aspect-[16/9] overflow-hidden bg-gray-100">
-      {/* Edge-to-Edge Full Width Background Swiper */}
-      <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
+    <section className="relative w-full bg-gradient-to-b from-white via-emerald-50/40 to-white overflow-hidden py-3 sm:py-5 md:py-8 border-b border-emerald-100/80">
+      <div className="container">
         <Swiper
-          modules={[Autoplay, EffectFade]}
+          modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
+          fadeEffect={{ crossFade: true }}
           autoplay={{
             delay: 5000,
             disableOnInteraction: false,
           }}
+          pagination={{
+            clickable: true,
+          }}
           loop={true}
-          className="w-full h-full"
+          className="w-full rounded-[1.75rem] sm:rounded-[2.25rem] md:rounded-[2.5rem] overflow-hidden shadow-md border border-emerald-100"
         >
-          {images.map((src, index) => (
-            <SwiperSlide key={index}>
-              <Link href="/products" className="block relative w-full h-full cursor-pointer">
-                <Image 
-                  src={src} 
-                  alt={`Hero Banner ${index + 1}`} 
-                  fill 
-                  className="object-cover object-center"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
-              </Link>
+          {heroSlides.map((slide) => (
+            <SwiperSlide key={slide.id}>
+              <div className="w-full min-h-[230px] sm:min-h-[320px] md:min-h-[460px] bg-gradient-to-br from-white via-emerald-50/70 to-emerald-100/50 p-3.5 sm:p-7 md:p-12 rounded-[1.5rem] sm:rounded-[2.25rem] md:rounded-[2.5rem] flex flex-row items-center justify-between gap-3 sm:gap-6 md:gap-8 relative border border-white">
+                
+                {/* Ambient glow decoration */}
+                <div className="absolute top-0 right-1/4 w-40 sm:w-80 h-40 sm:h-80 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-5 sm:left-10 w-32 sm:w-64 h-32 sm:h-64 bg-emerald-100/50 rounded-full blur-2xl pointer-events-none"></div>
+
+                {/* Left Content */}
+                <div className="flex-1 z-10 text-left min-w-0">
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-wider mb-1 sm:mb-2.5 border border-emerald-200">
+                    <FontAwesomeIcon icon={faBolt} className="text-emerald-600 text-[9px] sm:text-xs" />
+                    <span className="truncate">{slide.badgeText}</span>
+                  </div>
+
+                  <h1 className="text-base sm:text-2xl md:text-4xl lg:text-5xl font-black mb-1 sm:mb-2 text-slate-900 tracking-tight leading-tight line-clamp-1 sm:line-clamp-none">
+                    {slide.title}
+                  </h1>
+
+                  <p className="text-slate-600 text-[10px] sm:text-xs md:text-base mb-2 sm:mb-4 max-w-xl font-medium leading-snug line-clamp-2">
+                    {slide.tagline}
+                  </p>
+
+                  {/* Bullet Specs (Hidden on small mobile to keep neat horizontal balance, visible on tablet/desktop) */}
+                  <div className="hidden sm:flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-5">
+                    {slide.specs.map((spec, i) => (
+                      <span key={i} className="bg-white/90 border border-emerald-200 text-emerald-900 text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg font-bold shadow-xs flex items-center gap-1">
+                        <span className="text-emerald-600 font-black">✓</span>
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Pricing & CTA */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4 pt-0.5">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black text-secondary">
+                        {slide.price}
+                      </span>
+                      <span className="text-[10px] sm:text-xs md:text-sm text-gray-400 line-through font-bold">
+                        {slide.originalPrice}
+                      </span>
+                    </div>
+
+                    <Link 
+                      href={slide.link} 
+                      className="bg-secondary hover:bg-[#255732] text-white font-bold px-3 py-1.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2.5 active:scale-95 text-[9px] sm:text-xs md:text-sm uppercase tracking-wider"
+                    >
+                      <span>BUY NOW</span>
+                      <FontAwesomeIcon icon={faArrowRight} className="text-[8px] sm:text-xs" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Right Image (Horizontal alongside content) */}
+                <div className="relative w-28 h-36 sm:w-56 sm:h-64 md:w-[320px] md:h-[380px] flex-shrink-0 flex items-center justify-center z-10">
+                  <div className="absolute -inset-2 sm:-inset-4 bg-emerald-400/20 rounded-full blur-2xl opacity-60"></div>
+                  <Image 
+                    src={slide.image} 
+                    alt={slide.title} 
+                    fill 
+                    className="object-contain drop-shadow-[0_10px_25px_rgba(21,128,61,0.2)] transition-transform duration-700 hover:scale-105"
+                    priority
+                    sizes="(max-width: 640px) 120px, (max-width: 768px) 240px, 360px"
+                  />
+                </div>
+
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>
       </div>
-      
-      {/* Content Overlay: Shop Now Button kept down at the bottom on all screen sizes */}
-      <div className="container relative z-10 h-full flex items-end px-4 sm:px-12 md:px-20 pb-3 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Link 
-            href="/products" 
-            className="group bg-secondary text-white font-black px-3 py-1.5 sm:px-7 sm:py-3.5 md:px-8 md:py-4 rounded-lg sm:rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#255732] hover:shadow-[0_15px_35px_rgba(0,0,0,0.4)] transition-all flex items-center gap-2 sm:gap-4 w-fit active:scale-95 border border-white/20"
-          >
-            <div className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center text-white group-hover:bg-white group-hover:text-secondary transition-colors">
-              <FontAwesomeIcon icon={faArrowRight} className="text-[8px] sm:text-xs md:text-sm" />
-            </div>
-            <span className="text-[10px] sm:text-sm md:text-base font-black uppercase tracking-wider md:tracking-widest">
-              Shop Now
-            </span>
-          </Link>
-        </div>
-      </div>
+
+      {/* Swiper Pagination Styling for Brand Theme */}
+      <style jsx global>{`
+        .swiper-pagination-bullet {
+          background-color: #a7f3d0 !important;
+          opacity: 0.7 !important;
+          width: 8px !important;
+          height: 8px !important;
+          transition: all 0.3s ease !important;
+        }
+        .swiper-pagination-bullet-active {
+          background-color: #2e7d32 !important;
+          opacity: 1 !important;
+          width: 24px !important;
+          border-radius: 9999px !important;
+        }
+      `}</style>
     </section>
   );
 }

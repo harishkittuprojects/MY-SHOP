@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState, useMemo, useEffect } from "react";
 import ProductCard from "@/components/common/ProductCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter, faSearch, faTimes, faBox } from "@fortawesome/free-solid-svg-icons";
+import { faFilter, faSearch, faTimes, faBox, faChevronLeft, faChevronRight, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -89,47 +89,103 @@ function Content() {
 
   const currentCategory = categories.find(c => c.name.toLowerCase() === categoryFilter?.toLowerCase());
 
-  return (
-    <div className="container pt-16 md:pt-32 pb-10 md:pb-24 min-h-screen text-black">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-12 gap-4 md:gap-6">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-black mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            {categoryFilter ? (
-              <>
-                {(currentCategory?.image_url || currentCategory?.image) ? (
-                  <div className="relative w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-2xl overflow-hidden shadow-md bg-gray-50 flex-shrink-0">
-                    <SafeImg src={normalizeImageUrl(currentCategory.image_url || currentCategory.image)} alt={currentCategory.name} />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-lg md:rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
-                    <FontAwesomeIcon icon={faBox} size="xs" />
-                  </div>
-                )}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-brown">{categoryFilter}</span> 
-                  <span>Products</span>
-                </div>
-              </>
-            ) : "All Products"}
-          </h1>
-          <p className="text-gray-500 font-bold text-sm uppercase tracking-wide">
-            {filteredProducts.length} smartphones &amp; gadgets available
-          </p>
-        </div>
+  const isMobileCategory = !categoryFilter || 
+    categoryFilter.toLowerCase().includes("mobile") || 
+    categoryFilter.toLowerCase() === "mobiles & accessories";
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-1 sm:w-80">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search by model, brand, or specs..." 
-              className="w-full bg-white border border-gray-100 rounded-xl md:rounded-2xl py-3 md:py-4 pl-10 md:pl-12 pr-4 text-xs md:text-sm outline-none focus:ring-2 ring-primary shadow-sm transition-all font-bold"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+  return (
+    <div className="container py-6 sm:py-10">
+      {/* Best Selling Smartphones Section (Matching Screenshot) */}
+      {isMobileCategory && (
+        <section className="mb-10 sm:mb-14">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Best Selling Smartphones
+            </h2>
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/products?category=Mobiles%20%26%20Accessories" 
+                className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 hover:underline"
+              >
+                See All
+              </Link>
+              <div className="flex items-center gap-1.5">
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById("best-selling-carousel");
+                    if (el) el.scrollBy({ left: -320, behavior: "smooth" });
+                  }}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-md border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 shadow-xs cursor-pointer active:scale-90 transition-transform"
+                  aria-label="Scroll left"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                </button>
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById("best-selling-carousel");
+                    if (el) el.scrollBy({ left: 320, behavior: "smooth" });
+                  }}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-md border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 shadow-xs cursor-pointer active:scale-90 transition-transform"
+                  aria-label="Scroll right"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+
+          {/* Carousel rail with exact screenshot cards */}
+          <div 
+            id="best-selling-carousel"
+            className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth"
+          >
+            {products
+              .filter(p => (p.category || "").toLowerCase().includes("mobile") || p.is_popular)
+              .map((product) => {
+                const origPrice = product.original_price && product.original_price > product.price 
+                  ? product.original_price 
+                  : Math.round(product.price * 1.17);
+                const discount = Math.round(((origPrice - product.price) / origPrice) * 100);
+
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/products?category=Mobiles%20%26%20Accessories&search=${encodeURIComponent(product.name)}`}
+                    className="w-[170px] sm:w-[200px] md:w-[220px] flex-shrink-0 bg-white group flex flex-col justify-between"
+                  >
+                    {/* Image Box */}
+                    <div className="relative aspect-square w-full bg-white flex items-center justify-center p-3 mb-2">
+                      <Image
+                        src={product.image_url || product.image || "/mobile-logo.png"}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                        unoptimized
+                      />
+                    </div>
+
+                    {/* Product Name */}
+                    <h3 className="text-xs sm:text-sm font-medium text-slate-900 group-hover:text-emerald-700 line-clamp-1 mb-2 leading-tight">
+                      {product.name}
+                    </h3>
+
+                    {/* Price & Discount Pill Row */}
+                    <div className="flex items-center justify-between gap-2 mt-auto">
+                      <span className="text-sm sm:text-base font-black text-[#15803d]">
+                        ₹ {Math.floor(product.price).toLocaleString("en-IN")}
+                      </span>
+                      {discount > 0 && (
+                        <span className="bg-[#f97316] text-white text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded uppercase tracking-tight flex-shrink-0">
+                          {discount}% OFF
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
         <div className="hidden lg:block space-y-8 sticky top-32 self-start">

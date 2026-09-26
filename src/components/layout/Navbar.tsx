@@ -141,11 +141,11 @@ export default function Navbar() {
 
         {/* Desktop Links - HIDDEN ON MOBILE */}
         <div className="hidden md:flex items-center gap-8 text-[#222222]">
-          <Link href="/" className="hover:text-gray-600 font-medium">Home</Link>
-          <Link href="/products" className="hover:text-gray-600 font-medium text-secondary font-bold">Products</Link>
-          <Link href="/categories" className="hover:text-gray-600 font-medium">Categories</Link>
-          <Link href="/about" className="hover:text-gray-600 font-medium">About</Link>
-          <Link href="/contact" className="hover:text-gray-600 font-medium">Contact</Link>
+          <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
+          <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
+          <Link href="/services" className={`hover:text-gray-600 font-medium ${pathname === "/services" ? "text-secondary font-bold" : ""}`}>Services</Link>
+          <Link href="/about" className={`hover:text-gray-600 font-medium ${pathname === "/about" ? "text-secondary font-bold" : ""}`}>About</Link>
+          <Link href="/contact" className={`hover:text-gray-600 font-medium ${pathname === "/contact" ? "text-secondary font-bold" : ""}`}>Contact</Link>
         </div>
 
         {/* Actions - ACCOUNT & MENU ON RIGHT ON MOBILE, CART+ACCOUNT ON DESKTOP */}
@@ -175,15 +175,41 @@ export default function Navbar() {
             <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
           </button>
 
-          {/* Cart Icon - HIDDEN ON MOBILE HEADER, MOVED TO MENU */}
-          <Link href="/cart" className="hidden md:block relative p-2 transition-colors text-[#222222] hover:text-gray-600">
+          {/* Cart Icon - ALWAYS VISIBLE IN HEADER */}
+          <Link 
+            href="/cart" 
+            className="relative p-2 transition-colors text-[#222222] hover:text-secondary flex items-center justify-center active:scale-95"
+            aria-label="View Cart"
+          >
             <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+              <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
                 {cartCount}
               </span>
             )}
           </Link>
+        </div>
+      </div>
+
+      {/* Category Text Sub-Navigation Bar (Exact Poorvika Reference) */}
+      <div className="bg-white border-t border-b border-slate-100 hidden md:block py-2.5">
+        <div className="container flex items-center justify-between gap-4 lg:gap-8 overflow-x-auto no-scrollbar px-2 sm:px-4">
+          {[
+            "Mobiles & Accessories",
+            "Computers & Tablets",
+            "TV & Audio",
+            "Kitchen Appliances",
+            "Home Appliances",
+            "Smart Technology"
+          ].map((catName) => (
+            <Link
+              key={catName}
+              href={`/products?category=${encodeURIComponent(catName)}`}
+              className="text-xs lg:text-sm font-bold text-slate-900 hover:text-secondary whitespace-nowrap transition-colors tracking-tight py-0.5 border-b-2 border-transparent hover:border-secondary"
+            >
+              {catName}
+            </Link>
+          ))}
         </div>
       </div>
 

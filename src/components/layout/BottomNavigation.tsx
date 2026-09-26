@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { faSearch, faTimes, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faTimes, faArrowRight, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 
 export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -17,7 +19,8 @@ export default function BottomNavigation() {
   if (pathname?.startsWith("/admin")) return null;
 
   const isHome = pathname === "/";
-  const isCategories = pathname === "/categories" || pathname?.startsWith("/products");
+  const isProducts = pathname?.startsWith("/products");
+  const isCart = pathname === "/cart";
   const isProfile = pathname === "/account" || pathname === "/login";
 
   const phoneNumber = "+917416750834";
@@ -42,11 +45,11 @@ export default function BottomNavigation() {
             onSubmit={handleSearchSubmit}
             className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 px-4 border border-gray-200/90 shadow-2xl text-slate-800"
           >
-            <FontAwesomeIcon icon={faSearch} className="text-[#dfa735] text-sm" />
+            <FontAwesomeIcon icon={faSearch} className="text-secondary text-sm" />
             <input 
               type="text"
               autoFocus
-              placeholder="Search smartphones, brands, specs..."
+              placeholder="Search iPhone, Samsung, Pixel..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent border-none outline-none w-full text-xs text-slate-800 placeholder:text-gray-400 font-bold"
@@ -60,7 +63,7 @@ export default function BottomNavigation() {
             </button>
             <button
               type="submit"
-              className="w-7 h-7 rounded-xl bg-[#dfa735] text-slate-900 flex items-center justify-center active:scale-95 shadow-sm"
+              className="w-7 h-7 rounded-xl bg-secondary text-white flex items-center justify-center active:scale-95 shadow-sm"
             >
               <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
             </button>
@@ -68,7 +71,7 @@ export default function BottomNavigation() {
         </div>
       )}
 
-      {/* Floating Bottom Nav Container matching the user design */}
+      {/* Floating Bottom Nav Container matching Madur.in design */}
       <div className="flex items-center gap-2 w-full max-w-[460px] pointer-events-auto">
         {/* Main White Navigation Capsule */}
         <nav 
@@ -82,8 +85,8 @@ export default function BottomNavigation() {
             className="flex flex-col items-center justify-center flex-1 py-0.5 transition-all active:scale-90"
           >
             {isHome ? (
-              <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-[#dfa735] mb-0.5">
-                <svg className="w-5 h-5 text-[#dfa735]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center text-secondary mb-0.5">
+                <svg className="w-5 h-5 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9.5z"/>
                   <path d="M9 22v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/>
                 </svg>
@@ -96,23 +99,23 @@ export default function BottomNavigation() {
                 </svg>
               </div>
             )}
-            <span className={`text-[11px] font-bold leading-none ${isHome ? "text-[#dfa735]" : "text-[#64748b]"}`}>
+            <span className={`text-[11px] font-bold leading-none ${isHome ? "text-secondary font-black" : "text-[#64748b]"}`}>
               Home
             </span>
             {isHome && (
-              <span className="w-3.5 h-[2.5px] bg-[#dfa735] rounded-full mt-1"></span>
+              <span className="w-3.5 h-[2.5px] bg-secondary rounded-full mt-1"></span>
             )}
           </Link>
 
-          {/* Categories */}
+          {/* Products */}
           <Link
             href="/products"
             onClick={() => setIsSearchOpen(false)}
             className="flex flex-col items-center justify-center flex-1 py-0.5 transition-all active:scale-90"
           >
-            {isCategories && !isSearchOpen ? (
-              <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-[#dfa735] mb-0.5">
-                <svg className="w-5 h-5 text-[#dfa735]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {isProducts && !isSearchOpen ? (
+              <div className="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center text-secondary mb-0.5">
+                <svg className="w-5 h-5 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="7" height="7" rx="1.5"/>
                   <rect x="14" y="3" width="7" height="7" rx="1.5"/>
                   <rect x="14" y="14" width="7" height="7" rx="1.5"/>
@@ -129,11 +132,44 @@ export default function BottomNavigation() {
                 </svg>
               </div>
             )}
-            <span className={`text-[11px] font-bold leading-none ${isCategories && !isSearchOpen ? "text-[#dfa735]" : "text-[#64748b]"}`}>
-              Categories
+            <span className={`text-[11px] font-bold leading-none ${isProducts && !isSearchOpen ? "text-secondary font-black" : "text-[#64748b]"}`}>
+              Products
             </span>
-            {isCategories && !isSearchOpen && (
-              <span className="w-3.5 h-[2.5px] bg-[#dfa735] rounded-full mt-1"></span>
+            {isProducts && !isSearchOpen && (
+              <span className="w-3.5 h-[2.5px] bg-secondary rounded-full mt-1"></span>
+            )}
+          </Link>
+
+          {/* Cart Tab with Live Counter */}
+          <Link
+            href="/cart"
+            onClick={() => setIsSearchOpen(false)}
+            className="flex flex-col items-center justify-center flex-1 py-0.5 transition-all active:scale-90 relative"
+          >
+            {isCart ? (
+              <div className="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center text-secondary mb-0.5 relative">
+                <FontAwesomeIcon icon={faShoppingCart} className="text-base text-secondary" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-secondary text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="w-9 h-9 flex items-center justify-center text-[#64748b] mb-0.5 relative">
+                <FontAwesomeIcon icon={faShoppingCart} className="text-base" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-secondary text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+            )}
+            <span className={`text-[11px] font-bold leading-none ${isCart ? "text-secondary font-black" : "text-[#64748b]"}`}>
+              Cart
+            </span>
+            {isCart && (
+              <span className="w-3.5 h-[2.5px] bg-secondary rounded-full mt-1"></span>
             )}
           </Link>
 
@@ -144,8 +180,8 @@ export default function BottomNavigation() {
             className="flex flex-col items-center justify-center flex-1 py-0.5 transition-all active:scale-90"
           >
             {isSearchOpen ? (
-              <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-[#dfa735] mb-0.5">
-                <svg className="w-5 h-5 text-[#dfa735]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center text-secondary mb-0.5">
+                <svg className="w-5 h-5 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="7"/>
                   <line x1="21" y1="21" x2="16.5" y2="16.5"/>
                 </svg>
@@ -158,11 +194,11 @@ export default function BottomNavigation() {
                 </svg>
               </div>
             )}
-            <span className={`text-[11px] font-bold leading-none ${isSearchOpen ? "text-[#dfa735]" : "text-[#64748b]"}`}>
+            <span className={`text-[11px] font-bold leading-none ${isSearchOpen ? "text-secondary font-black" : "text-[#64748b]"}`}>
               Search
             </span>
             {isSearchOpen && (
-              <span className="w-3.5 h-[2.5px] bg-[#dfa735] rounded-full mt-1"></span>
+              <span className="w-3.5 h-[2.5px] bg-secondary rounded-full mt-1"></span>
             )}
           </button>
 
@@ -173,8 +209,8 @@ export default function BottomNavigation() {
             className="flex flex-col items-center justify-center flex-1 py-0.5 transition-all active:scale-90"
           >
             {isProfile ? (
-              <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-[#dfa735] mb-0.5">
-                <svg className="w-5 h-5 text-[#dfa735]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center text-secondary mb-0.5">
+                <svg className="w-5 h-5 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
@@ -187,21 +223,21 @@ export default function BottomNavigation() {
                 </svg>
               </div>
             )}
-            <span className={`text-[11px] font-bold leading-none ${isProfile ? "text-[#dfa735]" : "text-[#64748b]"}`}>
+            <span className={`text-[11px] font-bold leading-none ${isProfile ? "text-secondary font-black" : "text-[#64748b]"}`}>
               Profile
             </span>
             {isProfile && (
-              <span className="w-3.5 h-[2.5px] bg-[#dfa735] rounded-full mt-1"></span>
+              <span className="w-3.5 h-[2.5px] bg-secondary rounded-full mt-1"></span>
             )}
           </Link>
         </nav>
 
-        {/* Only WhatsApp Circular Icon Button (No white background or text) */}
+        {/* Only WhatsApp Circular Icon Button */}
         <a 
           href={whatsappUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="w-13 h-13 sm:w-14 sm:h-14 w-[54px] h-[54px] rounded-full bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(37,211,102,0.45)] flex-shrink-0 transition-transform"
+          className="w-[52px] h-[52px] sm:w-[54px] sm:h-[54px] rounded-full bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(37,211,102,0.45)] flex-shrink-0 transition-transform"
           aria-label="Order on WhatsApp"
         >
           <FontAwesomeIcon icon={faWhatsapp} className="text-2xl sm:text-3xl" />
