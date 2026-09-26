@@ -4,7 +4,19 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState, useMemo, useEffect } from "react";
 import ProductCard from "@/components/common/ProductCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter, faSearch, faTimes, faBox, faChevronLeft, faChevronRight, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faFilter, 
+  faSearch, 
+  faTimes, 
+  faBox, 
+  faChevronLeft, 
+  faChevronRight, 
+  faArrowRight, 
+  faList, 
+  faTableCells,
+  faGripVertical,
+  faSliders
+} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -32,6 +44,11 @@ function Content() {
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(urlSearchTerm);
+
+  // View Style & Grid Column Controls
+  const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
+  const [gridCols, setGridCols] = useState<2 | 3 | 4>(4);
+  const [listCols, setListCols] = useState<1 | 2>(1);
 
   const normalizeImageUrl = (url: string) => {
     if (!url) return "/mobile-logo.png";
@@ -92,6 +109,26 @@ function Content() {
   const isMobileCategory = !categoryFilter || 
     categoryFilter.toLowerCase().includes("mobile") || 
     categoryFilter.toLowerCase() === "mobiles & accessories";
+
+  // Compute active grid layout class
+  const getLayoutGridClass = () => {
+    if (viewStyle === "list") {
+      if (listCols === 2) {
+        return "grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6";
+      }
+      return "grid grid-cols-1 gap-4 sm:gap-5";
+    }
+
+    // Grid View
+    if (gridCols === 2) {
+      return "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6";
+    }
+    if (gridCols === 3) {
+      return "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6";
+    }
+    // 4 cols default
+    return "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6";
+  };
 
   return (
     <div className="container py-6 sm:py-10">
@@ -187,7 +224,8 @@ function Content() {
         </section>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
+        {/* Left Categories Sidebar */}
         <div className="hidden lg:block space-y-8 sticky top-32 self-start">
           <div>
             <h3 className="text-lg font-black mb-6 flex items-center gap-2">
@@ -234,16 +272,139 @@ function Content() {
           </div>
         </div>
 
+        {/* Right Products Catalog with Grid / List & Column Controls */}
         <div className="lg:col-span-3">
+          {/* Controls Toolbar: Style Switcher + Column Selector */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* Left: Product count & filter info */}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-black text-slate-900">
+                  {filteredProducts.length} Products
+                </span>
+                {categoryFilter && (
+                  <span className="text-[11px] font-bold text-secondary bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                    {categoryFilter}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 hidden sm:block">
+                Showing all genuine brand devices with official warranty
+              </p>
+            </div>
+
+            {/* Right: Layout & Column Controls */}
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+              {/* Column Control for Current View Style */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+                {viewStyle === "grid" ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setGridCols(2)}
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        gridCols === 2 ? "bg-white text-secondary shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="2 Columns"
+                    >
+                      <span>2</span>
+                      <span className="text-[10px] opacity-70">Cols</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGridCols(3)}
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        gridCols === 3 ? "bg-white text-secondary shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="3 Columns"
+                    >
+                      <span>3</span>
+                      <span className="text-[10px] opacity-70">Cols</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGridCols(4)}
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 hidden sm:flex ${
+                        gridCols === 4 ? "bg-white text-secondary shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="4 Columns"
+                    >
+                      <span>4</span>
+                      <span className="text-[10px] opacity-70">Cols</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setListCols(1)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        listCols === 1 ? "bg-white text-secondary shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="1 Column (Full Width List)"
+                    >
+                      <span>1</span>
+                      <span className="text-[10px] opacity-70">Row</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setListCols(2)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        listCols === 2 ? "bg-white text-secondary shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="2 Columns List"
+                    >
+                      <span>2</span>
+                      <span className="text-[10px] opacity-70">Rows</span>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* View Style Switcher (Grid vs List) */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+                <button
+                  type="button"
+                  onClick={() => setViewStyle("grid")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    viewStyle === "grid" 
+                      ? "bg-secondary text-white shadow-xs" 
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  aria-label="Grid View Style"
+                  title="Grid View (Cards)"
+                >
+                  <FontAwesomeIcon icon={faTableCells} className="text-xs" />
+                  <span className="hidden sm:inline">Grid</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewStyle("list")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    viewStyle === "list" 
+                      ? "bg-secondary text-white shadow-xs" 
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  aria-label="List View Style"
+                  title="List View (Rows)"
+                >
+                  <FontAwesomeIcon icon={faList} className="text-xs" />
+                  <span className="hidden sm:inline">List</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Items Display */}
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3 md:gap-8">
                {[...Array(6)].map((_, i) => <div key={i} className="h-60 md:h-80 bg-gray-100 animate-pulse rounded-2xl md:rounded-[2.5rem]"></div>)}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-8">
+            <div className={getLayoutGridClass()}>
               {(Array.isArray(filteredProducts) ? filteredProducts : []).map((product) => (
-                <div key={product.id}>
-                  <ProductCard product={product} />
+                <div key={product.id} className="h-full">
+                  <ProductCard product={product} viewMode={viewStyle} />
                 </div>
               ))}
             </div>
