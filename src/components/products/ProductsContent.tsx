@@ -115,24 +115,24 @@ function Content() {
   const getLayoutGridClass = () => {
     if (viewStyle === "list") {
       if (listCols === 2) {
-        return "grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6";
+        return "grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
       }
-      return "grid grid-cols-1 gap-4 sm:gap-5";
+      return "grid grid-cols-1 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-5";
     }
 
-    // Grid View
+    // Grid View on desktop, 1-col full-width Flipkart list on mobile
     if (gridCols === 2) {
-      return "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6";
+      return "grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
     }
     if (gridCols === 3) {
-      return "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6";
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
     }
-    // 4 cols default
-    return "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6";
+    // 4 cols default on desktop
+    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
   };
 
   return (
-    <div className="container py-6 sm:py-10">
+    <div className="w-full md:container px-0 md:px-4 py-2 sm:py-6 md:py-10">
       {/* Best Selling Smartphones Section (Matching Screenshot) */}
       {isMobileCategory && (
         <section className="mb-10 sm:mb-14">
