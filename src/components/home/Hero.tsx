@@ -61,15 +61,15 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-slate-100 select-none">
-      {/* Exact Vijay Sales Hero Banner Proportion: 16:9 on mobile, 16:8 on tablet, 21:9 on desktop */}
-      <div className="w-full relative aspect-[16/9] sm:aspect-[16/8] md:aspect-[21/9] max-h-[540px]">
+    <section className="relative w-full overflow-hidden bg-slate-900 select-none">
+      {/* Mobile: 16:9 proportion | Desktop: Full Screen Viewport Height (Madur.in style) */}
+      <div className="w-full relative aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[calc(100vh-130px)] lg:h-[calc(100vh-140px)] min-h-[220px] md:min-h-[580px] lg:min-h-[680px]">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
           fadeEffect={{ crossFade: true }}
           autoplay={{
-            delay: 4000,
+            delay: 4500,
             disableOnInteraction: false,
           }}
           pagination={{
@@ -89,7 +89,7 @@ export default function Hero() {
                   src={slide.image_url} 
                   alt={slide.title || `Hero Banner ${index + 1}`} 
                   fill 
-                  className="object-cover object-center w-full h-full group-hover:scale-[1.01] transition-transform duration-500"
+                  className="object-cover object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01]"
                   priority={index === 0}
                   sizes="100vw"
                   unoptimized
@@ -100,42 +100,47 @@ export default function Hero() {
         </Swiper>
       </div>
 
-      {/* Swiper Pagination Styling matching Vijay Sales dots */}
+      {/* Swiper Pagination Styling */}
       <style jsx global>{`
         .swiper-pagination {
-          bottom: 8px !important;
+          bottom: 12px !important;
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
-          gap: 4px !important;
+          gap: 6px !important;
           z-index: 20 !important;
         }
-        @media (min-width: 640px) {
+        @media (min-width: 768px) {
           .swiper-pagination {
-            bottom: 14px !important;
-            gap: 6px !important;
+            bottom: 24px !important;
+            gap: 8px !important;
           }
         }
         .swiper-pagination-bullet {
           background-color: rgba(255, 255, 255, 0.65) !important;
-          opacity: 0.9 !important;
-          width: 6px !important;
-          height: 6px !important;
+          opacity: 0.85 !important;
+          width: 7px !important;
+          height: 7px !important;
           margin: 0 !important;
-          transition: all 0.25s ease-in-out !important;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+          transition: all 0.3s ease-in-out !important;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45) !important;
         }
-        @media (min-width: 640px) {
+        @media (min-width: 768px) {
           .swiper-pagination-bullet {
-            width: 8px !important;
-            height: 8px !important;
+            width: 10px !important;
+            height: 10px !important;
           }
         }
         .swiper-pagination-bullet-active {
           background-color: #ffffff !important;
           opacity: 1 !important;
-          width: 18px !important;
+          width: 24px !important;
           border-radius: 9999px !important;
+        }
+        @media (min-width: 768px) {
+          .swiper-pagination-bullet-active {
+            width: 32px !important;
+          }
         }
       `}</style>
     </section>
