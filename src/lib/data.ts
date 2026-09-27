@@ -245,6 +245,44 @@ export const products = [
 
   // ==================== 2. COMPUTER & TABLETS ====================
   {
+    id: "ipad-pro-13-m4",
+    category: "Computers & Tablets",
+    category_id: "computers-tablets",
+    name: "Apple iPad Pro 13-inch M4 Ultra Retina XDR (Space Black)",
+    unit: "256 GB, 512 GB, 1 TB Nano-Texture, 2 TB Cellular",
+    price: 129900,
+    original_price: 139900,
+    image_url: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.9,
+    reviews_count: 840,
+    description: "The thinnest Apple product ever with breakthrough Ultra Retina XDR tandem OLED display. Powered by the next-generation Apple M4 chip with hardware-accelerated ray tracing, 4K ProRes video support, and full Apple Pencil Pro support with haptic feedback."
+  },
+  {
+    id: "apple-watch-ultra-2-titanium",
+    category: "Smart Technology",
+    category_id: "smart-technology",
+    name: "Apple Watch Ultra 2 GPS + Cellular 49mm (Aerospace Titanium)",
+    unit: "49mm / Trail Loop, 49mm / Ocean Band, 49mm / Alpine Loop, 49mm / Titanium Milanese",
+    price: 89900,
+    original_price: 94900,
+    image_url: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.9,
+    reviews_count: 1250,
+    description: "The ultimate sports and adventure watch. 49mm corrosion-resistant aerospace titanium case, precision dual-frequency GPS, up to 72 hours in Low Power Mode, 3000 nits display, EN13319 certified dive computer up to 40 meters, and dual speakers with 86-decibel Emergency Siren."
+  },
+  {
     id: "macbook-air-m3",
     category: "Computers & Tablets",
     category_id: "computers-tablets",
