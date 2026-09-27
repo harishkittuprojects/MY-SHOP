@@ -148,48 +148,31 @@ export default function HomeContent() {
         </div>
       </section>
       
-      {/* Popular Products - Exact Madur.in layout */}
-      <section className="bg-secondary/5 py-8 md:py-16">
+      {/* Popular Products */}
+      <section className="bg-secondary/5 py-5 sm:py-8 md:py-16">
         <div className="container">
-          {/* Mobile Search Bar */}
-          <div className="md:hidden mb-6">
-            <form 
-              onSubmit={handleSearch}
-              className="flex items-center bg-white border border-secondary/20 rounded-xl px-4 py-3 shadow-md"
-            >
-              <FontAwesomeIcon icon={faSearch} className="text-secondary mr-3 text-sm" />
-              <input
-                type="text"
-                placeholder="Search iPhone, Samsung, Pixel..."
-                className="bg-transparent border-none outline-none w-full text-sm text-[#222222] placeholder:text-gray-400"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </form>
-          </div>
-
-          <div className="flex items-center justify-between mb-4 md:mb-10">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-2.5 md:gap-3 text-[#222222]">
-              <span className="w-1.5 sm:w-2 h-6 sm:h-8 bg-secondary rounded-full"></span>
+          <div className="flex items-center justify-between mb-3 sm:mb-6 md:mb-10 px-0.5">
+            <h2 className="text-base sm:text-2xl md:text-3xl font-black flex items-center gap-2 md:gap-3 text-slate-900">
+              <span className="w-1.5 sm:w-2 h-5 sm:h-8 bg-secondary rounded-full"></span>
               Popular Products
             </h2>
-            <Link href="/products" className="text-secondary font-bold flex items-center gap-2 hover:underline text-xs sm:text-sm md:text-base">
+            <Link href="/products" className="text-secondary font-bold flex items-center gap-1.5 hover:underline text-xs sm:text-sm md:text-base">
               See all Products <FontAwesomeIcon icon={faArrowRight} size="xs" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-8 mb-6 md:mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y divide-slate-100 bg-white md:bg-transparent rounded-2xl md:rounded-none overflow-hidden border border-slate-100 md:border-none shadow-xs md:shadow-none gap-0 md:gap-6 mb-6 md:mb-12">
             {isLoading ? (
-                [...Array(4)].map((_, i) => <div key={i} className="h-80 bg-white/50 animate-pulse rounded-3xl"></div>)
+                [...Array(4)].map((_, i) => <div key={i} className="h-44 md:h-80 bg-white/70 animate-pulse rounded-2xl md:rounded-3xl"></div>)
             ) : (Array.isArray(products) ? products : []).map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} viewMode="grid" />
             ))}
           </div>
 
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-2 sm:mt-4">
             <Link 
               href="/products" 
-              className="bg-secondary text-secondary-foreground font-black px-6 py-3 md:px-10 md:py-5 text-xs md:text-base rounded-xl md:rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 md:gap-3"
+              className="bg-secondary text-secondary-foreground font-black px-6 py-3 md:px-10 md:py-5 text-xs md:text-base rounded-xl md:rounded-2xl shadow-lg hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 md:gap-3"
             >
               VIEW ALL PRODUCTS
               <FontAwesomeIcon icon={faArrowRight} className="text-xs md:text-base" />

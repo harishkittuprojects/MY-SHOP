@@ -109,137 +109,126 @@ export default function ProductCard({
 
   return (
     <>
-      {/* ===================== 1. FLIPKART STYLE MOBILE VIEW (SCREENSHOT EXACT) ===================== */}
+      {/* ===================== 1. MOBILE VIEW (EXACT FLIPKART SCREENSHOT MATCH) ===================== */}
       <div 
         onClick={() => setIsDetailOpen(true)}
-        className="block md:hidden bg-white border-b border-slate-200 py-3.5 px-2.5 active:bg-slate-50/70 transition-colors cursor-pointer relative"
+        className="block md:hidden bg-white border-b border-slate-200/90 py-3.5 px-3 active:bg-slate-50 transition-colors cursor-pointer relative"
       >
         <div className="flex items-start gap-3">
-          {/* Left: Product Image Box with Bestseller Badge */}
-          <div className="relative w-28 h-36 flex-shrink-0 bg-white rounded-lg flex items-center justify-center p-1.5">
+          {/* Left Column: Image with Bestseller Badge */}
+          <div className="flex flex-col items-start flex-shrink-0 w-24 sm:w-28">
             {product.is_popular && (
-              <span className="absolute top-0 left-0 z-10 bg-[#2874f0] text-white text-[9px] font-black px-1.5 py-0.5 rounded-br-md shadow-xs">
-                Bestseller
+              <span className="bg-[#00796b] text-white text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-xs mb-1">
+                BESTSELLER
               </span>
             )}
             
-            {imgSrc ? (
-              <Image 
-                src={imgSrc} 
-                alt={product.name} 
-                fill 
-                className="object-contain p-1" 
-                onError={() => setImgSrc("/placeholder.png")}
-                unoptimized
-              />
-            ) : (
-              <div className="text-xs text-gray-300">No Image</div>
-            )}
+            <div className="relative w-full h-32 bg-white flex items-center justify-center p-1">
+              {imgSrc ? (
+                <Image 
+                  src={imgSrc} 
+                  alt={product.name} 
+                  fill 
+                  className="object-contain p-0.5" 
+                  onError={() => setImgSrc("/placeholder.png")}
+                  unoptimized
+                />
+              ) : (
+                <div className="text-[10px] text-gray-300">No Image</div>
+              )}
 
-            {isOutOfStock && (
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-20 rounded-lg">
-                <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded text-[9px] uppercase">
-                  Out of Stock
-                </span>
-              </div>
-            )}
+              {isOutOfStock && (
+                <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20 rounded-md">
+                  <span className="bg-red-600 text-white font-black px-1.5 py-0.5 rounded text-[8px] uppercase">
+                    Out of Stock
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right: Product Details */}
+          {/* Right Column: Title, Ratings, Pricing, Bank Offer, Exchange, Warranty */}
           <div className="flex-1 min-w-0">
-            {/* Title & Wishlist */}
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2">
-                {product.name}
-              </h3>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsWishlisted(!isWishlisted);
-                }}
-                className={`p-1 flex-shrink-0 transition-colors ${
-                  isWishlisted ? "text-red-500" : "text-slate-400 hover:text-red-500"
-                }`}
-                aria-label="Wishlist"
-              >
-                <FontAwesomeIcon icon={faHeart} className="text-sm" />
-              </button>
-            </div>
+            {/* Title */}
+            <h3 className="text-[13px] sm:text-sm font-semibold text-[#212121] leading-snug line-clamp-2 mb-1">
+              {product.name}
+            </h3>
 
-            {/* Rating & Assured Badge */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 leading-none">
-                <span>{product.rating || 4.1}</span>
-                <FontAwesomeIcon icon={faStar} className="text-[7px]" />
+            {/* Rating Stars (Green Stars + Review Count + Assured Badge) */}
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+              <div className="flex items-center text-[#388e3c] text-xs">
+                {[...Array(5)].map((_, i) => (
+                  <FontAwesomeIcon 
+                    key={i} 
+                    icon={faStar} 
+                    className={`text-[10px] ${i < Math.floor(product.rating || 4.2) ? "text-[#388e3c]" : "text-slate-200"}`} 
+                  />
+                ))}
               </div>
-              <span className="text-[11px] text-slate-500 font-medium">{reviewsDisplay}</span>
-              <div className="flex items-center gap-1 text-[10px] font-black italic text-[#2874f0] bg-blue-50 px-1.5 py-0.5 rounded">
+              <span className="text-xs text-[#878787] font-medium">({product.reviews_count?.toLocaleString() || "4,318"})</span>
+              <div className="flex items-center gap-0.5 text-[10px] font-black italic text-[#2874f0]">
                 <FontAwesomeIcon icon={faShieldHalved} className="text-[9px]" />
                 <span>Assured</span>
               </div>
             </div>
 
-            {/* Pricing Row: Discount % + MRP + Price */}
+            {/* Pricing Row: Discount % + MRP Strikethrough + Selling Price */}
             <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
               {discountPercent > 0 && (
-                <span className="text-xs font-black text-[#388e3c] flex items-center">
-                  <FontAwesomeIcon icon={faArrowDown} className="text-[9px] mr-0.5" />
-                  {discountPercent}%
+                <span className="text-xs sm:text-sm font-bold text-[#388e3c]">
+                  ↓{discountPercent}%
                 </span>
               )}
               {originalPrice > product.price && (
-                <span className="text-xs text-slate-400 line-through font-medium">
+                <span className="text-xs text-[#878787] line-through font-normal">
                   ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
                 </span>
               )}
-              <span className="text-sm font-black text-slate-900">
+              <span className="text-sm sm:text-base font-bold text-[#212121]">
                 ₹{Math.floor(product.price).toLocaleString("en-IN")}
               </span>
             </div>
 
-            {/* Bank Offer Row */}
-            <div className="flex items-baseline gap-1 mb-1 text-xs">
-              <span className="font-black italic text-[#2874f0]">wow!</span>
-              <span className="font-black text-[#2874f0]">
-                ₹{bankOfferPrice.toLocaleString("en-IN")}
-              </span>
-              <span className="text-[11px] text-slate-500 font-medium">with Bank offer</span>
+            {/* Bank Offer Row: wow! ₹XX,XXX with Bank offer */}
+            <div className="flex items-center gap-1 text-xs text-[#2874f0] font-semibold mb-0.5">
+              <span className="italic font-black bg-blue-50 px-1 rounded text-[10px]">wow!</span>
+              <span className="font-bold">₹{bankOfferPrice.toLocaleString("en-IN")}</span>
+              <span className="text-[11px] text-[#2874f0]">with Bank offer</span>
             </div>
 
-            {/* Stock / Deal info */}
-            <div className="text-[11px] font-bold text-rose-600 mb-0.5">
-              Only few left
+            {/* Exchange Offer / Stock Tag */}
+            <div className="text-[11px] text-[#212121] mb-0.5">
+              {discountPercent > 20 ? (
+                <span>Upto ₹{Math.round(product.price * 0.45).toLocaleString("en-IN")} Off on Exchange</span>
+              ) : (
+                <span className="text-[#c2185b] font-bold">Only few left</span>
+              )}
             </div>
 
-            {/* Delivery & Warranty */}
-            <div className="text-[11px] text-slate-600 font-medium mb-0.5">
-              Get it by <span className="font-bold text-slate-900">Tomorrow</span>
-            </div>
-            <div className="text-[10px] text-slate-400 mb-1.5">
+            {/* Warranty Line */}
+            <div className="text-[11px] text-[#878787] mb-1">
               1 year warranty by {brandName}
             </div>
-
-            {/* Bottom Actions: View All Variants link + Quick Add */}
-            <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-              <span className="text-xs font-black text-[#2874f0] flex items-center gap-1 hover:underline">
-                <span>View All Variants</span>
-                <FontAwesomeIcon icon={faChevronRight} className="text-[9px]" />
-              </span>
-
-              <button
-                onClick={handleOpenModal}
-                disabled={isOutOfStock}
-                className={`text-[10px] font-black px-2.5 py-1 rounded-md transition-all flex items-center gap-1 shadow-xs active:scale-95 ${
-                  isOutOfStock 
-                    ? "bg-slate-100 text-slate-400" 
-                    : "bg-secondary text-white hover:bg-[#255732]"
-                }`}
-              >
-                <FontAwesomeIcon icon={faCartPlus} className="text-[9px]" />
-                <span>ADD</span>
-              </button>
-            </div>
           </div>
+        </div>
+
+        {/* Bottom Link: View All Variants */}
+        <div className="mt-1 pt-1.5 border-t border-slate-100 flex items-center justify-between">
+          <span className="text-xs font-semibold text-[#2874f0] hover:underline">
+            View All Variants
+          </span>
+          <button
+            onClick={handleOpenModal}
+            disabled={isOutOfStock}
+            className={`text-[10px] font-black px-3 py-1 rounded-md transition-all flex items-center gap-1 shadow-xs active:scale-95 ${
+              isOutOfStock 
+                ? "bg-slate-100 text-slate-400" 
+                : "bg-secondary text-white hover:bg-[#255732]"
+            }`}
+          >
+            <FontAwesomeIcon icon={faCartPlus} className="text-[9px]" />
+            <span>ADD TO CART</span>
+          </button>
         </div>
       </div>
 

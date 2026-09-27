@@ -63,24 +63,15 @@ export default function QuantityModal({ isOpen, onClose, onConfirm, onBuyNow, pr
     if (product.unit && product.unit.includes(',')) {
       return product.unit.split(',')
         .map(u => u.trim())
-        .filter(u => !u.toLowerCase().includes('1000grms'));
+        .filter(u => u.length > 0);
     }
     
-    // Fallback to the intelligent derivation if only one unit is selected
-    if (baseUnitInfo.unit === "g") {
-      // If "1 kg" is the only unit, show the standard set
-      if (currentUnit.toLowerCase().includes("1 kg") || currentUnit.toLowerCase().includes("1kg")) {
-        return ["100 grms", "250 grms", "500 grms", "1 kg"];
-      }
-      return [currentUnit];
-    } else if (baseUnitInfo.unit === "ml") {
-      // If "1 litre" is the only unit, show the standard set
-      if (currentUnit.toLowerCase().includes("1 litre") || currentUnit.toLowerCase().includes("1 l")) {
-        return ["250 ml", "500 ml", "1 litre"];
-      }
-      return [currentUnit];
+    // If unit is specified, return it as single selectable option
+    if (product.unit && product.unit.trim()) {
+      return [product.unit.trim()];
     }
-    return [currentUnit];
+    
+    return ["1 Unit (Official Warranty)"];
   };
 
   const units = getAvailableUnits();
