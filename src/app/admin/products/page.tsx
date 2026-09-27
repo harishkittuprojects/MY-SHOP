@@ -469,9 +469,6 @@ export default function AdminProductsPage() {
                 <h2 className="text-xl font-bold text-slate-900">
                   {isEditing ? "Edit Product" : "Add New Product"}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Synchronized with Supabase and Cloudinary
-                </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
