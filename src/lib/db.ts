@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { categories as defaultCategories, products as defaultProducts } from './data';
 
 // ==============================================================================
 // 1. AUDIT LOGGING HELPER
@@ -30,23 +31,44 @@ export async function logActivity(params: {
 // ==============================================================================
 export const CategoriesDB = {
   async getAll() {
+    let dbCategories: any[] = [];
     try {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      return data || [];
+      if (!error && data && data.length > 0) {
+        dbCategories = data;
+      }
     } catch (err) {
       console.error('CategoriesDB.getAll Error:', err);
-      return [];
     }
+
+    const dbCategoryIds = new Set(dbCategories.map((c) => String(c.id)));
+    const defaultList = defaultCategories.map((c, idx) => ({
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+      image_url: c.image_url,
+      sub_categories: [],
+      is_active: true,
+      display_order: idx + 1,
+    }));
+
+    return [
+      ...dbCategories,
+      ...defaultList.filter((dc) => !dbCategoryIds.has(String(dc.id))),
+    ];
   },
 
   async getById(id: string) {
-    const { data } = await supabase.from('categories').select('*').eq('id', id).single();
-    return data || null;
+    try {
+      const { data } = await supabase.from('categories').select('*').eq('id', id).single();
+      if (data) return data;
+    } catch { /* ignore */ }
+    const def = defaultCategories.find((c) => c.id === id);
+    return def ? { ...def, sub_categories: [], is_active: true } : null;
   },
 
   async create(category: any, adminName: string = 'Admin') {
@@ -120,43 +142,62 @@ export const CategoriesDB = {
 // ==============================================================================
 export const ProductsDB = {
   async getAll(filter?: { category?: string; search?: string; is_popular?: boolean; is_featured?: boolean; limit?: number }) {
+    let dbProducts: any[] = [];
     try {
-      let query = supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (filter?.category) {
-        query = query.or(`category_id.eq.${filter.category},category_name.eq.${filter.category}`);
+      if (!error && data) {
+        dbProducts = data;
       }
-      if (filter?.search) {
-        query = query.or(`name.ilike.%${filter.search}%,description.ilike.%${filter.search}%`);
-      }
-      if (filter?.is_popular) {
-        query = query.eq('is_popular', true);
-      }
-      if (filter?.is_featured) {
-        query = query.eq('is_featured', true);
-      }
-      if (filter?.limit) {
-        query = query.limit(filter.limit);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
     } catch (err) {
-      console.error('ProductsDB.getAll Error:', err);
-      return [];
+      console.error('ProductsDB.getAll DB Error:', err);
     }
+
+    // Merge: Live DB products take priority, and all default catalog products are preserved
+    const dbProductIds = new Set(dbProducts.map((p) => String(p.id)));
+    const merged = [
+      ...dbProducts,
+      ...defaultProducts.filter((dp) => !dbProductIds.has(String(dp.id))),
+    ];
+
+    let list = merged;
+    if (filter?.category && filter.category !== 'all') {
+      const catLower = filter.category.toLowerCase();
+      list = list.filter((p) =>
+        (p.category_id && p.category_id.toLowerCase() === catLower) ||
+        (p.category_name && p.category_name.toLowerCase() === catLower) ||
+        (p.category && p.category.toLowerCase() === catLower)
+      );
+    }
+    if (filter?.search) {
+      const s = filter.search.toLowerCase();
+      list = list.filter((p) =>
+        (p.name && p.name.toLowerCase().includes(s)) ||
+        (p.description && p.description.toLowerCase().includes(s)) ||
+        (p.sku && p.sku.toLowerCase().includes(s))
+      );
+    }
+    if (filter?.is_popular) {
+      list = list.filter((p) => p.is_popular);
+    }
+    if (filter?.is_featured) {
+      list = list.filter((p) => p.is_featured);
+    }
+
+    return filter?.limit ? list.slice(0, filter.limit) : list;
   },
 
   async getById(id: string) {
     try {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-      if (error) return null;
-      return data || null;
+      if (!error && data) return data;
     } catch (err) {
       console.error('ProductsDB.getById Error:', err);
-      return null;
     }
+    return defaultProducts.find((p) => String(p.id) === String(id)) || null;
   },
 
   async create(product: any, adminName: string = 'Admin') {
