@@ -159,8 +159,14 @@ export const ProductsDB = {
     // Merge: Live DB products take priority, and all default catalog products are preserved
     const dbProductIds = new Set(dbProducts.map((p) => String(p.id)));
     const merged = [
-      ...dbProducts,
-      ...defaultProducts.filter((dp) => !dbProductIds.has(String(dp.id))),
+      ...dbProducts.map(p => ({
+        ...p,
+        stock_quantity: p.stock_quantity !== undefined && p.stock_quantity !== null && !isNaN(Number(p.stock_quantity)) ? Number(p.stock_quantity) : 25
+      })),
+      ...defaultProducts.filter((dp) => !dbProductIds.has(String(dp.id))).map(dp => ({
+        ...dp,
+        stock_quantity: (dp as any).stock_quantity !== undefined && (dp as any).stock_quantity !== null && !isNaN(Number((dp as any).stock_quantity)) ? Number((dp as any).stock_quantity) : 25
+      })),
     ];
 
     let list = merged;
@@ -193,11 +199,23 @@ export const ProductsDB = {
   async getById(id: string) {
     try {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-      if (!error && data) return data;
+      if (!error && data) {
+        return {
+          ...data,
+          stock_quantity: data.stock_quantity !== undefined && data.stock_quantity !== null && !isNaN(Number(data.stock_quantity)) ? Number(data.stock_quantity) : 25
+        };
+      }
     } catch (err) {
       console.error('ProductsDB.getById Error:', err);
     }
-    return defaultProducts.find((p) => String(p.id) === String(id)) || null;
+    const def = defaultProducts.find((p) => String(p.id) === String(id));
+    if (def) {
+      return {
+        ...def,
+        stock_quantity: (def as any).stock_quantity !== undefined && (def as any).stock_quantity !== null && !isNaN(Number((def as any).stock_quantity)) ? Number((def as any).stock_quantity) : 25
+      };
+    }
+    return null;
   },
 
   async create(product: any, adminName: string = 'Admin') {
@@ -342,19 +360,43 @@ export const ProductsDB = {
     const current = await this.getById(productId);
     if (!current) return null;
 
-    const currentStock = current.stock_quantity || 0;
+    const currentStock = current.stock_quantity !== undefined && current.stock_quantity !== null && !isNaN(Number(current.stock_quantity))
+      ? Number(current.stock_quantity)
+      : (current.is_available !== false ? 25 : 0);
     const newStock = Math.max(0, currentStock + quantityChange);
     const isAvailable = newStock > 0;
 
-    await supabase.from('products').update({
+    const cleanRecord: any = {
+      id: current.id,
+      name: current.name || '',
+      category_id: current.category_id || 'mobiles-accessories',
+      category_name: current.category_name || current.category || '',
+      sub_category: current.sub_category || '',
+      price: Number(current.price) || 0,
+      original_price: Number(current.original_price) || Number(current.price) || 0,
       stock_quantity: newStock,
+      sku: current.sku || `SKU-${String(current.id).toUpperCase()}`,
+      image_url: current.image_url || '',
+      images: Array.isArray(current.images) && current.images.length > 0 ? current.images : [current.image_url || ''],
+      description: current.description || '',
+      unit: current.unit || '',
       is_available: isAvailable,
+      is_featured: Boolean(current.is_featured),
+      is_popular: Boolean(current.is_popular),
+      rating: Number(current.rating) || 4.8,
+      reviews_count: Number(current.reviews_count) || 0,
+      variants: Array.isArray(current.variants) ? current.variants : [],
       updated_at: new Date().toISOString()
-    }).eq('id', productId);
+    };
+
+    const { error: upsertError } = await supabase.from('products').upsert([cleanRecord]);
+    if (upsertError) {
+      console.error('adjustStock Supabase upsert error:', upsertError);
+    }
 
     try {
       await supabase.from('inventory_logs').insert([{
-        product_id: productId,
+        product_id: current.id,
         product_name: current.name,
         change_type: quantityChange < 0 ? 'order_deduct' : 'restock',
         previous_stock: currentStock,
