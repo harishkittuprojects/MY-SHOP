@@ -549,7 +549,7 @@ export const CouponsDB = {
     }
   },
 
-  async validateCoupon(code: string, subtotal: number) {
+  async validateCoupon(code: string, subtotal: number, items: any[] = []) {
     try {
       const { data: coupon, error } = await supabase
         .from('coupons')
@@ -576,6 +576,29 @@ export const CouponsDB = {
         return { valid: false, message: 'Coupon usage limit reached' };
       }
 
+      // Check category specification
+      if (coupon.applicable_category && coupon.applicable_category !== 'all' && items && items.length > 0) {
+        const matchesCategory = items.some((item: any) => 
+          item.category_id === coupon.applicable_category || 
+          (item.category_name && item.category_name.toLowerCase() === coupon.applicable_category.toLowerCase()) ||
+          (item.category && item.category.toLowerCase() === coupon.applicable_category.toLowerCase())
+        );
+        if (!matchesCategory) {
+          return { valid: false, message: `This coupon is only valid for items in the specified category (${coupon.applicable_category})` };
+        }
+      }
+
+      // Check product specification
+      if (coupon.applicable_product_id && coupon.applicable_product_id !== 'all' && items && items.length > 0) {
+        const matchesProduct = items.some((item: any) => 
+          String(item.id) === String(coupon.applicable_product_id) || 
+          String(item.product_id) === String(coupon.applicable_product_id)
+        );
+        if (!matchesProduct) {
+          return { valid: false, message: `This coupon is only valid for ${coupon.applicable_product_name || 'the specified product'}` };
+        }
+      }
+
       let discount = 0;
       if (coupon.discount_type === 'percentage') {
         discount = (subtotal * Number(coupon.discount_value)) / 100;
@@ -598,7 +621,7 @@ export const CouponsDB = {
   },
 
   async create(data: any, adminName: string = 'Admin') {
-    const record = {
+    const record: any = {
       code: data.code.toUpperCase().trim(),
       discount_type: data.discount_type || 'percentage',
       discount_value: Number(data.discount_value),
@@ -608,10 +631,26 @@ export const CouponsDB = {
       end_date: data.end_date || null,
       usage_limit: data.usage_limit ? Number(data.usage_limit) : null,
       is_active: data.is_active !== undefined ? data.is_active : true,
+      applicable_category: data.applicable_category || 'all',
+      applicable_product_id: data.applicable_product_id || 'all',
+      applicable_product_name: data.applicable_product_name || '',
     };
 
-    const { data: result, error } = await supabase.from('coupons').insert([record]).select().single();
-    if (error) throw error;
+    let result;
+    try {
+      const { data: res, error } = await supabase.from('coupons').insert([record]).select().single();
+      if (error) throw error;
+      result = res;
+    } catch (err: any) {
+      if (err?.message?.includes('column') || err?.code === 'PGRST204' || err?.code === '42703') {
+        const { applicable_category, applicable_product_id, applicable_product_name, ...baseRecord } = record;
+        const { data: res, error: retryError } = await supabase.from('coupons').insert([baseRecord]).select().single();
+        if (retryError) throw retryError;
+        result = { ...res, applicable_category, applicable_product_id, applicable_product_name };
+      } else {
+        throw err;
+      }
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -625,8 +664,21 @@ export const CouponsDB = {
   },
 
   async update(id: string, updates: any, adminName: string = 'Admin') {
-    const { data, error } = await supabase.from('coupons').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    let result;
+    try {
+      const { data, error } = await supabase.from('coupons').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      result = data;
+    } catch (err: any) {
+      if (err?.message?.includes('column') || err?.code === 'PGRST204' || err?.code === '42703') {
+        const { applicable_category, applicable_product_id, applicable_product_name, ...baseUpdates } = updates;
+        const { data, error: retryError } = await supabase.from('coupons').update(baseUpdates).eq('id', id).select().single();
+        if (retryError) throw retryError;
+        result = { ...data, applicable_category, applicable_product_id, applicable_product_name };
+      } else {
+        throw err;
+      }
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -636,7 +688,7 @@ export const CouponsDB = {
       details: updates
     });
 
-    return data;
+    return result;
   },
 
   async delete(id: string, adminName: string = 'Admin') {

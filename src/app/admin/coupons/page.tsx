@@ -9,6 +9,9 @@ import {
   faTrash,
   faTimes,
   faMagic,
+  faTags,
+  faMobileAlt,
+  faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Coupon {
@@ -23,10 +26,27 @@ interface Coupon {
   usage_limit?: number;
   used_count: number;
   is_active: boolean;
+  applicable_category?: string;
+  applicable_product_id?: string;
+  applicable_product_name?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  category_id?: string;
+  category_name?: string;
 }
 
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -42,23 +62,38 @@ export default function AdminCouponsPage() {
     end_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
     usage_limit: 100,
     is_active: true,
+    applicable_category: "all",
+    applicable_product_id: "all",
+    applicable_product_name: "",
   });
 
-  const fetchCoupons = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/coupons", { cache: "no-store" });
-      const data = await res.json();
-      setCoupons(Array.isArray(data) ? data : []);
+      const [couponsRes, catRes, prodRes] = await Promise.all([
+        fetch("/api/admin/coupons", { cache: "no-store" }),
+        fetch("/api/categoryList", { cache: "no-store" }),
+        fetch("/api/productList", { cache: "no-store" }),
+      ]);
+
+      const [couponsData, catData, prodData] = await Promise.all([
+        couponsRes.json(),
+        catRes.json(),
+        prodRes.json(),
+      ]);
+
+      setCoupons(Array.isArray(couponsData) ? couponsData : []);
+      setCategories(Array.isArray(catData) ? catData : []);
+      setProducts(Array.isArray(prodData) ? prodData : []);
     } catch (err) {
-      console.error("Coupons fetch error:", err);
+      console.error("Data fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCoupons();
+    fetchData();
   }, []);
 
   const handleOpenAddModal = () => {
@@ -73,13 +108,21 @@ export default function AdminCouponsPage() {
       end_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
       usage_limit: 100,
       is_active: true,
+      applicable_category: "all",
+      applicable_product_id: "all",
+      applicable_product_name: "",
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (coupon: Coupon) => {
     setIsEditing(true);
-    setFormData({ ...coupon });
+    setFormData({
+      ...coupon,
+      applicable_category: coupon.applicable_category || "all",
+      applicable_product_id: coupon.applicable_product_id || "all",
+      applicable_product_name: coupon.applicable_product_name || "",
+    });
     setIsModalOpen(true);
   };
 
@@ -88,6 +131,23 @@ export default function AdminCouponsPage() {
     const pre = prefixes[Math.floor(Math.random() * prefixes.length)];
     const num = Math.floor(Math.random() * 90 + 10);
     setFormData((prev) => ({ ...prev, code: `${pre}${num}` }));
+  };
+
+  const handleProductChange = (productId: string) => {
+    if (productId === "all") {
+      setFormData((prev) => ({
+        ...prev,
+        applicable_product_id: "all",
+        applicable_product_name: "",
+      }));
+    } else {
+      const selected = products.find((p) => String(p.id) === String(productId));
+      setFormData((prev) => ({
+        ...prev,
+        applicable_product_id: productId,
+        applicable_product_name: selected ? selected.name : "",
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,7 +173,7 @@ export default function AdminCouponsPage() {
 
       if (!res.ok) throw new Error("Operation failed");
       setIsModalOpen(false);
-      await fetchCoupons();
+      await fetchData();
     } catch (err: any) {
       alert(err.message || "Failed to save coupon");
     } finally {
@@ -126,11 +186,16 @@ export default function AdminCouponsPage() {
     try {
       const res = await fetch(`/api/admin/coupons?id=${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
-      await fetchCoupons();
+      await fetchData();
     } catch (err: any) {
       alert(err.message || "Delete failed");
     }
   };
+
+  // Filter products for dropdown if a specific category is selected
+  const filteredProducts = formData.applicable_category && formData.applicable_category !== "all"
+    ? products.filter((p) => p.category_id === formData.applicable_category || p.category_name?.toLowerCase() === formData.applicable_category?.toLowerCase())
+    : products;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -139,7 +204,7 @@ export default function AdminCouponsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Offers & Coupons</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Create discount promo codes, minimum spend limits and promotional campaigns
+            Create discount promo codes, minimum spend limits, category restrictions, and target model specifications
           </p>
         </div>
         <button
@@ -157,7 +222,7 @@ export default function AdminCouponsPage() {
           <div className="col-span-full py-20 text-center text-slate-400 text-xs">Loading coupons...</div>
         ) : coupons.length === 0 ? (
           <div className="col-span-full py-20 text-center text-slate-500 text-sm">
-            No coupon codes created yet. Click "Create Coupon" above.
+            No coupon codes created yet. Click &quot;Create Coupon&quot; above.
           </div>
         ) : (
           coupons.map((c) => (
@@ -187,6 +252,27 @@ export default function AdminCouponsPage() {
                   {c.discount_type === "percentage" ? `${c.discount_value}% OFF` : `₹${c.discount_value} FLAT OFF`}
                 </div>
 
+                {/* Specifications & Restrictions Badges */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-medium">
+                    <FontAwesomeIcon icon={faLayerGroup} className="text-slate-400 text-[10px]" />
+                    <span>
+                      {c.applicable_category && c.applicable_category !== "all"
+                        ? `Category: ${categories.find(cat => cat.id === c.applicable_category)?.name || c.applicable_category}`
+                        : "All Categories"}
+                    </span>
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-medium">
+                    <FontAwesomeIcon icon={faMobileAlt} className="text-slate-400 text-[10px]" />
+                    <span className="truncate max-w-[180px]">
+                      {c.applicable_product_id && c.applicable_product_id !== "all"
+                        ? `Product: ${c.applicable_product_name || products.find(p => String(p.id) === String(c.applicable_product_id))?.name || "Specific Device"}`
+                        : "All Products"}
+                    </span>
+                  </span>
+                </div>
+
                 <div className="space-y-1.5 text-xs text-slate-500 mb-4">
                   <div>Min Order Value: <strong className="text-slate-800">₹{c.min_order_value || 0}</strong></div>
                   {c.max_discount_amount && (
@@ -206,12 +292,14 @@ export default function AdminCouponsPage() {
                   <button
                     onClick={() => handleOpenEditModal(c)}
                     className="p-2 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold cursor-pointer"
+                    title="Edit Coupon"
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
                   <button
                     onClick={() => handleDelete(c.id, c.code)}
                     className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold cursor-pointer"
+                    title="Delete Coupon"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
@@ -224,12 +312,17 @@ export default function AdminCouponsPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-8">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900">
-                {isEditing ? "Edit Coupon" : "Create New Coupon"}
-              </h2>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {isEditing ? "Edit Coupon" : "Create New Coupon"}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Set discounts, category constraints and target product specifications
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-900 flex items-center justify-center"
@@ -238,7 +331,8 @@ export default function AdminCouponsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {/* Coupon Code */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -247,7 +341,7 @@ export default function AdminCouponsPage() {
                   <button
                     type="button"
                     onClick={generateRandomCode}
-                    className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 hover:underline"
+                    className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faMagic} />
                     <span>Auto Generate</span>
@@ -263,6 +357,7 @@ export default function AdminCouponsPage() {
                 />
               </div>
 
+              {/* Discount Type & Value */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -293,6 +388,55 @@ export default function AdminCouponsPage() {
                 </div>
               </div>
 
+              {/* Specifications: Category & Product */}
+              <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-3.5">
+                <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
+                  <FontAwesomeIcon icon={faTags} className="text-emerald-600" />
+                  <span>Applicability Specifications</span>
+                </div>
+
+                {/* Category Specification */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faLayerGroup} className="text-slate-400 text-[11px]" />
+                    <span>Category Specification</span>
+                  </label>
+                  <select
+                    value={formData.applicable_category || "all"}
+                    onChange={(e) => setFormData({ ...formData, applicable_category: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-emerald-600"
+                  >
+                    <option value="all">All Categories (Storewide)</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id || cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Product Specification */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faMobileAlt} className="text-slate-400 text-[11px]" />
+                    <span>Product Specification (Target Model)</span>
+                  </label>
+                  <select
+                    value={formData.applicable_product_id || "all"}
+                    onChange={(e) => handleProductChange(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-emerald-600"
+                  >
+                    <option value="all">All Products (Any Device / Model)</option>
+                    {filteredProducts.map((prod) => (
+                      <option key={prod.id} value={prod.id}>
+                        {prod.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Min Order & Max Cap */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -322,6 +466,7 @@ export default function AdminCouponsPage() {
                 </div>
               </div>
 
+              {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -348,28 +493,47 @@ export default function AdminCouponsPage() {
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer pt-2">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded text-emerald-600 focus:ring-0"
-                />
-                <span className="text-xs font-bold text-slate-700">Enable Coupon Code</span>
-              </label>
+              {/* Usage limit & active toggle */}
+              <div className="grid grid-cols-2 gap-3 items-center pt-1">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Usage Limit (Times)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.usage_limit || ""}
+                    onChange={(e) => setFormData({ ...formData, usage_limit: parseInt(e.target.value) || undefined })}
+                    placeholder="Unlimited"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                  />
+                </div>
+
+                <div className="pt-5">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_active}
+                      onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-0 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-slate-700">Enable Coupon</span>
+                  </label>
+                </div>
+              </div>
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer hover:bg-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? "Saving..." : isEditing ? "Save Changes" : "Create Coupon"}
                 </button>

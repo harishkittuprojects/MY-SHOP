@@ -107,6 +107,9 @@ CREATE TABLE IF NOT EXISTS public.coupons (
     usage_limit INT,
     used_count INT DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
+    applicable_category VARCHAR(100) DEFAULT 'all',
+    applicable_product_id VARCHAR(100) DEFAULT 'all',
+    applicable_product_name VARCHAR(255) DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
