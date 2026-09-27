@@ -175,16 +175,16 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
           </div>
 
           {/* Footer */}
-          <div className="mt-16 pt-8 border-t border-gray-100 text-center">
-             <div className="flex justify-center mb-6">
-                <div className="bg-green-50 text-green-500 px-6 py-3 rounded-2xl flex items-center gap-3 border border-green-100">
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+             <div className="flex justify-center mb-4">
+                <div className="bg-green-50 text-green-600 px-5 py-2 rounded-xl flex items-center gap-2 border border-green-100">
                    <FontAwesomeIcon icon={faCheckCircle} />
-                   <span className="font-black text-[10px] uppercase tracking-widest">Payment Successfully Processed</span>
+                   <span className="font-black text-[10px] uppercase tracking-wider">Payment Successfully Processed</span>
                 </div>
              </div>
-             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Thank you for your business!</p>
-             <p className="text-[8px] text-gray-300 font-bold max-w-sm mx-auto uppercase leading-relaxed tracking-wider">
-               This is a computer-generated invoice and doesn't require a physical signature. Madurfoods.in - Pure Organic Farm Fresh Produces.
+             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Thank you for shopping with MY SHOP Mobiles!</p>
+             <p className="text-[9px] text-gray-400 font-medium max-w-sm mx-auto leading-relaxed">
+               This is a computer-generated tax invoice. 1-Year Official Manufacturer Warranty on all certified devices.
              </p>
           </div>
 
@@ -192,7 +192,7 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
           <div className="mt-8 flex justify-center print:hidden">
             <button
               onClick={onClose}
-              className="flex items-center gap-3 bg-primary text-black font-black px-8 py-4 rounded-2xl shadow-lg hover:opacity-90 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
+              className="flex items-center gap-3 bg-secondary text-white font-black px-8 py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all text-sm uppercase tracking-widest"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
               Back to Account
@@ -200,6 +200,26 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @page {
+          size: A4 portrait;
+          margin: 8mm 10mm;
+        }
+        @media print {
+          html, body {
+            height: auto !important;
+            overflow: visible !important;
+            background: #fff !important;
+            font-size: 10pt !important;
+          }
+          #invoice-content {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -493,17 +493,19 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between no-print">
               <button
+                type="button"
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
               >
                 <FontAwesomeIcon icon={faPrint} />
                 <span>Print Invoice</span>
               </button>
               <button
+                type="button"
                 onClick={() => setIsDetailModalOpen(false)}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer active:scale-95"
               >
                 Done
               </button>
@@ -511,6 +513,186 @@ export default function AdminOrdersPage() {
           </div>
         </div>
       )}
+
+      {/* Hidden Standalone Clean 1-Page Printable Invoice (Appears ONLY during Print) */}
+      {selectedOrder && (
+        <div id="printable-invoice" className="hidden">
+          <div className="p-6 bg-white text-black font-sans text-xs leading-normal">
+            {/* Invoice Header */}
+            <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-4">
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 mb-0.5">MY SHOP</h1>
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                  Flagship Smartphones, 5G Mobiles &amp; Gadgets
+                </p>
+                <p className="text-[10px] text-slate-500">Express Tech Hub, Tech City • support@myshopmobiles.com</p>
+              </div>
+              <div className="text-right">
+                <span className="inline-block bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded mb-1">
+                  Tax / Retail Invoice
+                </span>
+                <p className="text-xs font-black text-slate-900">Order #{selectedOrder.id}</p>
+                <p className="text-[10px] text-slate-500">
+                  Date: {new Date(selectedOrder.created_at || Date.now()).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {/* Customer & Order Metadata */}
+            <div className="grid grid-cols-2 gap-4 border border-slate-200 rounded-lg p-3 mb-4 bg-slate-50/50">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Billed &amp; Shipped To:</p>
+                <p className="text-xs font-bold text-slate-900">{selectedOrder.customer_name}</p>
+                <p className="text-[11px] text-slate-600 font-medium">{selectedOrder.customer_phone || "Phone not provided"}</p>
+                {selectedOrder.customer_email && (
+                  <p className="text-[10px] text-slate-500">{selectedOrder.customer_email}</p>
+                )}
+                <p className="text-[11px] text-slate-700 mt-1 leading-tight">{selectedOrder.shipping_address || "Standard Delivery Address"}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Payment &amp; Delivery Details:</p>
+                <p className="text-xs font-bold text-slate-900">
+                  Method: <span className="uppercase text-emerald-800">{selectedOrder.payment_method || "Paid Online"}</span>
+                </p>
+                <p className="text-[11px] text-slate-700">
+                  Payment Status: <strong className="uppercase">{selectedOrder.payment_status || "Paid"}</strong>
+                </p>
+                <p className="text-[11px] text-slate-700">
+                  Order Status: <strong className="uppercase">{selectedOrder.order_status || "Delivered"}</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* Products Table */}
+            <table className="w-full border-collapse border border-slate-200 mb-4 text-xs">
+              <thead>
+                <tr className="bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider border-b border-slate-200">
+                  <th className="p-2 text-center w-8 border-r border-slate-200">#</th>
+                  <th className="p-2 text-left border-r border-slate-200">Item Description</th>
+                  <th className="p-2 text-center w-14 border-r border-slate-200">Qty</th>
+                  <th className="p-2 text-right w-24 border-r border-slate-200">Unit Price</th>
+                  <th className="p-2 text-right w-28">Total Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                  selectedOrder.items.map((item: any, i: number) => (
+                    <tr key={i} className="border-b border-slate-200">
+                      <td className="p-2 text-center font-bold border-r border-slate-200">{i + 1}</td>
+                      <td className="p-2 border-r border-slate-200">
+                        <div className="font-bold text-slate-900">{item.name}</div>
+                        {item.unit && <div className="text-[10px] text-slate-500">{item.unit}</div>}
+                      </td>
+                      <td className="p-2 text-center font-bold border-r border-slate-200">{item.quantity}</td>
+                      <td className="p-2 text-right border-r border-slate-200">₹{Number(item.price || 0).toLocaleString("en-IN")}</td>
+                      <td className="p-2 text-right font-bold text-slate-900">
+                        ₹{((Number(item.price) || 0) * (Number(item.quantity) || 1)).toLocaleString("en-IN")}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="border-b border-slate-200">
+                    <td className="p-2 text-center">1</td>
+                    <td className="p-2">Smartphone / Gadget Order (#{selectedOrder.id})</td>
+                    <td className="p-2 text-center">1</td>
+                    <td className="p-2 text-right">₹{Number(selectedOrder.total_amount).toLocaleString("en-IN")}</td>
+                    <td className="p-2 text-right font-bold">₹{Number(selectedOrder.total_amount).toLocaleString("en-IN")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            {/* Totals & Sign Box */}
+            <div className="flex justify-between items-start mb-4">
+              <div className="border border-slate-200 rounded p-2.5 max-w-[280px] bg-slate-50/50">
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Official Warranty &amp; Guarantee:</p>
+                <p className="text-[10px] text-slate-700 leading-tight">
+                  1-Year Official Manufacturer Warranty on sealed devices. Keep this invoice for warranty registration and official service center visits.
+                </p>
+              </div>
+
+              <div className="w-64 border border-slate-200 rounded divide-y divide-slate-200 text-xs">
+                <div className="p-1.5 flex justify-between">
+                  <span className="text-slate-600">Subtotal:</span>
+                  <span className="font-bold">₹{Number(selectedOrder.subtotal || selectedOrder.total_amount).toLocaleString("en-IN")}</span>
+                </div>
+                {selectedOrder.discount_amount > 0 && (
+                  <div className="p-1.5 flex justify-between text-emerald-800">
+                    <span>Discount:</span>
+                    <span className="font-bold">-₹{Number(selectedOrder.discount_amount).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <div className="p-1.5 flex justify-between">
+                  <span className="text-slate-600">Delivery Fee:</span>
+                  <span className="font-bold">
+                    {!selectedOrder.delivery_fee || selectedOrder.delivery_fee === 0 ? "FREE" : `₹${Number(selectedOrder.delivery_fee).toLocaleString("en-IN")}`}
+                  </span>
+                </div>
+                <div className="p-2 flex justify-between bg-slate-100 font-black text-sm">
+                  <span>Grand Total:</span>
+                  <span className="text-slate-900">₹{Number(selectedOrder.total_amount).toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-slate-200 pt-2 text-center text-[9px] text-slate-400">
+              <p>This is a computer-generated tax invoice and does not require a physical signature.</p>
+              <p className="font-bold text-slate-600 mt-0.5">Thank you for shopping with MY SHOP Mobiles!</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global CSS for Strict 1-Page Printing */}
+      <style jsx global>{`
+        @page {
+          size: A4 portrait;
+          margin: 8mm 10mm;
+        }
+        @media print {
+          html, body {
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 10pt !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-invoice, #printable-invoice * {
+            visibility: visible !important;
+          }
+          #printable-invoice {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+          }
+          .no-print, nav, aside, header, footer, button, .admin-sidebar {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
