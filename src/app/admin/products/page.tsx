@@ -694,18 +694,18 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* Product Sizes & Storage Variants Section */}
+              {/* Storage & RAM / Device Variants Section */}
               <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-900">
-                    Product Sizes / Storage Variants
+                    Storage &amp; RAM / Device Variants
                   </label>
                   <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                    {getCurrentSizes().length} Sizes Configured
+                    {getCurrentSizes().length} Variants Configured
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mb-3">
-                  Add different sizes or storage options (e.g. 128 GB, 256 GB, 512 GB). Customers will be able to select between these sizes when adding to cart.
+                  Add available storage capacities, RAM configurations, or dial sizes (e.g. 128 GB, 256 GB, 512 GB, 45mm). Customers will select their preferred variant on the product page.
                 </p>
 
                 {/* Active Sizes Badges */}
@@ -744,7 +744,7 @@ export default function AdminProductsPage() {
                         handleAddSize(customSizeInput);
                       }
                     }}
-                    placeholder="Type size/storage (e.g. 128 GB, 256 GB, 512 GB, XL, 44mm) and press Enter"
+                    placeholder="Type storage/variant (e.g. 128 GB, 256 GB, 512 GB, 8GB/256GB, 45mm) and press Enter"
                     className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-emerald-600 shadow-xs"
                   />
                   <button
@@ -752,17 +752,34 @@ export default function AdminProductsPage() {
                     onClick={() => handleAddSize(customSizeInput)}
                     className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
                   >
-                    + Add Size
+                    + Add Storage / Variant
                   </button>
                 </div>
 
                 {/* Quick Presets */}
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Quick One-Click Suggestions:
+                    Quick Smartphone &amp; Gadget Suggestions:
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "6GB / 128GB", "8GB / 256GB", "12GB / 512GB", "40mm", "44mm", "Small", "Medium", "Large", "XL", "1 Unit"].map((preset) => {
+                    {[
+                      "64 GB",
+                      "128 GB",
+                      "256 GB",
+                      "512 GB",
+                      "1 TB",
+                      "6GB / 128GB",
+                      "8GB / 128GB",
+                      "8GB / 256GB",
+                      "12GB / 256GB",
+                      "12GB / 512GB",
+                      "16GB / 1TB",
+                      "40mm",
+                      "44mm",
+                      "45mm",
+                      "49mm Ultra",
+                      "1 Unit (Official Warranty)"
+                    ].map((preset) => {
                       const isAdded = getCurrentSizes().includes(preset);
                       return (
                         <button
