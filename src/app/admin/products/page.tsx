@@ -251,7 +251,10 @@ export default function AdminProductsPage() {
         });
       }
 
-      if (!res.ok) throw new Error("Failed to save product");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || "Failed to save product");
+      }
 
       setIsModalOpen(false);
       await fetchData();
@@ -269,7 +272,10 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/productList?id=${productToDelete.id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete product");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || "Failed to delete product");
+      }
       setIsDeleteModalOpen(false);
       setProductToDelete(null);
       await fetchData();

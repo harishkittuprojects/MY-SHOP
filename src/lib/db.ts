@@ -161,9 +161,9 @@ export const ProductsDB = {
 
   async create(product: any, adminName: string = 'Admin') {
     const id = product.id || `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const record = {
+    const record: any = {
       id,
-      name: product.name,
+      name: product.name || '',
       category_id: product.category_id || 'mobiles-accessories',
       category_name: product.category_name || product.category || '',
       sub_category: product.sub_category || '',
@@ -172,20 +172,23 @@ export const ProductsDB = {
       stock_quantity: Number(product.stock_quantity) || 10,
       sku: product.sku || `SKU-${id.toUpperCase()}`,
       image_url: product.image_url || '',
-      images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image_url],
+      images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image_url || ''],
       description: product.description || '',
       unit: product.unit || '',
-      is_available: product.is_available !== undefined ? product.is_available : true,
+      is_available: product.is_available !== undefined ? Boolean(product.is_available) : true,
       is_featured: Boolean(product.is_featured),
       is_popular: Boolean(product.is_popular),
       rating: Number(product.rating) || 4.8,
       reviews_count: Number(product.reviews_count) || 0,
-      variants: product.variants || [],
+      variants: Array.isArray(product.variants) ? product.variants : [],
       updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabase.from('products').insert([record]).select().single();
-    if (error) throw error;
+    if (error) {
+      console.error('ProductsDB.create Supabase Error:', error);
+      throw error;
+    }
 
     // Log Inventory initial creation
     try {
@@ -232,24 +235,46 @@ export const ProductsDB = {
       }
     }
 
+    const cleanUpdates: any = {
+      updated_at: new Date().toISOString(),
+    };
+    if (updates.name !== undefined) cleanUpdates.name = updates.name;
+    if (updates.category_id !== undefined) cleanUpdates.category_id = updates.category_id;
+    if (updates.category_name !== undefined) cleanUpdates.category_name = updates.category_name;
+    if (updates.sub_category !== undefined) cleanUpdates.sub_category = updates.sub_category;
+    if (updates.price !== undefined) cleanUpdates.price = Number(updates.price) || 0;
+    if (updates.original_price !== undefined) cleanUpdates.original_price = Number(updates.original_price) || Number(updates.price) || 0;
+    if (updates.stock_quantity !== undefined) cleanUpdates.stock_quantity = Number(updates.stock_quantity) || 0;
+    if (updates.sku !== undefined) cleanUpdates.sku = updates.sku;
+    if (updates.image_url !== undefined) cleanUpdates.image_url = updates.image_url;
+    if (updates.images !== undefined) cleanUpdates.images = Array.isArray(updates.images) ? updates.images : [updates.image_url || ''];
+    if (updates.description !== undefined) cleanUpdates.description = updates.description;
+    if (updates.unit !== undefined) cleanUpdates.unit = updates.unit;
+    if (updates.is_available !== undefined) cleanUpdates.is_available = Boolean(updates.is_available);
+    if (updates.is_featured !== undefined) cleanUpdates.is_featured = Boolean(updates.is_featured);
+    if (updates.is_popular !== undefined) cleanUpdates.is_popular = Boolean(updates.is_popular);
+    if (updates.rating !== undefined) cleanUpdates.rating = Number(updates.rating) || 4.8;
+    if (updates.reviews_count !== undefined) cleanUpdates.reviews_count = Number(updates.reviews_count) || 0;
+    if (updates.variants !== undefined) cleanUpdates.variants = Array.isArray(updates.variants) ? updates.variants : [];
+
     const { data, error } = await supabase
       .from('products')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('ProductsDB.update Supabase Error:', error);
+      throw error;
+    }
 
     await logActivity({
       admin_name: adminName,
       action: 'update_product',
       entity_type: 'product',
       entity_id: id,
-      details: updates
+      details: cleanUpdates
     });
 
     return data;
@@ -257,7 +282,10 @@ export const ProductsDB = {
 
   async delete(id: string, adminName: string = 'Admin') {
     const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+      console.error('ProductsDB.delete Supabase Error:', error);
+      throw error;
+    }
 
     await logActivity({
       admin_name: adminName,
