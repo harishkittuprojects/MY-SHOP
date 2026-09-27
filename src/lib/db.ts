@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { categories as defaultCategories, products as defaultProducts } from './data';
 
 // ==============================================================================
 // 1. AUDIT LOGGING HELPER
@@ -37,26 +36,17 @@ export const CategoriesDB = {
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (error || !data || data.length === 0) {
-        return defaultCategories.map((c, idx) => ({
-          id: c.id,
-          name: c.name,
-          icon: c.icon,
-          image_url: c.image_url,
-          sub_categories: [],
-          is_active: true,
-          display_order: idx + 1
-        }));
-      }
-      return data;
-    } catch {
-      return defaultCategories;
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('CategoriesDB.getAll Error:', err);
+      return [];
     }
   },
 
   async getById(id: string) {
     const { data } = await supabase.from('categories').select('*').eq('id', id).single();
-    return data;
+    return data || null;
   },
 
   async create(category: any, adminName: string = 'Admin') {
@@ -150,33 +140,23 @@ export const ProductsDB = {
       }
 
       const { data, error } = await query;
-      if (error || !data || data.length === 0) {
-        // Fallback to static products if DB is empty / loading
-        let list = [...defaultProducts];
-        if (filter?.category) {
-          list = list.filter(p => (p.category_id === filter.category || p.category === filter.category));
-        }
-        if (filter?.search) {
-          const s = filter.search.toLowerCase();
-          list = list.filter(p => p.name.toLowerCase().includes(s) || (p.description && p.description.toLowerCase().includes(s)));
-        }
-        if (filter?.is_popular) {
-          list = list.filter(p => p.is_popular);
-        }
-        return filter?.limit ? list.slice(0, filter.limit) : list;
-      }
-      return data;
-    } catch {
-      return defaultProducts;
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('ProductsDB.getAll Error:', err);
+      return [];
     }
   },
 
   async getById(id: string) {
     try {
-      const { data } = await supabase.from('products').select('*').eq('id', id).single();
-      if (data) return data;
-    } catch { /* ignore */ }
-    return defaultProducts.find(p => p.id === id) || null;
+      const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+      if (error) return null;
+      return data || null;
+    } catch (err) {
+      console.error('ProductsDB.getById Error:', err);
+      return null;
+    }
   },
 
   async create(product: any, adminName: string = 'Admin') {
