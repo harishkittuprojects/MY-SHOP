@@ -72,6 +72,32 @@ export default function AdminProductsPage() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [customSizeInput, setCustomSizeInput] = useState("");
+
+  const getCurrentSizes = (): string[] => {
+    if (!formData.unit) return [];
+    return formData.unit
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  };
+
+  const handleAddSize = (sizeToAdd: string) => {
+    const trimmed = sizeToAdd.trim();
+    if (!trimmed) return;
+    const current = getCurrentSizes();
+    if (!current.includes(trimmed)) {
+      const next = [...current, trimmed];
+      setFormData((prev) => ({ ...prev, unit: next.join(", ") }));
+    }
+    setCustomSizeInput("");
+  };
+
+  const handleRemoveSize = (indexToRemove: number) => {
+    const current = getCurrentSizes();
+    const next = current.filter((_, idx) => idx !== indexToRemove);
+    setFormData((prev) => ({ ...prev, unit: next.join(", ") }));
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -668,18 +694,93 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* Specs & Description */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                  Highlight Specs / Unit
-                </label>
-                <input
-                  type="text"
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  placeholder="e.g. 256GB • Natural Titanium • 48MP • 120Hz OLED"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
-                />
+              {/* Product Sizes & Storage Variants Section */}
+              <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-900">
+                    Product Sizes / Storage Variants
+                  </label>
+                  <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                    {getCurrentSizes().length} Sizes Configured
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mb-3">
+                  Add different sizes or storage options (e.g. 128 GB, 256 GB, 512 GB). Customers will be able to select between these sizes when adding to cart.
+                </p>
+
+                {/* Active Sizes Badges */}
+                <div className="flex flex-wrap gap-2 mb-3 min-h-[42px] p-2.5 bg-white rounded-xl border border-slate-200 items-center">
+                  {getCurrentSizes().length === 0 ? (
+                    <span className="text-xs text-slate-400 italic">No sizes configured yet. Click suggestions below or add your own size.</span>
+                  ) : (
+                    getCurrentSizes().map((size, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-bold shadow-xs animate-in zoom-in-95"
+                      >
+                        <span>{size}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSize(idx)}
+                          className="w-4 h-4 rounded-full bg-emerald-200/80 hover:bg-rose-500 hover:text-white text-emerald-800 text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                          title="Remove size"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Custom Size Input */}
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={customSizeInput}
+                    onChange={(e) => setCustomSizeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSize(customSizeInput);
+                      }
+                    }}
+                    placeholder="Type size/storage (e.g. 128 GB, 256 GB, 512 GB, XL, 44mm) and press Enter"
+                    className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-emerald-600 shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddSize(customSizeInput)}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                  >
+                    + Add Size
+                  </button>
+                </div>
+
+                {/* Quick Presets */}
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    Quick One-Click Suggestions:
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "6GB / 128GB", "8GB / 256GB", "12GB / 512GB", "40mm", "44mm", "Small", "Medium", "Large", "XL", "1 Unit"].map((preset) => {
+                      const isAdded = getCurrentSizes().includes(preset);
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => handleAddSize(preset)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                            isAdded
+                              ? "bg-emerald-100 text-emerald-800 border-emerald-300 opacity-60"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 active:scale-95"
+                          }`}
+                        >
+                          + {preset}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div>
