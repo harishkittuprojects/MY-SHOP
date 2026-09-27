@@ -261,7 +261,7 @@ export default function AdminSettingsPage() {
         <div className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
           {savedSuccess ? (
             <span className="text-emerald-700 text-xs font-bold flex items-center gap-2">
-              ✓ Settings saved successfully to Supabase!
+              ✓ Settings saved successfully!
             </span>
           ) : (
             <span className="text-slate-500 text-xs">Remember to save after making changes.</span>

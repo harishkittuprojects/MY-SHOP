@@ -28,7 +28,7 @@ const AVAILABLE_PERMISSIONS = [
   { id: "customers", label: "Customer Profiles & Directory" },
   { id: "coupons", label: "Offers & Coupons" },
   { id: "banners", label: "Homepage & Hero Banners" },
-  { id: "gallery", label: "Cloudinary Media Gallery" },
+  { id: "gallery", label: "Media Gallery" },
   { id: "reports", label: "Sales Reports & Analytics" },
   { id: "settings", label: "Site Settings & Configuration" },
   { id: "logs", label: "Activity Audit Logs" },

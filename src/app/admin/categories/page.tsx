@@ -341,10 +341,10 @@ export default function AdminCategoriesPage() {
                 </div>
               </div>
 
-              {/* Banner Image Upload to Cloudinary */}
+              {/* Banner Image Upload */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                  Category Banner Image (Cloudinary)
+                  Category Banner Image
                 </label>
                 <div className="flex items-center gap-3">
                   {formData.image_url && (
@@ -354,7 +354,7 @@ export default function AdminCategoriesPage() {
                   )}
                   <label className="flex-1 border border-dashed border-emerald-300 hover:border-emerald-500 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer bg-emerald-50/40 transition-colors text-xs font-bold text-slate-700">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="text-emerald-600" />
-                    <span>{uploadingImage ? "Uploading to Cloudinary..." : "Choose Image"}</span>
+                    <span>{uploadingImage ? "Uploading image..." : "Choose Image"}</span>
                     <input type="file" accept="image/*" onChange={handleImageFileUpload} disabled={uploadingImage} className="hidden" />
                   </label>
                 </div>

@@ -243,20 +243,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs font-medium text-slate-500">Database:</span>
-              <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs">
-                Supabase PostgreSQL Active
-              </span>
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Cloudinary CDN Online
-            </div>
-
             <Link
               href="/"
               target="_blank"

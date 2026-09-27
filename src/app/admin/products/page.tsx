@@ -307,7 +307,7 @@ export default function AdminProductsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Product Catalog</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Manage your store items, multi-image Cloudinary gallery, pricing, and stock levels
+            Manage your store items, gallery images, pricing, and stock levels
           </p>
         </div>
         <button
@@ -626,14 +626,14 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Multiple Images Upload & Cloudinary Gallery */}
+              {/* Multiple Images Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Product Images (Cloudinary CDN)
+                    Product Images
                   </label>
                   <span className="text-[11px] text-emerald-700 font-semibold">
-                    {uploadingImage ? "Uploading to Cloudinary..." : "Click below to upload"}
+                    {uploadingImage ? "Uploading images..." : "Click below to upload"}
                   </span>
                 </div>
 
@@ -644,7 +644,7 @@ export default function AdminProductsPage() {
                     className="text-2xl text-emerald-600 group-hover:scale-110 transition-transform"
                   />
                   <div className="text-xs font-bold text-slate-800">
-                    {uploadingImage ? "Uploading files..." : "Upload Images to Cloudinary"}
+                    {uploadingImage ? "Uploading files..." : "Upload Images"}
                   </div>
                   <div className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP, GIF</div>
                   <input

@@ -120,9 +120,9 @@ export default function AdminGalleryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Cloudinary Media Gallery</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Media Gallery</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Upload and manage images and PDF documents served via Cloudinary global CDN
+            Upload and manage images and PDF documents for your store
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function AdminGalleryPage() {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">
-              {uploading ? "Uploading to Cloudinary CDN..." : "Upload Images & PDF Files"}
+              {uploading ? "Uploading files..." : "Upload Images & PDF Files"}
             </h3>
             <p className="text-xs text-slate-500 mt-1">
               Supports JPG, PNG, WEBP, SVG, GIF and PDF documents up to 20MB
