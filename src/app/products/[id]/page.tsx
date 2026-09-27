@@ -1,0 +1,815 @@
+"use client";
+
+import React, { useState, useEffect, use } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faStar,
+  faBolt,
+  faCartPlus,
+  faHeart,
+  faShieldHalved,
+  faTruck,
+  faRotateLeft,
+  faTag,
+  faCheck,
+  faChevronRight,
+  faArrowLeft,
+  faShareNodes,
+  faMicrochip,
+  faCamera,
+  faMobileScreenButton,
+  faBatteryFull,
+  faCircleCheck,
+  faPlus,
+  faMinus,
+} from "@fortawesome/free-solid-svg-icons";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/context/CartContext";
+import ProductCard from "@/components/common/ProductCard";
+
+interface Product {
+  id: string;
+  name: string;
+  category_id?: string;
+  category_name?: string;
+  category?: string;
+  sub_category?: string;
+  price: number;
+  original_price?: number;
+  stock_quantity: number;
+  sku?: string;
+  image_url?: string;
+  image?: string;
+  images?: string[];
+  description: string;
+  unit: string;
+  is_available: boolean;
+  is_out_of_stock?: boolean;
+  is_featured?: boolean;
+  is_popular?: boolean;
+  rating?: number;
+  reviews_count?: number;
+}
+
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+  const productId = resolvedParams.id;
+  const router = useRouter();
+  const { addToCart } = useCart();
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedVariant, setSelectedVariant] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [addedToast, setAddedToast] = useState(false);
+  const [activeTab, setActiveTab] = useState<"specs" | "desc" | "reviews">("specs");
+
+  const normalizeImageUrl = (url?: string) => {
+    if (!url) return "/mobile-logo.png";
+    if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("/")) return url;
+    return `/${url}`;
+  };
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/products/${productId}`, { cache: "no-store" });
+        if (res.ok) {
+          const data: Product = await res.json();
+          setProduct(data);
+          const initialImg = normalizeImageUrl(
+            (data.images && data.images[0]) || data.image_url || data.image
+          );
+          setSelectedImage(initialImg);
+
+          // Set initial variant
+          if (data.unit) {
+            const variants = data.unit
+              .split(",")
+              .map((u) => u.trim())
+              .filter(Boolean);
+            if (variants.length > 0) {
+              setSelectedVariant(variants[0]);
+            }
+          }
+
+          // Fetch related products
+          const catId = data.category_id || data.category;
+          const relatedRes = await fetch(
+            `/api/productList?${catId ? `category=${encodeURIComponent(catId)}&` : ""}limit=4`,
+            { cache: "no-store" }
+          );
+          if (relatedRes.ok) {
+            const relData = await relatedRes.json();
+            setRelatedProducts(
+              Array.isArray(relData)
+                ? relData.filter((p: Product) => String(p.id) !== String(data.id))
+                : []
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load product:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-bold text-sm">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-4 text-2xl font-black">
+            !
+          </div>
+          <h1 className="text-xl font-black text-slate-900 mb-2">Product Not Found</h1>
+          <p className="text-sm text-slate-500 mb-6">
+            The device you are looking for might have been discontinued or moved.
+          </p>
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+            <span>Browse All Products</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const displayCategory = product.category_name || product.category || "Smartphones";
+  const originalPrice =
+    product.original_price && product.original_price > product.price
+      ? product.original_price
+      : Math.round(product.price * 1.18);
+  const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
+  const savings = Math.max(0, originalPrice - product.price);
+  const bankOfferPrice = Math.round(product.price * 0.92);
+  const emiPerMonth = Math.round(product.price / 12);
+  const isOutOfStock = product.is_out_of_stock || product.stock_quantity <= 0;
+  const brandName = product.name.split(" ")[0] || "Official";
+
+  const allImages = Array.from(
+    new Set(
+      [
+        ...(product.images || []),
+        product.image_url,
+        product.image,
+      ]
+        .filter(Boolean)
+        .map((u) => normalizeImageUrl(u))
+    )
+  );
+
+  const variantsList = product.unit
+    ? product.unit
+        .split(",")
+        .map((u) => u.trim())
+        .filter(Boolean)
+    : [];
+
+  const handleAddToCart = () => {
+    if (isOutOfStock) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: selectedImage || normalizeImageUrl(product.image_url || product.image),
+      quantity,
+      category: displayCategory,
+      selectedUnit: selectedVariant || product.unit,
+    });
+    setAddedToast(true);
+    setTimeout(() => setAddedToast(false), 3000);
+  };
+
+  const handleBuyNow = () => {
+    if (isOutOfStock) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: selectedImage || normalizeImageUrl(product.image_url || product.image),
+      quantity,
+      category: displayCategory,
+      selectedUnit: selectedVariant || product.unit,
+    });
+    router.push("/cart");
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} at ₹${product.price}!`,
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Product link copied to clipboard!");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] pb-24 md:pb-16 text-slate-800">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {addedToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 right-4 sm:right-8 z-50 bg-emerald-700 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
+          >
+            <FontAwesomeIcon icon={faCheck} className="text-white text-base" />
+            <span>Added {product.name} to your Cart!</span>
+            <Link
+              href="/cart"
+              className="ml-2 underline text-white hover:text-emerald-100 font-extrabold"
+            >
+              View Cart
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Breadcrumbs Navigation */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 text-xs font-medium text-slate-500 overflow-x-auto whitespace-nowrap">
+          <Link href="/" className="hover:text-emerald-700 transition-colors">
+            Home
+          </Link>
+          <FontAwesomeIcon icon={faChevronRight} className="text-[9px] text-slate-300" />
+          <Link href="/products" className="hover:text-emerald-700 transition-colors">
+            Products
+          </Link>
+          <FontAwesomeIcon icon={faChevronRight} className="text-[9px] text-slate-300" />
+          <Link
+            href={`/products?category=${encodeURIComponent(product.category_id || displayCategory)}`}
+            className="hover:text-emerald-700 transition-colors"
+          >
+            {displayCategory}
+          </Link>
+          <FontAwesomeIcon icon={faChevronRight} className="text-[9px] text-slate-300" />
+          <span className="text-slate-900 font-bold truncate max-w-[200px] sm:max-w-md">
+            {product.name}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* ======================= LEFT: Product Gallery ======================= */}
+          <div className="lg:col-span-5 flex flex-col gap-4 sticky top-24">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden shadow-xs flex items-center justify-center min-h-[360px] sm:min-h-[440px]">
+              {/* Top Badges */}
+              <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+                {product.is_popular && (
+                  <span className="bg-[#00796b] text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs">
+                    BESTSELLER
+                  </span>
+                )}
+                {discountPercent > 0 && !isOutOfStock && (
+                  <span className="bg-orange-500 text-white font-black px-2.5 py-1 rounded-md text-[11px] uppercase tracking-tight shadow-xs">
+                    {discountPercent}% OFF
+                  </span>
+                )}
+              </div>
+
+              {/* Wishlist & Share Buttons */}
+              <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                <button
+                  onClick={handleShare}
+                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                  title="Share product"
+                >
+                  <FontAwesomeIcon icon={faShareNodes} />
+                </button>
+                <button
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                    isWishlisted
+                      ? "bg-rose-50 text-rose-500"
+                      : "bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500"
+                  }`}
+                  title="Wishlist"
+                >
+                  <FontAwesomeIcon icon={faHeart} />
+                </button>
+              </div>
+
+              {/* Main Image */}
+              <div className="relative w-full h-80 sm:h-96 flex items-center justify-center">
+                {selectedImage ? (
+                  <Image
+                    src={selectedImage}
+                    alt={product.name}
+                    fill
+                    className="object-contain p-2 transition-transform duration-300 hover:scale-105"
+                    priority
+                    unoptimized
+                  />
+                ) : (
+                  <div className="text-sm text-slate-400">No Image Available</div>
+                )}
+
+                {isOutOfStock && (
+                  <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20">
+                    <span className="bg-red-600 text-white font-black px-4 py-1.5 rounded-lg text-sm uppercase tracking-wider shadow-lg">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Thumbnail Strip */}
+            {allImages.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`relative w-20 h-20 rounded-2xl bg-white border-2 p-1.5 flex-shrink-0 transition-all cursor-pointer overflow-hidden ${
+                      selectedImage === img
+                        ? "border-emerald-600 shadow-md ring-2 ring-emerald-600/20"
+                        : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} thumbnail ${idx + 1}`}
+                      fill
+                      className="object-contain p-1"
+                      unoptimized
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Desktop Action Buttons under image */}
+            <div className="hidden lg:grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer ${
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    : "bg-amber-400 hover:bg-amber-500 text-slate-900 shadow-amber-400/20"
+                }`}
+              >
+                <FontAwesomeIcon icon={faCartPlus} />
+                <span>Add to Cart</span>
+              </button>
+
+              <button
+                onClick={handleBuyNow}
+                disabled={isOutOfStock}
+                className={`py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-95 cursor-pointer ${
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30"
+                }`}
+              >
+                <FontAwesomeIcon icon={faBolt} />
+                <span>Buy Now</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ======================= RIGHT: Product Details ======================= */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Header info */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                  {displayCategory}
+                </span>
+                <span className="text-xs text-slate-400 font-semibold">SKU: {product.sku || product.id}</span>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                {product.name}
+              </h1>
+
+              {/* Ratings and Reviews */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="inline-flex items-center gap-1.5 bg-[#388e3c] text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                  <span>{product.rating || 4.8}</span>
+                  <FontAwesomeIcon icon={faStar} className="text-[10px]" />
+                </div>
+                <span className="text-xs text-slate-500 font-medium">
+                  {product.reviews_count ? `${product.reviews_count.toLocaleString()} Ratings & Reviews` : "4,318 Ratings & 482 Reviews"}
+                </span>
+                <div className="flex items-center gap-1 text-xs font-black italic text-[#2874f0] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+                  <FontAwesomeIcon icon={faShieldHalved} className="text-[10px]" />
+                  <span>Assured Certified</span>
+                </div>
+              </div>
+
+              {/* Price Banner */}
+              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    ₹{Math.floor(product.price).toLocaleString("en-IN")}
+                  </span>
+                  {originalPrice > product.price && (
+                    <>
+                      <span className="text-base sm:text-lg text-slate-400 line-through font-semibold">
+                        ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
+                      </span>
+                      <span className="text-sm sm:text-base font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-lg">
+                        {discountPercent}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {savings > 0 && (
+                  <div className="text-xs font-bold text-emerald-700">
+                    You save ₹{savings.toLocaleString("en-IN")} on this order
+                  </div>
+                )}
+              </div>
+
+              {/* Bank & Payment Offers Card */}
+              <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
+                  <FontAwesomeIcon icon={faTag} className="text-emerald-600" />
+                  <span>Available Offers & Promotions</span>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <span className="text-[#388e3c] font-black shrink-0">💳 Bank Offer:</span>
+                    <span>10% Instant Discount on HDFC & ICICI Credit Cards (Pay only <strong>₹{bankOfferPrice.toLocaleString("en-IN")}</strong>).</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-emerald-700 font-black shrink-0">🎟️ Promo Code:</span>
+                    <span>Apply coupon codes at checkout for additional instant cashback.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-700 font-black shrink-0">⚡ No Cost EMI:</span>
+                    <span>Starts from <strong>₹{emiPerMonth.toLocaleString("en-IN")}/month</strong> with standard credit cards.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Variants Selector (Storage / RAM / Device Options) */}
+              {variantsList.length > 0 && (
+                <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 uppercase tracking-wider">
+                      Storage & Device Variant:
+                    </span>
+                    <span className="font-black text-emerald-700">{selectedVariant}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    {variantsList.map((variant, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                          selectedVariant === variant
+                            ? "bg-slate-900 border-slate-900 text-white shadow-sm ring-2 ring-slate-900/10"
+                            : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
+                        }`}
+                      >
+                        {variant}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity Selector */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-4">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Quantity:
+                </span>
+                <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1 || isOutOfStock}
+                    className="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-slate-200 disabled:opacity-40 transition-colors"
+                  >
+                    <FontAwesomeIcon icon={faMinus} className="text-xs" />
+                  </button>
+                  <span className="w-10 text-center font-bold text-sm text-slate-900">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    disabled={isOutOfStock}
+                    className="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-slate-200 disabled:opacity-40 transition-colors"
+                  >
+                    <FontAwesomeIcon icon={faPlus} className="text-xs" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="bg-slate-50 p-3 rounded-2xl flex flex-col items-center gap-1 text-slate-700">
+                  <FontAwesomeIcon icon={faTruck} className="text-emerald-600 text-base" />
+                  <span className="text-[11px] font-bold">Free Delivery</span>
+                  <span className="text-[9px] text-slate-400">All India</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl flex flex-col items-center gap-1 text-slate-700">
+                  <FontAwesomeIcon icon={faRotateLeft} className="text-emerald-600 text-base" />
+                  <span className="text-[11px] font-bold">7 Days Return</span>
+                  <span className="text-[9px] text-slate-400">Hassle Free</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl flex flex-col items-center gap-1 text-slate-700">
+                  <FontAwesomeIcon icon={faShieldHalved} className="text-emerald-600 text-base" />
+                  <span className="text-[11px] font-bold">1 Year Brand</span>
+                  <span className="text-[9px] text-slate-400">Official Warranty</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl flex flex-col items-center gap-1 text-slate-700">
+                  <FontAwesomeIcon icon={faCircleCheck} className="text-emerald-600 text-base" />
+                  <span className="text-[11px] font-bold">100% Genuine</span>
+                  <span className="text-[9px] text-slate-400">Certified Authentic</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs for Specification, Description, Reviews */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="flex items-center border-b border-slate-200 gap-6 text-sm font-bold">
+                <button
+                  onClick={() => setActiveTab("specs")}
+                  className={`pb-3 border-b-2 transition-all cursor-pointer ${
+                    activeTab === "specs"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-slate-400 hover:text-slate-700"
+                  }`}
+                >
+                  Key Specifications
+                </button>
+                <button
+                  onClick={() => setActiveTab("desc")}
+                  className={`pb-3 border-b-2 transition-all cursor-pointer ${
+                    activeTab === "desc"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-slate-400 hover:text-slate-700"
+                  }`}
+                >
+                  Product Description
+                </button>
+                <button
+                  onClick={() => setActiveTab("reviews")}
+                  className={`pb-3 border-b-2 transition-all cursor-pointer ${
+                    activeTab === "reviews"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-slate-400 hover:text-slate-700"
+                  }`}
+                >
+                  Customer Reviews
+                </button>
+              </div>
+
+              {/* Specs Tab */}
+              {activeTab === "specs" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center gap-3 border border-slate-100">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <FontAwesomeIcon icon={faMicrochip} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Processor & Performance</div>
+                        <div className="text-xs font-bold text-slate-900">Flagship High Performance Chipset</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center gap-3 border border-slate-100">
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                        <FontAwesomeIcon icon={faCamera} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Camera System</div>
+                        <div className="text-xs font-bold text-slate-900">Ultra High-Res Pro Lens with OIS & AI</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center gap-3 border border-slate-100">
+                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                        <FontAwesomeIcon icon={faMobileScreenButton} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Display</div>
+                        <div className="text-xs font-bold text-slate-900">120Hz Ultra Bright AMOLED Screen</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center gap-3 border border-slate-100">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                        <FontAwesomeIcon icon={faBatteryFull} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">Battery & Charging</div>
+                        <div className="text-xs font-bold text-slate-900">All-Day Battery + Fast Charging Support</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 text-xs">
+                    <div className="grid grid-cols-3 p-3 bg-slate-50/60 font-semibold">
+                      <span className="text-slate-500">In The Box</span>
+                      <span className="col-span-2 text-slate-900">Handset, USB Type-C Cable, SIM Eject Tool, User Manual</span>
+                    </div>
+                    <div className="grid grid-cols-3 p-3 font-semibold">
+                      <span className="text-slate-500">Model Name</span>
+                      <span className="col-span-2 text-slate-900">{product.name}</span>
+                    </div>
+                    <div className="grid grid-cols-3 p-3 bg-slate-50/60 font-semibold">
+                      <span className="text-slate-500">Warranty Summary</span>
+                      <span className="col-span-2 text-slate-900">1 Year Manufacturer Warranty for Device and 6 Months for In-Box Accessories</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Description Tab */}
+              {activeTab === "desc" && (
+                <div className="text-sm text-slate-700 leading-relaxed space-y-3">
+                  <p className="whitespace-pre-line font-medium">
+                    {product.description ||
+                      `${product.name} offers pinnacle performance, state-of-the-art camera capabilities, and industry-leading durability. Built with premium materials and precision engineering.`}
+                  </p>
+                </div>
+              )}
+
+              {/* Reviews Tab */}
+              {activeTab === "reviews" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-slate-900">{product.rating || 4.8}</div>
+                      <div className="flex items-center text-amber-500 text-xs justify-center my-1">
+                        {[...Array(5)].map((_, i) => (
+                          <FontAwesomeIcon key={i} icon={faStar} />
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-bold">Verified Ratings</div>
+                    </div>
+                    <div className="flex-1 space-y-1 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 text-slate-500 font-bold">5★</span>
+                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-600 rounded-full w-[82%]"></div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 text-slate-500 font-bold">4★</span>
+                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full w-[14%]"></div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 text-slate-500 font-bold">3★</span>
+                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-400 rounded-full w-[3%]"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-slate-100 space-y-3 pt-2">
+                    <div className="pt-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded">
+                          5 ★
+                        </span>
+                        <span className="font-bold text-xs text-slate-900">Exceptional smartphone!</span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        Top notch display, lightning fast performance and battery lasts full day on heavy usage. Highly recommended!
+                      </p>
+                      <div className="text-[10px] text-slate-400 mt-1 font-medium">
+                        Rajesh K. • Verified Buyer • 2 days ago
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded">
+                          5 ★
+                        </span>
+                        <span className="font-bold text-xs text-slate-900">Original and authentic</span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        Received original sealed pack with official brand warranty. Super fast delivery!
+                      </p>
+                      <div className="text-[10px] text-slate-400 mt-1 font-medium">
+                        Sneha V. • Verified Buyer • 5 days ago
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ======================= BOTTOM: Related Products ======================= */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-14 pt-8 border-t border-slate-200 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Similar & Recommended Devices
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Explore other top rated smartphones in {displayCategory}
+                </p>
+              </div>
+              <Link
+                href={`/products?category=${encodeURIComponent(product.category_id || displayCategory)}`}
+                className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
+              >
+                <span>View All</span>
+                <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedProducts.map((rel) => (
+                <ProductCard
+                  key={rel.id}
+                  product={{
+                    ...rel,
+                    category: rel.category || rel.category_name || "Smartphones",
+                    unit: rel.unit || "",
+                  }}
+                  viewMode="grid"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ======================= MOBILE BOTTOM STICKY BAR ======================= */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-4 py-3 flex items-center gap-3 shadow-2xl">
+        <button
+          onClick={handleAddToCart}
+          disabled={isOutOfStock}
+          className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
+            isOutOfStock
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-amber-400 active:bg-amber-500 text-slate-900"
+          }`}
+        >
+          <FontAwesomeIcon icon={faCartPlus} />
+          <span>Add to Cart</span>
+        </button>
+
+        <button
+          onClick={handleBuyNow}
+          disabled={isOutOfStock}
+          className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
+            isOutOfStock
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-emerald-600 active:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
+          }`}
+        >
+          <FontAwesomeIcon icon={faBolt} />
+          <span>Buy Now</span>
+        </button>
+      </div>
+    </div>
+  );
+}

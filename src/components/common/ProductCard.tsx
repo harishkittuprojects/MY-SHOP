@@ -109,9 +109,9 @@ export default function ProductCard({
 
   return (
     <>
-      {/* ===================== 1. MOBILE VIEW (EXACT FLIPKART SCREENSHOT MATCH) ===================== */}
+      {/* ===================== 1. MOBILE VIEW (EXACT FLIPKART SCREENMATCH) ===================== */}
       <div 
-        onClick={() => setIsDetailOpen(true)}
+        onClick={() => router.push(`/products/${product.id}`)}
         className="block md:hidden bg-white border-b border-slate-200/90 py-3.5 px-3 active:bg-slate-50 transition-colors cursor-pointer relative"
       >
         <div className="flex items-start gap-3">
@@ -240,7 +240,7 @@ export default function ProductCard({
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            onClick={() => setIsDetailOpen(true)}
+            onClick={() => router.push(`/products/${product.id}`)}
             className={`group bg-white rounded-2xl p-4 md:p-5 border border-slate-200/90 hover:border-secondary/50 shadow-xs hover:shadow-md transition-all duration-300 flex items-center gap-6 relative cursor-pointer h-full ${isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""}`}
           >
             <div className="relative w-44 h-44 rounded-xl overflow-hidden bg-white border border-slate-100 flex items-center justify-center p-3 flex-shrink-0 group-hover:bg-slate-50/40 transition-colors">
@@ -340,7 +340,7 @@ export default function ProductCard({
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            onClick={() => setIsDetailOpen(true)}
+            onClick={() => router.push(`/products/${product.id}`)}
             className={`group bg-white rounded-2xl md:rounded-3xl p-3 sm:p-4 border border-slate-200/90 hover:border-secondary/50 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col h-full relative cursor-pointer ${isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""}`}
           >
             <div className="relative aspect-square w-full rounded-xl md:rounded-2xl overflow-hidden bg-white mb-2.5 border border-slate-100 flex items-center justify-center p-3 group-hover:bg-slate-50/40 transition-colors">
