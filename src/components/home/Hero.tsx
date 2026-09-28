@@ -18,9 +18,9 @@ const defaultBanners = [
     link: "/products?category=Mobiles%20%26%20Accessories"
   },
   {
-    image_url: "/hero/banner-samsung-zflip.jpg",
-    title: "Samsung Galaxy Z Flip & S25 Ultra 5G",
-    link: "/products?category=Mobiles%20%26%20Accessories"
+    image_url: "/hero/samsung-s26-ultra-ad.jpg",
+    title: "Samsung Galaxy S26 Ultra 5G",
+    link: "/products/samsung-s26-ultra"
   },
   {
     image_url: "/hero/banner-pixel9pro.jpg",

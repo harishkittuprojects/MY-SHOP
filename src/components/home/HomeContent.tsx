@@ -19,6 +19,7 @@ import HomeBanners from "@/components/home/HomeBanners";
 import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
+import S26UltraSpotlightAd from "@/components/home/S26UltraSpotlightAd";
 import { useRouter } from "next/navigation";
 
 export default function HomeContent() {
@@ -148,6 +149,11 @@ export default function HomeContent() {
         </div>
       </section>
       
+      {/* ========================================================================= */}
+      {/* SAMSUNG GALAXY S26 ULTRA 5G - INSTAGRAM-AD STYLE SPOTLIGHT SHOWCASE      */}
+      {/* ========================================================================= */}
+      <S26UltraSpotlightAd />
+
       {/* Popular Products */}
       <section className="bg-secondary/5 py-5 sm:py-8 md:py-16">
         <div className="container">

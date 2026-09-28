@@ -174,6 +174,26 @@ export const products = [
     description: "Built for Apple Intelligence. 6.9-inch Super Retina XDR display with ProMotion 120Hz, A18 Pro chip with 6-core GPU, 48MP Fusion Camera Control button, and Grade 5 Titanium architecture with official 1-Year Apple India warranty."
   },
   {
+    id: "samsung-s26-ultra",
+    category: "Mobiles & Accessories",
+    category_id: "mobiles-accessories",
+    name: "Samsung Galaxy S26 Ultra 5G (Titanium Silver, 512 GB, 16 GB RAM)",
+    unit: "16GB RAM | 512GB ROM • Snapdragon 8 Elite Gen 2 • 200MP Quad Pro AI",
+    price: 139999,
+    original_price: 149999,
+    stock_quantity: 25,
+    image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+    images: [
+      "/products/samsung-galaxy-s26-ultra.jpg",
+      "/hero/samsung-s26-ultra-ad.jpg"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 5.0,
+    reviews_count: 2450,
+    description: "The pinnacle of flagship performance with Next-Gen Galaxy AI. Powered by Snapdragon 8 Elite, ultra-bright 6.9-inch Dynamic AMOLED 2X with Gorilla Armor 2, upgraded 200MP Quad Pro AI camera with 150x Space Zoom, built-in S-Pen, Grade 5 Titanium frame, 6000mAh battery with 65W Super Fast Charging."
+  },
+  {
     id: "samsung-s25-ultra",
     category: "Mobiles & Accessories",
     category_id: "mobiles-accessories",
