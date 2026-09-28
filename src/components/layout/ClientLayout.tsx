@@ -17,7 +17,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   if (isAdmin) {
     return (
       <CartProvider>
-        <main className="min-h-screen bg-accent/30">
+        <main className="min-h-screen bg-accent/30 w-full max-w-full overflow-x-hidden">
           {children}
         </main>
       </CartProvider>
@@ -27,10 +27,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <CartProvider>
       <SubscriptionProvider>
-        <div className="animate-in fade-in duration-300">
+        <div className="animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden relative">
           <Navbar />
           <CartToast />
-          <main className="min-h-screen pb-24 md:pb-0 pt-[90px] sm:pt-[98px] md:pt-[108px]">
+          <main className="min-h-screen pb-24 md:pb-0 pt-[90px] sm:pt-[98px] md:pt-[108px] w-full max-w-full overflow-x-hidden">
             {children}
           </main>
           <Footer />

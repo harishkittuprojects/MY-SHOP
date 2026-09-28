@@ -10,10 +10,10 @@ export default function StreamingTagline() {
   return (
     <Link 
       href="/products"
-      className={`block bg-slate-900 hover:bg-slate-800 text-white overflow-hidden whitespace-nowrap transition-colors ${isHome ? "py-1.5" : "py-1"}`}
+      className={`block w-full max-w-full bg-slate-900 hover:bg-slate-800 text-white overflow-hidden whitespace-nowrap transition-colors ${isHome ? "py-1.5" : "py-1"}`}
     >
-      <div className="flex items-center">
-        <div className="animate-marquee inline-block">
+      <div className="flex items-center w-full max-w-full overflow-hidden">
+        <div className="animate-marquee inline-block whitespace-nowrap">
           <span className="px-6 text-xs font-black uppercase tracking-wider text-white">
             🔥 FESTIVE MOBILE CARNIVAL: Flat ₹5,000 Instant Bank Discount on iPhone 16 &amp; Galaxy S25 Series | 0% No Cost EMI Available! 📱
           </span>

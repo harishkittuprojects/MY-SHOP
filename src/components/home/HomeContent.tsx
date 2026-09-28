@@ -98,7 +98,7 @@ export default function HomeContent() {
   };
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 md:gap-14 pb-16 md:pb-24">
+    <div className="flex flex-col gap-6 sm:gap-8 md:gap-14 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden">
       <Hero />
 
       {/* Quick Brand Categories Rail (Top Categories Section) */}

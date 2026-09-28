@@ -24,7 +24,7 @@ export default function BottomNavigation() {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <div className="fixed bottom-3 left-0 right-0 z-50 px-2 sm:px-4 flex flex-col items-center pointer-events-none md:hidden select-none safe-area-bottom">
+    <div className="fixed bottom-3 left-0 right-0 z-50 px-2 sm:px-4 flex flex-col items-center pointer-events-none md:hidden select-none safe-area-bottom w-full max-w-[100vw] overflow-hidden">
       {/* Floating Bottom Nav Container */}
       <div className="flex items-center gap-2 w-full max-w-[420px] pointer-events-auto">
         {/* Main White Navigation Capsule */}
