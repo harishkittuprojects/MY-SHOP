@@ -45,6 +45,7 @@ function Content() {
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(urlSearchTerm);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
 
   // View Style & Grid Column Controls
   const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
@@ -85,25 +86,62 @@ function Content() {
     setSearchTerm(urlSearchTerm);
   }, [urlSearchTerm]);
 
+  useEffect(() => {
+    setSelectedSubCategory("all");
+  }, [categoryFilter]);
+
+  const activeCategoryObj = categories.find(
+    (c) =>
+      c.name.toLowerCase() === categoryFilter?.toLowerCase() ||
+      c.id.toLowerCase() === categoryFilter?.toLowerCase()
+  );
+
+  const activeSubcategories = useMemo(() => {
+    if (activeCategoryObj?.sub_categories && Array.isArray(activeCategoryObj.sub_categories)) {
+      return activeCategoryObj.sub_categories;
+    }
+    // Extract unique subcategories from products in this category
+    const catProds = categoryFilter
+      ? products.filter(
+          (p) =>
+            (p.category_name && p.category_name.toLowerCase() === categoryFilter.toLowerCase()) ||
+            (p.category && p.category.toLowerCase() === categoryFilter.toLowerCase()) ||
+            (p.category_id && p.category_id.toLowerCase() === categoryFilter.toLowerCase())
+        )
+      : products;
+    const subs = Array.from(new Set(catProds.map((p) => p.sub_category).filter(Boolean)));
+    return subs;
+  }, [activeCategoryObj, categoryFilter, products]);
+
   const filteredProducts = useMemo(() => {
     const cleanSearch = searchTerm.toLowerCase().replace(/\s/g, "");
     
     return products.filter((product) => {
       const prodCategoryName = product.category_name || product.categories?.name || product.category || "";
+      const prodCategoryId = product.category_id || "";
       
       const matchesCategory = categoryFilter 
-        ? prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() 
+        ? prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() ||
+          prodCategoryId.toLowerCase() === categoryFilter.toLowerCase()
         : true;
+
+      const matchesSubCategory =
+        selectedSubCategory === "all"
+          ? true
+          : product.sub_category &&
+            product.sub_category.toLowerCase() === selectedSubCategory.toLowerCase();
         
       const cleanName = (product.name || "").toLowerCase().replace(/\s/g, "");
       const cleanProductCategory = (prodCategoryName || "").toLowerCase().replace(/\s/g, "");
+      const cleanSub = (product.sub_category || "").toLowerCase().replace(/\s/g, "");
       
       const matchesSearch = cleanName.includes(cleanSearch) ||
-                           cleanProductCategory.includes(cleanSearch);
+                           cleanProductCategory.includes(cleanSearch) ||
+                           cleanSub.includes(cleanSearch);
                            
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesSubCategory && matchesSearch;
     });
-  }, [categoryFilter, searchTerm, products]);
+  }, [categoryFilter, selectedSubCategory, searchTerm, products]);
 
   const currentCategory = categories.find(c => c.name.toLowerCase() === categoryFilter?.toLowerCase());
 
@@ -275,6 +313,39 @@ function Content() {
 
         {/* Right Products Catalog with Grid / List & Column Controls */}
         <div className="lg:col-span-3">
+          {/* Subcategory Pills Bar */}
+          {activeSubcategories.length > 0 && (
+            <div className="mb-4 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex items-center gap-2 min-w-max">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubCategory("all")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    selectedSubCategory === "all"
+                      ? "bg-secondary text-white shadow-xs"
+                      : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  All {categoryFilter || "Items"}
+                </button>
+                {activeSubcategories.map((sub: string) => (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => setSelectedSubCategory(sub)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${
+                      selectedSubCategory.toLowerCase() === sub.toLowerCase()
+                        ? "bg-secondary text-white shadow-xs"
+                        : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Controls Toolbar: Style Switcher + Column Selector */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             {/* Left: Product count & filter info */}

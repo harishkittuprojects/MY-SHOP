@@ -149,6 +149,16 @@ export default function CartPage() {
                   <span>Subtotal</span>
                   <span className="font-bold text-gray-800">₹{Math.floor(cartTotal)}</span>
                 </div>
+                {cart.reduce((sum, item) => sum + ((item as any).cashback_amount || 0) * item.quantity, 0) > 0 && (
+                  <div className="flex justify-between items-center bg-emerald-50 border border-emerald-200/80 px-3 py-2 rounded-xl text-xs">
+                    <span className="font-bold text-emerald-800 flex items-center gap-1.5">
+                      ✨ Eligible Cashback
+                    </span>
+                    <span className="font-black text-emerald-700">
+                      +₹{Math.floor(cart.reduce((sum, item) => sum + ((item as any).cashback_amount || 0) * item.quantity, 0)).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-500">
                   <span>Delivery Charge</span>
                   <span className={deliveryCharge === 0 ? "text-green-600 font-bold" : "font-bold text-gray-800"}>

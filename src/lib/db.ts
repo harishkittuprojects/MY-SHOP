@@ -51,7 +51,7 @@ export const CategoriesDB = {
       name: c.name,
       icon: c.icon,
       image_url: c.image_url,
-      sub_categories: [],
+      sub_categories: (c as any).sub_categories || [],
       is_active: true,
       display_order: idx + 1,
     }));
@@ -141,7 +141,7 @@ export const CategoriesDB = {
 // 3. PRODUCTS REPOSITORY
 // ==============================================================================
 export const ProductsDB = {
-  async getAll(filter?: { category?: string; search?: string; is_popular?: boolean; is_featured?: boolean; limit?: number }) {
+  async getAll(filter?: { category?: string; sub_category?: string; search?: string; is_popular?: boolean; is_featured?: boolean; limit?: number }) {
     let dbProducts: any[] = [];
     try {
       const { data, error } = await supabase
@@ -178,12 +178,19 @@ export const ProductsDB = {
         (p.category && p.category.toLowerCase() === catLower)
       );
     }
+    if (filter?.sub_category && filter.sub_category !== 'all') {
+      const subLower = filter.sub_category.toLowerCase();
+      list = list.filter((p) =>
+        p.sub_category && p.sub_category.toLowerCase() === subLower
+      );
+    }
     if (filter?.search) {
       const s = filter.search.toLowerCase();
       list = list.filter((p) =>
         (p.name && p.name.toLowerCase().includes(s)) ||
         (p.description && p.description.toLowerCase().includes(s)) ||
-        (p.sku && p.sku.toLowerCase().includes(s))
+        (p.sku && p.sku.toLowerCase().includes(s)) ||
+        (p.sub_category && p.sub_category.toLowerCase().includes(s))
       );
     }
     if (filter?.is_popular) {
@@ -1147,16 +1154,175 @@ export const ActivityLogsDB = {
 export const InventoryLogsDB = {
   async getAll(productId?: string) {
     try {
-      let query = supabase.from('inventory_logs').select('*').order('created_at', { ascending: false });
+      let query = supabase
+        .from('inventory_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
       if (productId) {
         query = query.eq('product_id', productId);
       }
+
       const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    } catch {
-      return [];
+      if (!error && data) return data;
+    } catch { /* ignore */ }
+    return [];
+  },
+
+  async logChange(
+    productId: string,
+    productName: string,
+    changeAmount: number,
+    previousStock: number,
+    newStock: number,
+    reason: string,
+    adminName: string = 'Admin'
+  ) {
+    try {
+      const { data, error } = await supabase
+        .from('inventory_logs')
+        .insert([{
+          product_id: productId,
+          product_name: productName,
+          change_amount: changeAmount,
+          previous_stock: previousStock,
+          new_stock: newStock,
+          reason,
+          created_by: adminName,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      if (!error && data) return data;
+    } catch { /* ignore */ }
+    return null;
+  }
+};
+
+// ==============================================================================
+// 14. SERVICE BOOKINGS REPOSITORY (Mobile Display Replacement & Installation)
+// ==============================================================================
+export const ServiceBookingsDB = {
+  async getAll(filter?: { status?: string; search?: string }) {
+    try {
+      let query = supabase.from('service_bookings').select('*').order('created_at', { ascending: false });
+      if (filter?.status && filter.status !== 'all') {
+        query = query.eq('status', filter.status);
+      }
+      if (filter?.search) {
+        query = query.or(`id.ilike.%${filter.search}%,customer_name.ilike.%${filter.search}%,customer_phone.ilike.%${filter.search}%,device_model.ilike.%${filter.search}%`);
+      }
+      const { data, error } = await query;
+      if (!error && data) return data;
+    } catch { /* fallback */ }
+    return [];
+  },
+
+  async getById(id: string) {
+    try {
+      const { data, error } = await supabase.from('service_bookings').select('*').eq('id', id).single();
+      if (!error && data) return data;
+    } catch { /* fallback */ }
+    return null;
+  },
+
+  async create(bookingData: {
+    customer_name: string;
+    customer_phone: string;
+    customer_email?: string;
+    address?: string;
+    city?: string;
+    pincode?: string;
+    device_brand: string;
+    device_model: string;
+    screen_type: string;
+    estimated_price: number;
+    preferred_date: string;
+    preferred_time?: string;
+    notes?: string;
+  }) {
+    const bookingId = `SRV-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
+    const record = {
+      id: bookingId,
+      customer_name: bookingData.customer_name || 'Customer',
+      customer_phone: bookingData.customer_phone || '',
+      customer_email: bookingData.customer_email || '',
+      address: bookingData.address || '',
+      city: bookingData.city || 'Tech City',
+      pincode: bookingData.pincode || '',
+      device_brand: bookingData.device_brand || 'Smartphone',
+      device_model: bookingData.device_model || 'Standard Model',
+      screen_type: bookingData.screen_type || 'Original OLED Display',
+      estimated_price: Number(bookingData.estimated_price) || 2499,
+      preferred_date: bookingData.preferred_date || new Date().toISOString().split('T')[0],
+      preferred_time: bookingData.preferred_time || '10:00 AM - 01:00 PM',
+      notes: bookingData.notes || '',
+      status: 'pending',
+      admin_notes: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data, error } = await supabase.from('service_bookings').insert([record]).select().single();
+      if (!error && data) return data;
+    } catch (e) {
+      console.warn('ServiceBookings insert warning:', e);
     }
+
+    await logActivity({
+      admin_name: 'Customer Online',
+      action: 'book_display_service',
+      entity_type: 'service_booking',
+      entity_id: bookingId,
+      details: { model: record.device_model, price: record.estimated_price }
+    });
+
+    return record;
+  },
+
+  async updateStatus(id: string, status: string, adminNotes?: string, adminName: string = 'Admin') {
+    const updates: any = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (adminNotes !== undefined) updates.admin_notes = adminNotes;
+
+    try {
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        await logActivity({
+          admin_name: adminName,
+          action: 'update_service_status',
+          entity_type: 'service_booking',
+          entity_id: id,
+          details: updates
+        });
+        return data;
+      }
+    } catch (e) {
+      console.warn('ServiceBookings update status warning:', e);
+    }
+    return { id, ...updates };
+  },
+
+  async delete(id: string, adminName: string = 'Admin') {
+    try {
+      await supabase.from('service_bookings').delete().eq('id', id);
+      await logActivity({
+        admin_name: adminName,
+        action: 'delete_service_booking',
+        entity_type: 'service_booking',
+        entity_id: id
+      });
+    } catch { /* ignore */ }
+    return true;
   }
 };
 
@@ -1173,4 +1339,5 @@ export default {
   MediaGalleryDB,
   ActivityLogsDB,
   InventoryLogsDB,
+  ServiceBookingsDB,
 };

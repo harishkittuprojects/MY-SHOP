@@ -23,6 +23,7 @@ interface Product {
   id: string;
   name: string;
   category: string;
+  sub_category?: string;
   unit: string;
   price: number;
   original_price?: number;
@@ -34,6 +35,10 @@ interface Product {
   rating?: number;
   reviews_count?: number;
   is_popular?: boolean;
+  cashback_amount?: number;
+  condition?: string;
+  battery_health?: string;
+  warranty_period?: string;
 }
 
 export default function ProductCard({ 
@@ -189,25 +194,28 @@ export default function ProductCard({
               </span>
             </div>
 
-            {/* Bank Offer Row: wow! ₹XX,XXX with Bank offer */}
-            <div className="flex items-center gap-1 text-xs text-[#2874f0] font-semibold mb-0.5">
-              <span className="italic font-black bg-blue-50 px-1 rounded text-[10px]">wow!</span>
-              <span className="font-bold">₹{bankOfferPrice.toLocaleString("en-IN")}</span>
-              <span className="text-[11px] text-[#2874f0]">with Bank offer</span>
-            </div>
-
-            {/* Exchange Offer / Stock Tag */}
-            <div className="text-[11px] text-[#212121] mb-0.5">
-              {discountPercent > 20 ? (
-                <span>Upto ₹{Math.round(product.price * 0.45).toLocaleString("en-IN")} Off on Exchange</span>
-              ) : (
-                <span className="text-[#c2185b] font-bold">Only few left</span>
+            {/* Cashback and Refurbished Info Tags */}
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+              {Boolean(product.cashback_amount && product.cashback_amount > 0) && (
+                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+                  ✨ ₹{product.cashback_amount} Cashback
+                </span>
+              )}
+              {product.battery_health && (
+                <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                  🔋 {product.battery_health}
+                </span>
+              )}
+              {product.condition && (
+                <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                  {product.condition}
+                </span>
               )}
             </div>
 
             {/* Warranty Line */}
             <div className="text-[11px] text-[#878787] mb-1">
-              1 year warranty by {brandName}
+              {product.warranty_period || `1 year warranty by ${brandName}`}
             </div>
           </div>
         </div>
@@ -399,6 +407,25 @@ export default function ProductCard({
                 <p className="text-[10px] sm:text-[11px] text-slate-500 line-clamp-1 mb-1.5">
                   {product.unit || "Official Brand Sealed • 1 Year"}
                 </p>
+
+                {/* Cashback / Refurbished Tag */}
+                <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                  {Boolean(product.cashback_amount && product.cashback_amount > 0) && (
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+                      ✨ ₹{product.cashback_amount} Cashback
+                    </span>
+                  )}
+                  {product.battery_health && (
+                    <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                      🔋 {product.battery_health}
+                    </span>
+                  )}
+                  {product.condition && (
+                    <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                      {product.condition}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="mt-auto pt-1.5 border-t border-slate-100">

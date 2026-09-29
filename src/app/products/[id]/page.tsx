@@ -52,6 +52,11 @@ interface Product {
   is_popular?: boolean;
   rating?: number;
   reviews_count?: number;
+  cashback_amount?: number;
+  condition?: string;
+  battery_health?: string;
+  warranty_period?: string;
+  specs?: Record<string, string>;
 }
 
 export default function ProductDetailPage({
@@ -471,9 +476,18 @@ export default function ProductDetailPage({
                 </div>
 
                 <div className="space-y-2 text-xs text-slate-700">
+                  {Boolean(product.cashback_amount && product.cashback_amount > 0) && (
+                    <div className="flex items-start gap-2 bg-emerald-100/80 p-2.5 rounded-xl border border-emerald-300">
+                      <span className="text-emerald-800 font-black shrink-0">✨ Exclusive Cashback:</span>
+                      <span className="text-emerald-950 font-semibold">
+                        Get <strong>₹{Number(product.cashback_amount || 0).toLocaleString("en-IN")} Instant Cashback</strong> on this order! Credited directly upon delivery.
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex items-start gap-2">
                     <span className="text-[#388e3c] font-black shrink-0">💳 Bank Offer:</span>
-                    <span>10% Instant Discount on HDFC & ICICI Credit Cards (Pay only <strong>₹{bankOfferPrice.toLocaleString("en-IN")}</strong>).</span>
+                    <span>10% Instant Discount on HDFC &amp; ICICI Credit Cards (Pay only <strong>₹{bankOfferPrice.toLocaleString("en-IN")}</strong>).</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-emerald-700 font-black shrink-0">🎟️ Promo Code:</span>
@@ -485,6 +499,35 @@ export default function ProductDetailPage({
                   </div>
                 </div>
               </div>
+
+              {/* Refurbished / EV / Special Condition Box */}
+              {(product.battery_health || product.condition || product.warranty_period) && (
+                <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-black text-amber-900 uppercase tracking-wider">
+                    <span>🛡️ Device Certification &amp; Warranty</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold text-slate-800">
+                    {product.condition && (
+                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center">
+                        <span className="text-slate-500 block text-[10px] uppercase">Grade / Condition</span>
+                        <span className="text-amber-900 font-black">{product.condition}</span>
+                      </div>
+                    )}
+                    {product.battery_health && (
+                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center">
+                        <span className="text-slate-500 block text-[10px] uppercase">Battery Health</span>
+                        <span className="text-emerald-700 font-black">{product.battery_health}</span>
+                      </div>
+                    )}
+                    {product.warranty_period && (
+                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center col-span-2 sm:col-span-1">
+                        <span className="text-slate-500 block text-[10px] uppercase">Warranty</span>
+                        <span className="text-slate-900 font-bold">{product.warranty_period}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Variants Selector (Storage / RAM / Device Options) */}
               {variantsList.length > 0 && (

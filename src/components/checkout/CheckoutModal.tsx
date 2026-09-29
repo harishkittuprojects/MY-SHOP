@@ -383,6 +383,12 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
               <span>Items Total</span>
               <span>₹{Math.floor(cartTotal)}</span>
             </div>
+            {cart.reduce((sum, item) => sum + ((item as any).cashback_amount || 0) * item.quantity, 0) > 0 && (
+              <div className="flex justify-between text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/60">
+                <span>✨ Eligible Cashback</span>
+                <span className="font-black">+₹{Math.floor(cart.reduce((sum, item) => sum + ((item as any).cashback_amount || 0) * item.quantity, 0)).toLocaleString("en-IN")}</span>
+              </div>
+            )}
             <div className="flex justify-between text-xs font-bold text-gray-500">
               <span>Delivery Charge</span>
               <span>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</span>

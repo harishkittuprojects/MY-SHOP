@@ -103,6 +103,65 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* Dedicated Mobile Display Replacement Banner */}
+      <section className="container mb-12">
+        <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl border border-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full">
+                <FontAwesomeIcon icon={faShieldHalved} />
+                <span>Express 30-Min Service</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight">
+                Mobile Display Replacement &amp; Screen Installation
+              </h2>
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
+                Cracked or damaged screen? Get certified OEM &amp; 120Hz OLED display replacements for Apple iPhone, Samsung Galaxy, OnePlus, Vivo, Xiaomi &amp; Pixel with up to 6 months warranty, free labor, and doorstep service.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href="/services/display-replacement"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3.5 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 inline-flex items-center gap-2"
+                >
+                  <span>Book Display Replacement</span>
+                  <FontAwesomeIcon icon={faCheckCircle} />
+                </Link>
+                <Link
+                  href="/services/display-replacement"
+                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3.5 rounded-xl text-xs sm:text-sm transition-all border border-white/20 inline-flex items-center gap-2"
+                >
+                  <span>Check Model Prices</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-sm space-y-3">
+              <div className="text-xs font-black uppercase text-emerald-400 tracking-wider">
+                Service Guarantee
+              </div>
+              <div className="space-y-2 text-xs text-slate-200">
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-400" />
+                  <span>Original OLED &amp; Premium HD screens</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-400" />
+                  <span>TrueTone &amp; 120Hz touch preserved</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-400" />
+                  <span>6 Months replacement warranty</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-400" />
+                  <span>Free installation &amp; zero advance</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Brand Grid */}
       <section className="container pb-16">
         <h2 className="text-2xl md:text-3xl font-black mb-8 text-[#222]">Browse by Smartphone Brand &amp; Ecosystem</h2>
