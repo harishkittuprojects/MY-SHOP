@@ -62,8 +62,8 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden bg-slate-900 select-none">
-      {/* Compact & well-proportioned Hero Banner Height */}
-      <div className="w-full relative h-[180px] sm:h-[260px] md:h-[360px] lg:h-[420px] xl:h-[460px]">
+      {/* Balanced eCommerce Banner Height - Categories & Products visible above/at the fold */}
+      <div className="w-full relative aspect-[16/9] sm:aspect-[21/9] md:aspect-auto md:h-[360px] lg:h-[420px] xl:h-[460px] min-h-[200px]">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
