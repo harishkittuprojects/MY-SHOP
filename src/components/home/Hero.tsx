@@ -72,13 +72,13 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-2 sm:pt-3 md:pt-4 select-none">
+    <section className="relative w-full px-0 sm:px-0 md:px-6 max-w-7xl mx-auto pt-0 md:pt-4 select-none">
       {/* 
-        Responsive Hero Container:
-        - Mobile: Original 16:9 aspect ratio with edge-to-edge cover fit
+        Hero Container:
+        - Mobile: Full-bleed 16:9 edge-to-edge with madur.in Shop Now floating button
         - Desktop: Compact ~340px - 375px with ambient-contain fit
       */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[340px] lg:h-[375px] max-h-[390px] rounded-2xl sm:rounded-3xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-950 group">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[340px] lg:h-[375px] max-h-[390px] rounded-none sm:rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-md border-0 md:border border-slate-200/80 bg-slate-950 group">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
@@ -101,56 +101,73 @@ export default function Hero() {
         >
           {slides.map((slide, index) => (
             <SwiperSlide key={index} className="w-full h-full bg-slate-950">
-              <Link 
-                href={slide.link || "/products"} 
-                className="block relative w-full h-full cursor-pointer overflow-hidden"
-              >
-                {/* ================= MOBILE VIEW (Original 16:9 Full-Bleed Cover Fit) ================= */}
-                <div className="relative w-full h-full block md:hidden">
-                  <Image 
-                    src={slide.image_url} 
-                    alt={slide.title || `Hero Banner ${index + 1}`} 
-                    fill 
-                    className="object-cover object-center w-full h-full transition-transform duration-700 active:scale-100"
-                    priority={index === 0}
-                    sizes="100vw"
-                    unoptimized
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10 pointer-events-none" />
-                </div>
-
-                {/* ================= DESKTOP VIEW (Dual-Layer Ambient Contain Layout) ================= */}
-                <div className="relative w-full h-full hidden md:block">
-                  {/* Ambient Backdrop */}
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <Image 
-                      src={slide.image_url} 
-                      alt="" 
-                      fill 
-                      className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
-                      aria-hidden="true"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-slate-950/40" />
-                  </div>
-
-                  {/* Foreground Sharp Banner Graphic */}
-                  <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative w-full h-full">
+                <Link 
+                  href={slide.link || "/products"} 
+                  className="block relative w-full h-full cursor-pointer overflow-hidden"
+                >
+                  {/* ================= MOBILE VIEW (Exact madur.in 16:9 Full-Bleed Cover Fit) ================= */}
+                  <div className="relative w-full h-full block md:hidden">
                     <Image 
                       src={slide.image_url} 
                       alt={slide.title || `Hero Banner ${index + 1}`} 
                       fill 
-                      className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
+                      className="object-cover object-center w-full h-full"
                       priority={index === 0}
-                      sizes="1280px"
+                      sizes="100vw"
                       unoptimized
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
                   </div>
-                </div>
 
-                {/* Subtle vignette border for ultra-crisp edge finish */}
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl sm:rounded-3xl md:rounded-3xl pointer-events-none" />
-              </Link>
+                  {/* ================= DESKTOP VIEW (Dual-Layer Ambient Contain Layout) ================= */}
+                  <div className="relative w-full h-full hidden md:block">
+                    {/* Ambient Backdrop */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <Image 
+                        src={slide.image_url} 
+                        alt="" 
+                        fill 
+                        className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
+                        aria-hidden="true"
+                        unoptimized
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40" />
+                    </div>
+
+                    {/* Foreground Sharp Banner Graphic */}
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <Image 
+                        src={slide.image_url} 
+                        alt={slide.title || `Hero Banner ${index + 1}`} 
+                        fill 
+                        className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
+                        priority={index === 0}
+                        sizes="1280px"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+
+                  {/* Subtle vignette border on desktop */}
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-none md:rounded-3xl pointer-events-none" />
+                </Link>
+
+                {/* Mobile Floating "Shop Now" Action Badge (madur.in style) */}
+                <div className="absolute bottom-3 left-3 z-10 block md:hidden pointer-events-auto">
+                  <Link 
+                    href={slide.link || "/products"} 
+                    className="bg-secondary text-white font-black px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 active:scale-95 border border-white/20"
+                  >
+                    <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center text-white">
+                      <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider">
+                      Shop Now
+                    </span>
+                  </Link>
+                </div>
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>
