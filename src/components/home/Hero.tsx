@@ -62,8 +62,8 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden bg-slate-900 select-none">
-      {/* Mobile: 16:9 proportion | Desktop: Full Screen Viewport Height (Madur.in style) */}
-      <div className="w-full relative aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[calc(100vh-130px)] lg:h-[calc(100vh-140px)] min-h-[220px] md:min-h-[580px] lg:min-h-[680px]">
+      {/* Compact & well-proportioned Hero Banner Height */}
+      <div className="w-full relative h-[180px] sm:h-[260px] md:h-[360px] lg:h-[420px] xl:h-[460px]">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
