@@ -102,8 +102,55 @@ export default function HomeContent() {
     <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden">
       <Hero />
 
-      {/* Quick Brand Categories Rail (Top Categories Section) */}
-      <section className="bg-white border-b border-gray-100 py-4 sm:py-5 md:py-8 shadow-sm">
+      {/* 1. Shop by Category (SHOW FIRST AS REQUESTED) */}
+      <section className="container py-4 sm:py-6 md:py-10">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-2.5 md:gap-3 text-[#222222]">
+            <span className="w-1.5 sm:w-2 h-6 sm:h-8 bg-secondary rounded-full"></span>
+            Shop by Category
+          </h2>
+          <Link href="/categories" className="text-secondary font-bold flex items-center gap-2 hover:underline text-xs sm:text-sm md:text-base">
+            View All <FontAwesomeIcon icon={faArrowRight} size="xs" />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
+          {isLoading ? (
+            [...Array(4)].map((_, i) => <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl"></div>)
+          ) : (Array.isArray(categories) ? categories : []).map((cat) => (
+            <Link 
+              href={`/products?category=${encodeURIComponent(cat.name)}`} 
+              key={cat.id}
+              className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-secondary transition-all text-center overflow-hidden"
+            >
+              <div className="w-full aspect-[4/3] relative overflow-hidden bg-gray-50">
+                {cat.image_url || cat.image ? (
+                  <Image 
+                    src={normalizeImageUrl(cat.image_url || cat.image)} 
+                    alt={cat.name} 
+                    fill 
+                    className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <FontAwesomeIcon icon={faBox} className="text-gray-200 text-4xl" />
+                  </div>
+                )}
+              </div>
+              <div className="p-3 md:p-4 bg-white border-t border-gray-50">
+                <span className="text-xs md:text-sm font-black text-[#222222] leading-tight block">
+                  {cat.name}
+                </span>
+                <span className="text-[10px] text-gray-400 font-semibold mt-0.5 block">View Catalog →</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 2. Quick Brand Categories Rail */}
+      <section className="bg-white border-b border-gray-100 py-3 sm:py-4 md:py-6 shadow-sm">
         <div className="container">
           <div className="flex items-center justify-between mb-3 md:mb-5 px-1">
             <h2 className="text-base sm:text-xl md:text-2xl font-black flex items-center gap-2 md:gap-3 text-slate-900 tracking-tight">
@@ -149,12 +196,10 @@ export default function HomeContent() {
         </div>
       </section>
       
-      {/* ========================================================================= */}
-      {/* SAMSUNG GALAXY S26 ULTRA 5G - INSTAGRAM-AD STYLE SPOTLIGHT SHOWCASE      */}
-      {/* ========================================================================= */}
+      {/* 3. SAMSUNG GALAXY S26 ULTRA 5G SPOTLIGHT */}
       <S26UltraSpotlightAd />
 
-      {/* Popular Products */}
+      {/* 4. Popular Products */}
       <section className="bg-secondary/5 py-5 sm:py-8 md:py-16">
         <div className="container">
           <div className="flex items-center justify-between mb-3 sm:mb-6 md:mb-10 px-0.5">
@@ -184,53 +229,6 @@ export default function HomeContent() {
               <FontAwesomeIcon icon={faArrowRight} className="text-xs md:text-base" />
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Categories Grid - Exact Madur.in layout */}
-      <section className="container py-8 md:py-16">
-        <div className="flex items-center justify-between mb-4 md:mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-2.5 md:gap-3 text-[#222222]">
-            <span className="w-1.5 sm:w-2 h-6 sm:h-8 bg-secondary rounded-full"></span>
-            Shop by Category
-          </h2>
-          <Link href="/categories" className="text-secondary font-bold flex items-center gap-2 hover:underline text-xs sm:text-sm md:text-base">
-            View All <FontAwesomeIcon icon={faArrowRight} size="xs" />
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
-          {isLoading ? (
-            [...Array(4)].map((_, i) => <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl"></div>)
-          ) : (Array.isArray(categories) ? categories : []).map((cat) => (
-            <Link 
-              href={`/products?category=${encodeURIComponent(cat.name)}`} 
-              key={cat.id}
-              className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-secondary transition-all text-center overflow-hidden"
-            >
-              <div className="w-full aspect-[4/3] relative overflow-hidden bg-gray-50">
-                {cat.image_url || cat.image ? (
-                  <Image 
-                    src={normalizeImageUrl(cat.image_url || cat.image)} 
-                    alt={cat.name} 
-                    fill 
-                    className="object-cover group-hover:scale-110 transition-transform duration-500" 
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <FontAwesomeIcon icon={faBox} className="text-gray-200 text-4xl" />
-                  </div>
-                )}
-              </div>
-              <div className="p-3 md:p-4 bg-white border-t border-gray-50">
-                <span className="text-xs md:text-sm font-black text-[#222222] leading-tight block">
-                  {cat.name}
-                </span>
-                <span className="text-[10px] text-gray-400 font-semibold mt-0.5 block">View Catalog →</span>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
       {/* The Journey Section - Exact Madur.in layout */}
