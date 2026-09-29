@@ -75,11 +75,11 @@ export default function Hero() {
     <section className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-2 sm:pt-3 md:pt-4 select-none">
       {/* 
         Compact, Professional Hero Container:
-        - Mobile: ~190px - 230px (aspect ratio ~16:9 on small screens)
-        - Tablet: ~300px - 340px
-        - Desktop: ~350px - 390px (leaves navbar + categories fully visible above the fold)
+        - Mobile: ~200px - 230px
+        - Tablet: ~280px - 330px
+        - Desktop: ~350px - 380px (leaves navbar + categories fully visible above the fold)
       */}
-      <div className="relative w-full h-[180px] xs:h-[210px] sm:h-[260px] md:h-[340px] lg:h-[370px] xl:h-[390px] rounded-2xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-950 group">
+      <div className="relative w-full h-[200px] xs:h-[230px] sm:h-[280px] md:h-[340px] lg:h-[375px] max-h-[390px] rounded-2xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-950 group">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
@@ -104,21 +104,36 @@ export default function Hero() {
             <SwiperSlide key={index} className="w-full h-full bg-slate-950">
               <Link 
                 href={slide.link || "/products"} 
-                className="block relative w-full h-full cursor-pointer"
+                className="block relative w-full h-full cursor-pointer overflow-hidden"
               >
-                {/* Background Banner Image with object-cover and subtle scale on hover */}
-                <Image 
-                  src={slide.image_url} 
-                  alt={slide.title || `Hero Banner ${index + 1}`} 
-                  fill 
-                  className="object-cover object-center w-full h-full transition-transform duration-700 hover:scale-[1.015]"
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, 1280px"
-                  unoptimized
-                />
+                {/* 1. Ambient Background Layer (Blended with image colors so no harsh blank space) */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <Image 
+                    src={slide.image_url} 
+                    alt="" 
+                    fill 
+                    className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
+                    aria-hidden="true"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-slate-950/40" />
+                </div>
 
-                {/* Subtle gradient vignette to guarantee crisp legibility */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none" />
+                {/* 2. Foreground Main Banner Graphic (100% complete, zero cropping, sharp aspect ratio) */}
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <Image 
+                    src={slide.image_url} 
+                    alt={slide.title || `Hero Banner ${index + 1}`} 
+                    fill 
+                    className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
+                    priority={index === 0}
+                    sizes="(max-width: 768px) 100vw, 1280px"
+                    unoptimized
+                  />
+                </div>
+
+                {/* Subtle vignette border for ultra-crisp edge finish */}
+                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl pointer-events-none" />
               </Link>
             </SwiperSlide>
           ))}

@@ -105,13 +105,35 @@ function Content() {
     setSelectedBrand("all");
   }, [categoryFilter]);
 
+  const isMobileAndAccessoriesFilter = 
+    categoryFilter?.toLowerCase() === "mobiles & accessories" || 
+    categoryFilter?.toLowerCase() === "mobiles" || 
+    categoryFilter?.toLowerCase() === "mobiles-accessories";
+
+  const isAccessoryOnlyFilter =
+    categoryFilter?.toLowerCase() === "mobile accessories" ||
+    categoryFilter?.toLowerCase() === "mobile-accessories";
+
   const activeCategoryObj = categories.find(
     (c) =>
       c.name.toLowerCase() === categoryFilter?.toLowerCase() ||
-      c.id.toLowerCase() === categoryFilter?.toLowerCase()
+      c.id.toLowerCase() === categoryFilter?.toLowerCase() ||
+      (isMobileAndAccessoriesFilter && (c.name.toLowerCase().includes("mobile") || c.id.toLowerCase().includes("mobile")))
   );
 
   const activeSubcategories = useMemo(() => {
+    if (isMobileAndAccessoriesFilter) {
+      return [
+        "Flagship Phones",
+        "5G Phones",
+        "Chargers & Adapters",
+        "Power Banks",
+        "Cases & Covers",
+        "Tempered Glass",
+        "Storage",
+        "Cables"
+      ];
+    }
     if (activeCategoryObj?.sub_categories && Array.isArray(activeCategoryObj.sub_categories)) {
       return activeCategoryObj.sub_categories;
     }
@@ -125,7 +147,7 @@ function Content() {
       : products;
     const subs = Array.from(new Set(catProds.map((p) => p.sub_category).filter(Boolean)));
     return subs;
-  }, [activeCategoryObj, categoryFilter, products]);
+  }, [activeCategoryObj, categoryFilter, isMobileAndAccessoriesFilter, products]);
 
   // Extract available brands
   const availableBrands = useMemo(() => {
@@ -170,19 +192,45 @@ function Content() {
     let result = products.filter((product) => {
       const prodCategoryName = product.category_name || product.categories?.name || product.category || "";
       const prodCategoryId = product.category_id || "";
+      const prodSubCategory = (product.sub_category || "").toLowerCase();
       
       // 1. Category Filter
-      const matchesCategory = categoryFilter 
-        ? prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() ||
-          prodCategoryId.toLowerCase() === categoryFilter.toLowerCase()
-        : true;
+      let matchesCategory = true;
+      if (categoryFilter) {
+        if (isMobileAndAccessoriesFilter) {
+          matchesCategory = 
+            prodCategoryName.toLowerCase().includes("mobile") ||
+            prodCategoryId.toLowerCase().includes("mobile");
+        } else if (isAccessoryOnlyFilter) {
+          matchesCategory = 
+            prodCategoryName.toLowerCase().includes("accessories") ||
+            prodCategoryId.toLowerCase().includes("accessories");
+        } else {
+          matchesCategory = 
+            prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() ||
+            prodCategoryId.toLowerCase() === categoryFilter.toLowerCase() ||
+            prodCategoryName.toLowerCase().includes(categoryFilter.toLowerCase());
+        }
+      }
 
-      // 2. Subcategory Filter
-      const matchesSubCategory =
-        selectedSubCategory === "all"
-          ? true
-          : product.sub_category &&
-            product.sub_category.toLowerCase() === selectedSubCategory.toLowerCase();
+      // 2. Subcategory Filter (Fuzzy & Smart matching)
+      let matchesSubCategory = true;
+      if (selectedSubCategory !== "all") {
+        const subLow = selectedSubCategory.toLowerCase();
+        matchesSubCategory = Boolean(
+          prodSubCategory === subLow ||
+          prodSubCategory.includes(subLow) ||
+          subLow.includes(prodSubCategory) ||
+          (subLow.includes("charger") && (prodSubCategory.includes("charger") || prodSubCategory.includes("adapter"))) ||
+          (subLow.includes("adapter") && (prodSubCategory.includes("adapter") || prodSubCategory.includes("charger"))) ||
+          (subLow.includes("power") && prodSubCategory.includes("power")) ||
+          (subLow.includes("case") && (prodSubCategory.includes("case") || prodSubCategory.includes("cover"))) ||
+          (subLow.includes("glass") && prodSubCategory.includes("glass")) ||
+          (subLow.includes("cable") && prodSubCategory.includes("cable")) ||
+          (subLow.includes("storage") && (prodSubCategory.includes("storage") || product.name.toLowerCase().includes("storage") || product.name.toLowerCase().includes("microsd") || product.name.toLowerCase().includes("gb"))) ||
+          (subLow.includes("phone") || subLow === "mobile" ? (product.category.toLowerCase() === "mobiles" || prodSubCategory.includes("phone")) : false)
+        );
+      }
 
       // 3. Brand Filter
       const matchesBrand =
