@@ -61,9 +61,9 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-slate-900 select-none">
-      {/* Balanced eCommerce Banner Height - Categories & Products visible above/at the fold */}
-      <div className="w-full relative aspect-[16/9] sm:aspect-[21/9] md:aspect-auto md:h-[360px] lg:h-[420px] xl:h-[460px] min-h-[200px]">
+    <section className="relative w-full px-2 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-4 select-none">
+      {/* Curved Container with rounded corners */}
+      <div className="w-full relative aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[calc(100vh-160px)] lg:h-[calc(100vh-170px)] min-h-[220px] md:min-h-[520px] lg:min-h-[620px] rounded-2xl sm:rounded-3xl md:rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-800/10 bg-slate-900">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
