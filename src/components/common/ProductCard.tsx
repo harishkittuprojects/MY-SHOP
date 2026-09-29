@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import QuantityModal from "./QuantityModal";
 import ProductDetailModal from "./ProductDetailModal";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { 
   faStar, 
   faBolt, 
@@ -14,7 +15,8 @@ import {
   faHeart, 
   faShieldHalved,
   faChevronRight,
-  faArrowDown
+  faArrowDown,
+  faTruckFast
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -49,9 +51,10 @@ export default function ProductCard({
   viewMode?: "grid" | "list";
 }) {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const isWishlisted = isInWishlist(product.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const router = useRouter();
   
   const normalizeImageUrl = (url?: string) => {
@@ -154,10 +157,25 @@ export default function ProductCard({
 
           {/* Right Column: Title, Ratings, Pricing, Bank Offer, Exchange, Warranty */}
           <div className="flex-1 min-w-0">
-            {/* Title */}
-            <h3 className="text-[13px] sm:text-sm font-semibold text-[#212121] leading-snug line-clamp-2 mb-1">
-              {product.name}
-            </h3>
+            {/* Title & Wishlist Header */}
+            <div className="flex items-start justify-between gap-1 mb-1">
+              <h3 className="text-[13px] sm:text-sm font-semibold text-[#212121] leading-snug line-clamp-2">
+                {product.name}
+              </h3>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleWishlist(product as any);
+                }}
+                className={`p-1 rounded-full text-xs transition-colors shrink-0 ${
+                  isWishlisted ? "text-red-500" : "text-slate-300 hover:text-red-500"
+                }`}
+                title="Wishlist"
+              >
+                <FontAwesomeIcon icon={faHeart} />
+              </button>
+            </div>
 
             {/* Rating Stars (Green Stars + Review Count + Assured Badge) */}
             <div className="flex items-center gap-1.5 mb-1 flex-wrap">
@@ -328,18 +346,33 @@ export default function ProductCard({
                 </div>
               </div>
 
-              <button 
-                onClick={handleOpenModal}
-                disabled={isOutOfStock}
-                className={`w-full font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all shadow-xs active:scale-95 whitespace-nowrap ${
-                  isOutOfStock 
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                    : "bg-secondary text-white hover:bg-[#255732]"
-                }`}
-              >
-                <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
-                <span>{isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}</span>
-              </button>
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist(product as any);
+                  }}
+                  className={`p-2.5 rounded-xl border transition-all flex items-center justify-center ${
+                    isWishlisted ? "bg-red-50 text-red-500 border-red-200" : "bg-slate-50 text-slate-400 hover:text-red-500 border-slate-200"
+                  }`}
+                  title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
+                >
+                  <FontAwesomeIcon icon={faHeart} className="text-sm" />
+                </button>
+                <button 
+                  onClick={handleOpenModal}
+                  disabled={isOutOfStock}
+                  className={`flex-1 font-black py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-all shadow-xs active:scale-95 whitespace-nowrap ${
+                    isOutOfStock 
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                      : "bg-secondary text-white hover:bg-[#255732]"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
+                  <span>{isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -360,17 +393,20 @@ export default function ProductCard({
                 </div>
               )}
               
-              <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsWishlisted(!isWishlisted);
+                    toggleWishlist(product as any);
                   }}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md backdrop-blur-md transition-all ${
-                    isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md backdrop-blur-md transition-all active:scale-90 ${
+                    isWishlisted ? "bg-red-50 text-red-500 scale-105" : "bg-white/90 text-slate-400 hover:text-red-500"
                   }`}
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-xs" />
+                  <FontAwesomeIcon icon={faHeart} className={`text-xs ${isWishlisted ? "text-red-500" : ""}`} />
                 </button>
               </div>
 

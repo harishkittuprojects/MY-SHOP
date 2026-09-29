@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faBars, 
@@ -12,14 +13,17 @@ import {
   faTimes, 
   faUser, 
   faShoppingCart,
+  faHeart,
   faChevronLeft,
   faLayerGroup,
   faBox,
-  faArrowRight
+  faArrowRight,
+  faWrench,
+  faBolt,
+  faGem,
+  faMobileAlt
 } from "@fortawesome/free-solid-svg-icons";
 import StreamingTagline from "./StreamingTagline";
-
-
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,10 +31,13 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const isHome = pathname === "/";
   const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,10 +47,8 @@ export default function Navbar() {
       try {
         const res = await fetch("/api/auth/session", { 
           signal: controller.signal,
-          cache: "no-store", // Prevent browser from caching redirect loops
-          headers: {
-            "Accept": "application/json"
-          }
+          cache: "no-store",
+          headers: { "Accept": "application/json" }
         });
         if (!res.ok) throw new Error("Session failed");
         const session = await res.json();
@@ -55,25 +60,56 @@ export default function Navbar() {
       }
     }
     
-    async function fetchCategories() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/categoryList");
-        const data = await res.json();
-        setCategories(Array.isArray(data) ? data : []);
+        const [catRes, prodRes] = await Promise.all([
+          fetch("/api/categoryList"),
+          fetch("/api/productList")
+        ]);
+        const catData = await catRes.json();
+        const prodData = await prodRes.json();
+        setCategories(Array.isArray(catData) ? catData : []);
+        setProducts(Array.isArray(prodData) ? prodData : []);
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        console.error("Failed to fetch nav data:", err);
       }
     }
 
     checkSession();
-    fetchCategories();
+    fetchData();
     
     return () => controller.abort();
-  }, [pathname]); // Check on every navigation
+  }, [pathname]);
+
+  // Handle outside clicks to close search suggestions
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const searchSuggestions = searchQuery.trim().length > 1
+    ? products
+        .filter((p) => {
+          const q = searchQuery.toLowerCase();
+          return (
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.category && p.category.toLowerCase().includes(q)) ||
+            (p.category_name && p.category_name.toLowerCase().includes(q)) ||
+            (p.sub_category && p.sub_category.toLowerCase().includes(q))
+          );
+        })
+        .slice(0, 6)
+    : [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setShowSuggestions(false);
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsMobileMenuOpen(false);
     }
@@ -93,7 +129,7 @@ export default function Navbar() {
         isScrolled ? "py-1 shadow-md" : "py-0 shadow-sm"
       }`}
     >
-      {/* Horizontal Announcement Bar (Collapses smoothly on scroll) */}
+      {/* Horizontal Announcement Bar */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
           isScrolled ? "max-h-0 opacity-0 -translate-y-2 pointer-events-none" : "max-h-14 opacity-100 translate-y-0"
@@ -128,27 +164,109 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6 lg:gap-8 text-[#222222]">
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
           <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
-          <Link href="/services" className={`hover:text-gray-600 font-medium ${pathname === "/services" ? "text-secondary font-bold" : ""}`}>Services</Link>
+          <Link href="/services/display-replacement" className={`hover:text-gray-600 font-medium flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}>
+            <FontAwesomeIcon icon={faWrench} className="text-xs text-secondary" />
+            Screen Repair
+          </Link>
           <Link href="/about" className={`hover:text-gray-600 font-medium ${pathname === "/about" ? "text-secondary font-bold" : ""}`}>About</Link>
           <Link href="/contact" className={`hover:text-gray-600 font-medium ${pathname === "/contact" ? "text-secondary font-bold" : ""}`}>Contact</Link>
         </div>
 
         {/* Actions Area */}
         <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 z-50 flex-shrink-0">
-          {/* Search Bar */}
-          <form 
-            onSubmit={handleSearch}
-            className="flex items-center bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 transition-all focus-within:ring-2 focus-within:ring-secondary/30 focus-within:border-secondary focus-within:bg-white w-28 xs:w-36 sm:w-48 md:w-56 lg:w-64 shadow-xs"
+          {/* Live Search Bar with Suggestions */}
+          <div ref={searchContainerRef} className="relative">
+            <form 
+              onSubmit={handleSearch}
+              className="flex items-center bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 transition-all focus-within:ring-2 focus-within:ring-secondary/30 focus-within:border-secondary focus-within:bg-white w-28 xs:w-36 sm:w-48 md:w-56 lg:w-64 shadow-xs"
+            >
+              <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-1.5 sm:mr-2 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search brands, products..."
+                className="bg-transparent border-none outline-none w-full text-[11px] sm:text-xs md:text-sm text-slate-800 placeholder:text-slate-400 font-medium"
+                value={searchQuery}
+                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setShowSuggestions(false);
+                  }}
+                  className="text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                </button>
+              )}
+            </form>
+
+            {/* Suggestions Dropdown (Amazon style) */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2 z-50 min-w-[280px] max-h-[380px] overflow-y-auto">
+                <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                  Products &amp; Suggestions
+                </div>
+                {searchSuggestions.map((prod) => (
+                  <button
+                    key={prod.id}
+                    type="button"
+                    onClick={() => {
+                      setShowSuggestions(false);
+                      setSearchQuery("");
+                      router.push(`/products/${prod.id}`);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-3 transition-colors group border-b border-slate-50 last:border-0"
+                  >
+                    <div className="relative w-8 h-8 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden">
+                      <Image
+                        src={prod.image_url || prod.image || "/mobile-logo.png"}
+                        alt={prod.name}
+                        fill
+                        className="object-contain p-0.5"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-800 group-hover:text-secondary truncate">
+                        {prod.name}
+                      </p>
+                      <p className="text-[10px] text-emerald-700 font-black">
+                        ₹{Math.floor(prod.price).toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  className="w-full text-center py-2 text-xs font-bold text-secondary bg-emerald-50/60 hover:bg-emerald-50 transition-colors block"
+                >
+                  See all results for "{searchQuery}" →
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Wishlist Icon */}
+          <Link
+            href="/account?tab=wishlist"
+            className="relative p-1.5 sm:p-2 transition-colors text-[#222222] hover:text-red-500 flex items-center justify-center active:scale-95 flex-shrink-0"
+            aria-label="Wishlist"
+            title="Wishlist"
           >
-            <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-1.5 sm:mr-2 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent border-none outline-none w-full text-[11px] sm:text-xs md:text-sm text-slate-800 placeholder:text-slate-400 font-medium"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
+            <FontAwesomeIcon icon={faHeart} className="text-base sm:text-xl" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
 
           {/* Profile Symbol */}
           {user ? (
@@ -196,19 +314,19 @@ export default function Navbar() {
       <div className="bg-white border-t border-b border-slate-100 hidden md:block py-2.5">
         <div className="container flex items-center justify-between gap-4 lg:gap-8 overflow-x-auto no-scrollbar px-2 sm:px-4">
           {[
-            "Mobiles & Accessories",
-            "Computers & Tablets",
-            "TV & Audio",
-            "Kitchen Appliances",
-            "Home Appliances",
-            "Smart Technology"
-          ].map((catName) => (
+            { label: "Mobiles & Accessories", href: "/products?category=Mobiles%20%26%20Accessories" },
+            { label: "Old / Refurbished Mobiles", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+            { label: "Fashion & Jewellery", href: "/products?category=Fashion%20%26%20Jewellery" },
+            { label: "EV Vehicles", href: "/products?category=EV%20Vehicles" },
+            { label: "Mobile Accessories", href: "/products?category=Mobile%20Accessories" },
+            { label: "Display Replacement", href: "/services/display-replacement" },
+          ].map((catItem) => (
             <Link
-              key={catName}
-              href={`/products?category=${encodeURIComponent(catName)}`}
+              key={catItem.label}
+              href={catItem.href}
               className="text-xs lg:text-sm font-bold text-slate-900 hover:text-secondary whitespace-nowrap transition-colors tracking-tight py-0.5 border-b-2 border-transparent hover:border-secondary"
             >
-              {catName}
+              {catItem.label}
             </Link>
           ))}
         </div>

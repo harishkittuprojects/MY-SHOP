@@ -28,6 +28,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "@/components/common/ProductCard";
 
 interface Product {
@@ -68,6 +69,7 @@ export default function ProductDetailPage({
   const productId = resolvedParams.id;
   const router = useRouter();
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -75,9 +77,12 @@ export default function ProductDetailPage({
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
   const [activeTab, setActiveTab] = useState<"specs" | "desc" | "reviews">("specs");
+  const [pincode, setPincode] = useState("");
+  const [pincodeChecked, setPincodeChecked] = useState(false);
+
+  const isWishlisted = isInWishlist(product?.id || "");
 
   const normalizeImageUrl = (url?: string) => {
     if (!url) return "/mobile-logo.png";
@@ -321,13 +326,13 @@ export default function ProductDetailPage({
                   <FontAwesomeIcon icon={faShareNodes} />
                 </button>
                 <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={() => product && toggleWishlist(product as any)}
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
                     isWishlisted
-                      ? "bg-rose-50 text-rose-500"
+                      ? "bg-rose-50 text-rose-500 scale-105"
                       : "bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500"
                   }`}
-                  title="Wishlist"
+                  title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
                 >
                   <FontAwesomeIcon icon={faHeart} />
                 </button>
@@ -582,6 +587,72 @@ export default function ProductDetailPage({
                   </button>
                 </div>
               </div>
+
+              {/* Pincode & Delivery Date Checker (Amazon style) */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                  Delivery &amp; Location:
+                </span>
+                <div className="flex items-center gap-2 max-w-sm">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="Enter 6-digit Pincode"
+                    value={pincode}
+                    onChange={(e) => {
+                      setPincode(e.target.value.replace(/\D/g, ""));
+                      setPincodeChecked(false);
+                    }}
+                    className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-secondary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPincodeChecked(true)}
+                    disabled={pincode.length < 6}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all"
+                  >
+                    Check
+                  </button>
+                </div>
+                {pincodeChecked && (
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                    <FontAwesomeIcon icon={faTruck} className="text-emerald-600" />
+                    <span>⚡ <strong>FREE Express Delivery</strong> by Tomorrow, 5 PM to {pincode}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Cross-Sell / Service Booking Notices */}
+              {product.category?.toLowerCase().includes("mobile") && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-blue-950">🛠️ Cracked or Broken Screen?</p>
+                    <p className="text-[11px] text-blue-700">We offer 30-min doorstep display replacement with 6-month warranty.</p>
+                  </div>
+                  <Link
+                    href="/services/display-replacement"
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-[11px] shrink-0 shadow-xs"
+                  >
+                    Book Repair
+                  </Link>
+                </div>
+              )}
+
+              {/* EV Vehicle Test Ride Notice */}
+              {(product.category_id?.includes("ev") || product.category?.toLowerCase().includes("ev") || product.category?.toLowerCase().includes("vehicle")) && (
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-emerald-950">⚡ Want a Home Test Ride?</p>
+                    <p className="text-[11px] text-emerald-700">Experience zero emissions and instant torque at your doorstep.</p>
+                  </div>
+                  <Link
+                    href="/contact?subject=EV%20Test%20Ride"
+                    className="px-3 py-1.5 bg-secondary hover:bg-[#255732] text-white font-bold rounded-xl text-[11px] shrink-0 shadow-xs"
+                  >
+                    Book Test Ride
+                  </Link>
+                </div>
+              )}
 
               {/* Trust Badges */}
               <div className="pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
