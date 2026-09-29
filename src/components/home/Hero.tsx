@@ -74,12 +74,11 @@ export default function Hero() {
   return (
     <section className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-2 sm:pt-3 md:pt-4 select-none">
       {/* 
-        Compact, Professional Hero Container:
-        - Mobile: ~200px - 230px
-        - Tablet: ~280px - 330px
-        - Desktop: ~350px - 380px (leaves navbar + categories fully visible above the fold)
+        Responsive Hero Container:
+        - Mobile: Original 16:9 aspect ratio with edge-to-edge cover fit
+        - Desktop: Compact ~340px - 375px with ambient-contain fit
       */}
-      <div className="relative w-full h-[200px] xs:h-[230px] sm:h-[280px] md:h-[340px] lg:h-[375px] max-h-[390px] rounded-2xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-950 group">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[340px] lg:h-[375px] max-h-[390px] rounded-2xl sm:rounded-3xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-950 group">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
@@ -106,34 +105,51 @@ export default function Hero() {
                 href={slide.link || "/products"} 
                 className="block relative w-full h-full cursor-pointer overflow-hidden"
               >
-                {/* 1. Ambient Background Layer (Blended with image colors so no harsh blank space) */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                  <Image 
-                    src={slide.image_url} 
-                    alt="" 
-                    fill 
-                    className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
-                    aria-hidden="true"
-                    unoptimized
-                  />
-                  <div className="absolute inset-0 bg-slate-950/40" />
-                </div>
-
-                {/* 2. Foreground Main Banner Graphic (100% complete, zero cropping, sharp aspect ratio) */}
-                <div className="relative w-full h-full flex items-center justify-center">
+                {/* ================= MOBILE VIEW (Original 16:9 Full-Bleed Cover Fit) ================= */}
+                <div className="relative w-full h-full block md:hidden">
                   <Image 
                     src={slide.image_url} 
                     alt={slide.title || `Hero Banner ${index + 1}`} 
                     fill 
-                    className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
+                    className="object-cover object-center w-full h-full transition-transform duration-700 active:scale-100"
                     priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, 1280px"
+                    sizes="100vw"
                     unoptimized
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10 pointer-events-none" />
+                </div>
+
+                {/* ================= DESKTOP VIEW (Dual-Layer Ambient Contain Layout) ================= */}
+                <div className="relative w-full h-full hidden md:block">
+                  {/* Ambient Backdrop */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <Image 
+                      src={slide.image_url} 
+                      alt="" 
+                      fill 
+                      className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
+                      aria-hidden="true"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-slate-950/40" />
+                  </div>
+
+                  {/* Foreground Sharp Banner Graphic */}
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <Image 
+                      src={slide.image_url} 
+                      alt={slide.title || `Hero Banner ${index + 1}`} 
+                      fill 
+                      className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
+                      priority={index === 0}
+                      sizes="1280px"
+                      unoptimized
+                    />
+                  </div>
                 </div>
 
                 {/* Subtle vignette border for ultra-crisp edge finish */}
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl pointer-events-none" />
+                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl sm:rounded-3xl md:rounded-3xl pointer-events-none" />
               </Link>
             </SwiperSlide>
           ))}
