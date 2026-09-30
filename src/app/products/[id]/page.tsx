@@ -31,6 +31,21 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "@/components/common/ProductCard";
 
+interface ProductVariant {
+  id: string;
+  ram?: string;
+  rom?: string;
+  storage_label: string;
+  color: string;
+  color_code?: string;
+  price: number;
+  original_price?: number;
+  stock_quantity: number;
+  sku?: string;
+  image_url?: string;
+  is_active?: boolean;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -58,6 +73,7 @@ interface Product {
   battery_health?: string;
   warranty_period?: string;
   specs?: Record<string, string>;
+  variants?: ProductVariant[];
 }
 
 export default function ProductDetailPage({
@@ -75,7 +91,14 @@ export default function ProductDetailPage({
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string>("");
-  const [selectedVariant, setSelectedVariant] = useState<string>("");
+  
+  // Storage & Color Variant States
+  const [selectedStorage, setSelectedStorage] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notifySubmitted, setNotifySubmitted] = useState(false);
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
+
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
   const [activeTab, setActiveTab] = useState<"specs" | "desc" | "reviews">("specs");
@@ -103,14 +126,21 @@ export default function ProductDetailPage({
           );
           setSelectedImage(initialImg);
 
-          // Set initial variant
-          if (data.unit) {
-            const variants = data.unit
-              .split(",")
-              .map((u) => u.trim())
-              .filter(Boolean);
-            if (variants.length > 0) {
-              setSelectedVariant(variants[0]);
+          // Setup initial storage & color variant
+          const variants = Array.isArray(data.variants) ? data.variants : [];
+          if (variants.length > 0) {
+            // Find first in-stock variant or first variant
+            const firstInStock = variants.find(v => (v.stock_quantity || 0) > 0 && v.is_active !== false) || variants[0];
+            const storage = firstInStock.storage_label || (firstInStock.ram && firstInStock.rom ? `${firstInStock.ram} RAM + ${firstInStock.rom} ROM` : "Standard");
+            setSelectedStorage(storage);
+            setSelectedColor(firstInStock.color || "Standard");
+            if (firstInStock.image_url) {
+              setSelectedImage(normalizeImageUrl(firstInStock.image_url));
+            }
+          } else if (data.unit) {
+            const units = data.unit.split(",").map((u) => u.trim()).filter(Boolean);
+            if (units.length > 0) {
+              setSelectedStorage(units[0]);
             }
           }
 
@@ -140,6 +170,88 @@ export default function ProductDetailPage({
       fetchProduct();
     }
   }, [productId]);
+
+  // Derived Variant Configurations
+  const productVariants = React.useMemo(() => {
+    return Array.isArray(product?.variants) ? product.variants : [];
+  }, [product]);
+
+  // Distinct Available Storage Options (RAM + ROM combinations)
+  const availableStorages = React.useMemo(() => {
+    if (productVariants.length === 0) {
+      return product?.unit ? product.unit.split(",").map(u => u.trim()).filter(Boolean) : [];
+    }
+    const map = new Map<string, { label: string; minPrice: number; hasStock: boolean }>();
+    productVariants.forEach(v => {
+      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      const current = map.get(label);
+      const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
+      if (!current) {
+        map.set(label, { label, minPrice: v.price, hasStock: isInstock });
+      } else {
+        map.set(label, {
+          label,
+          minPrice: Math.min(current.minPrice, v.price),
+          hasStock: current.hasStock || isInstock
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [productVariants, product]);
+
+  // Available Colors for the currently selected Storage
+  const colorsForSelectedStorage = React.useMemo(() => {
+    if (productVariants.length === 0) return [];
+    const matchedVariants = productVariants.filter(v => {
+      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      return label.toLowerCase() === selectedStorage.toLowerCase();
+    });
+    return matchedVariants;
+  }, [productVariants, selectedStorage]);
+
+  // Active Selected Variant Object
+  const activeVariant = React.useMemo(() => {
+    if (productVariants.length === 0) return null;
+    return productVariants.find(v => {
+      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      return label.toLowerCase() === selectedStorage.toLowerCase() &&
+             v.color.toLowerCase() === selectedColor.toLowerCase();
+    }) || colorsForSelectedStorage[0] || productVariants[0] || null;
+  }, [productVariants, selectedStorage, selectedColor, colorsForSelectedStorage]);
+
+  // Handle Storage Change
+  const handleStorageSelect = (newStorage: string) => {
+    setSelectedStorage(newStorage);
+    // Check if the current color is in stock in the new storage
+    const colorsInNewStorage = productVariants.filter(v => {
+      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      return label.toLowerCase() === newStorage.toLowerCase();
+    });
+
+    const sameColorMatch = colorsInNewStorage.find(
+      c => c.color.toLowerCase() === selectedColor.toLowerCase() && (c.stock_quantity || 0) > 0
+    );
+
+    if (sameColorMatch) {
+      setSelectedColor(sameColorMatch.color);
+      if (sameColorMatch.image_url) setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
+    } else {
+      // Find first in-stock color or first available
+      const firstInStock = colorsInNewStorage.find(c => (c.stock_quantity || 0) > 0) || colorsInNewStorage[0];
+      if (firstInStock) {
+        setSelectedColor(firstInStock.color);
+        if (firstInStock.image_url) setSelectedImage(normalizeImageUrl(firstInStock.image_url));
+      }
+    }
+  };
+
+  // Handle Color Select
+  const handleColorSelect = (variant: ProductVariant) => {
+    setSelectedColor(variant.color);
+    if (variant.image_url) {
+      setSelectedImage(normalizeImageUrl(variant.image_url));
+    }
+  };
 
   if (loading) {
     return (
@@ -175,21 +287,29 @@ export default function ProductDetailPage({
     );
   }
 
+  // Active Price & Stock calculations
   const displayCategory = product.category_name || product.category || "Smartphones";
-  const originalPrice =
-    product.original_price && product.original_price > product.price
-      ? product.original_price
-      : Math.round(product.price * 1.18);
-  const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
-  const savings = Math.max(0, originalPrice - product.price);
-  const bankOfferPrice = Math.round(product.price * 0.92);
-  const emiPerMonth = Math.round(product.price / 12);
-  const isOutOfStock = product.is_out_of_stock || product.stock_quantity <= 0;
+  const currentPrice = activeVariant ? Number(activeVariant.price) : Number(product.price);
+  const rawOriginalPrice = activeVariant?.original_price || product.original_price;
+  const originalPrice = rawOriginalPrice && Number(rawOriginalPrice) > currentPrice
+    ? Number(rawOriginalPrice)
+    : Math.round(currentPrice * 1.18);
+  const discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  const savings = Math.max(0, originalPrice - currentPrice);
+  const bankOfferPrice = Math.round(currentPrice * 0.92);
+  const emiPerMonth = Math.round(currentPrice / 12);
+
+  const currentStock = activeVariant ? Number(activeVariant.stock_quantity) : Number(product.stock_quantity);
+  const isOutOfStock = activeVariant
+    ? (currentStock <= 0 || activeVariant.is_active === false)
+    : (product.is_out_of_stock || currentStock <= 0);
+
   const brandName = product.name.split(" ")[0] || "Official";
 
   const allImages = Array.from(
     new Set(
       [
+        activeVariant?.image_url,
         ...(product.images || []),
         product.image_url,
         product.image,
@@ -199,23 +319,22 @@ export default function ProductDetailPage({
     )
   );
 
-  const variantsList = product.unit
-    ? product.unit
-        .split(",")
-        .map((u) => u.trim())
-        .filter(Boolean)
-    : [];
-
   const handleAddToCart = () => {
     if (isOutOfStock) return;
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: currentPrice,
       image: selectedImage || normalizeImageUrl(product.image_url || product.image),
       quantity,
       category: displayCategory,
-      selectedUnit: selectedVariant || product.unit,
+      selectedUnit: selectedStorage || product.unit,
+      variant_id: activeVariant?.id,
+      color: activeVariant?.color || selectedColor,
+      storage: selectedStorage,
+      ram: activeVariant?.ram,
+      rom: activeVariant?.rom,
+      sku: activeVariant?.sku || product.sku
     });
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 3000);
@@ -226,20 +345,38 @@ export default function ProductDetailPage({
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: currentPrice,
       image: selectedImage || normalizeImageUrl(product.image_url || product.image),
       quantity,
       category: displayCategory,
-      selectedUnit: selectedVariant || product.unit,
+      selectedUnit: selectedStorage || product.unit,
+      variant_id: activeVariant?.id,
+      color: activeVariant?.color || selectedColor,
+      storage: selectedStorage,
+      ram: activeVariant?.ram,
+      rom: activeVariant?.rom,
+      sku: activeVariant?.sku || product.sku
     });
     router.push("/cart");
+  };
+
+  const handleNotifySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifyEmail) return;
+    setNotifySubmitted(true);
+    setTimeout(() => {
+      setShowNotifyModal(false);
+      setNotifySubmitted(false);
+      setNotifyEmail("");
+      alert(`Thank you! We will notify ${notifyEmail} as soon as this variant (${selectedStorage} - ${selectedColor}) is back in stock.`);
+    }, 1200);
   };
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
         title: product.name,
-        text: `Check out ${product.name} at ₹${product.price}!`,
+        text: `Check out ${product.name} (${selectedStorage} - ${selectedColor}) at ₹${currentPrice}!`,
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -452,9 +589,9 @@ export default function ProductDetailPage({
               <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                 <div className="flex items-baseline gap-3 flex-wrap">
                   <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                    ₹{Math.floor(product.price).toLocaleString("en-IN")}
+                    ₹{Math.floor(currentPrice).toLocaleString("en-IN")}
                   </span>
-                  {originalPrice > product.price && (
+                  {originalPrice > currentPrice && (
                     <>
                       <span className="text-base sm:text-lg text-slate-400 line-through font-semibold">
                         ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
@@ -469,6 +606,34 @@ export default function ProductDetailPage({
                 {savings > 0 && (
                   <div className="text-xs font-bold text-emerald-700">
                     You save ₹{savings.toLocaleString("en-IN")} on this order
+                  </div>
+                )}
+              </div>
+
+              {/* Stock Status Indicator */}
+              <div className="pt-2">
+                {!isOutOfStock ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+                    <FontAwesomeIcon icon={faCircleCheck} className="text-emerald-600" />
+                    <span>
+                      {currentStock <= 3
+                        ? `Only ${currentStock} left in stock - order soon!`
+                        : "In Stock (Dispatched in 24 Hours with 1-Year Official Warranty)"}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs">
+                    <div className="flex items-center gap-2 text-rose-800 font-bold">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                      <span>Currently Out of Stock for {selectedColor} ({selectedStorage})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNotifyModal(true)}
+                      className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs shadow-xs"
+                    >
+                      Notify Me
+                    </button>
                   </div>
                 )}
               </div>
@@ -505,59 +670,107 @@ export default function ProductDetailPage({
                 </div>
               </div>
 
-              {/* Refurbished / EV / Special Condition Box */}
-              {(product.battery_health || product.condition || product.warranty_period) && (
-                <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-black text-amber-900 uppercase tracking-wider">
-                    <span>🛡️ Device Certification &amp; Warranty</span>
+              {/* 1. RAM & ROM / Storage Combination Selector */}
+              {availableStorages.length > 0 && (
+                <div className="pt-4 border-t border-slate-100 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 uppercase tracking-wider">
+                      Select Storage / Configuration:
+                    </span>
+                    <span className="font-black text-emerald-700">{selectedStorage}</span>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold text-slate-800">
-                    {product.condition && (
-                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center">
-                        <span className="text-slate-500 block text-[10px] uppercase">Grade / Condition</span>
-                        <span className="text-amber-900 font-black">{product.condition}</span>
-                      </div>
-                    )}
-                    {product.battery_health && (
-                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center">
-                        <span className="text-slate-500 block text-[10px] uppercase">Battery Health</span>
-                        <span className="text-emerald-700 font-black">{product.battery_health}</span>
-                      </div>
-                    )}
-                    {product.warranty_period && (
-                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 text-center col-span-2 sm:col-span-1">
-                        <span className="text-slate-500 block text-[10px] uppercase">Warranty</span>
-                        <span className="text-slate-900 font-bold">{product.warranty_period}</span>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {availableStorages.map((item, idx) => {
+                      const label = typeof item === 'string' ? item : item.label;
+                      const minPrice = typeof item === 'string' ? null : item.minPrice;
+                      const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleStorageSelect(label)}
+                          className={`p-3 rounded-2xl text-left transition-all border cursor-pointer relative ${
+                            isSelected
+                              ? "bg-emerald-50/70 border-emerald-600 ring-2 ring-emerald-600/20 shadow-xs"
+                              : "bg-white border-slate-200 hover:border-slate-300"
+                          }`}
+                        >
+                          <span className={`block text-xs font-black ${isSelected ? "text-emerald-950" : "text-slate-800"}`}>
+                            {label}
+                          </span>
+                          {minPrice && (
+                            <span className="block text-[11px] font-bold text-slate-500 mt-0.5">
+                              From ₹{Math.floor(minPrice).toLocaleString("en-IN")}
+                            </span>
+                          )}
+                          {isSelected && (
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600"></span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Variants Selector (Storage / RAM / Device Options) */}
-              {variantsList.length > 0 && (
-                <div className="pt-3 border-t border-slate-100 space-y-2.5">
+              {/* 2. Colour Availability Swatches (For Selected RAM/ROM) */}
+              {colorsForSelectedStorage.length > 0 && (
+                <div className="pt-4 border-t border-slate-100 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-700 uppercase tracking-wider">
-                      Storage & Device Variant:
+                      Select Colour:
                     </span>
-                    <span className="font-black text-emerald-700">{selectedVariant}</span>
+                    <span className="font-black text-slate-900">{selectedColor}</span>
                   </div>
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    {variantsList.map((variant, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedVariant(variant)}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                          selectedVariant === variant
-                            ? "bg-slate-900 border-slate-900 text-white shadow-sm ring-2 ring-slate-900/10"
-                            : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
-                        }`}
-                      >
-                        {variant}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                    {colorsForSelectedStorage.map((v) => {
+                      const isColorSelected = selectedColor.toLowerCase() === v.color.toLowerCase();
+                      const isColorOutOfStock = (v.stock_quantity || 0) <= 0 || v.is_active === false;
+
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => handleColorSelect(v)}
+                          className={`p-2.5 rounded-2xl text-left transition-all border cursor-pointer relative flex flex-col justify-between gap-1.5 ${
+                            isColorSelected
+                              ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10"
+                              : isColorOutOfStock
+                              ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60"
+                              : "bg-white border-slate-200 hover:border-slate-300 text-slate-800"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-5 h-5 rounded-full border border-black/10 shrink-0 shadow-2xs"
+                              style={{ backgroundColor: v.color_code || "#334155" }}
+                            />
+                            <span className="text-xs font-bold truncate">
+                              {v.color}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-1 mt-1 text-[10px] font-bold">
+                            <span className={isColorSelected ? "text-emerald-300 font-black" : "text-slate-600"}>
+                              ₹{Math.floor(v.price).toLocaleString("en-IN")}
+                            </span>
+                            {isColorOutOfStock ? (
+                              <span className="text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
+                                Out of Stock
+                              </span>
+                            ) : v.stock_quantity <= 3 ? (
+                              <span className="text-amber-500 font-bold bg-amber-50 px-1.5 py-0.5 rounded">
+                                {v.stock_quantity} Left
+                              </span>
+                            ) : (
+                              <span className={isColorSelected ? "text-emerald-300" : "text-emerald-600"}>
+                                In Stock
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -924,6 +1137,63 @@ export default function ProductDetailPage({
           <span>Buy Now</span>
         </button>
       </div>
+
+      {/* ======================= NOTIFY ME MODAL ======================= */}
+      {showNotifyModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowNotifyModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm"
+            >
+              ✕
+            </button>
+
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-xl">
+                🔔
+              </div>
+              <h3 className="text-lg font-black text-slate-900">
+                Get Notified When Available
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                <strong>{product.name}</strong> in <strong>{selectedStorage} ({selectedColor})</strong> is currently out of stock. Enter your email and we'll alert you the moment it arrives in our warehouse!
+              </p>
+
+              <form onSubmit={handleNotifySubmit} className="space-y-3 pt-2">
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={notifyEmail}
+                  onChange={(e) => setNotifyEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-emerald-600"
+                />
+                <button
+                  type="submit"
+                  disabled={notifySubmitted}
+                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
+                >
+                  {notifySubmitted ? "Registering Alert..." : "Notify Me Upon Restock"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Added to Cart Toast */}
+      {addedToast && (
+        <div className="fixed top-20 right-4 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-800 animate-in slide-in-from-top-4 duration-300">
+          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs">
+            ✓
+          </div>
+          <div>
+            <div className="text-xs font-black">Added to Cart!</div>
+            <div className="text-[10px] text-slate-400">{selectedStorage} • {selectedColor}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

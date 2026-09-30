@@ -10,13 +10,19 @@ export interface CartItem {
   quantity: number;
   category: string;
   selectedUnit?: string;
+  variant_id?: string;
+  color?: string;
+  storage?: string;
+  ram?: string;
+  rom?: string;
+  sku?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string, selectedUnit?: string) => void;
-  updateQuantity: (id: string, quantity: number, selectedUnit?: string) => void;
+  removeFromCart: (id: string, selectedUnit?: string, variantId?: string) => void;
+  updateQuantity: (id: string, quantity: number, selectedUnit?: string, variantId?: string) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -49,14 +55,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("madur_cart", JSON.stringify(cart));
   }, [cart]);
 
+  const isMatch = (a: CartItem, id: string, selectedUnit?: string, variantId?: string) => {
+    if (a.id !== id) return false;
+    if (variantId && a.variant_id) return a.variant_id === variantId;
+    return a.selectedUnit === selectedUnit;
+  };
+
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
-      const existing = prev.find(
-        (i) => i.id === item.id && i.selectedUnit === item.selectedUnit
+      const existing = prev.find((i) =>
+        isMatch(i, item.id, item.selectedUnit, item.variant_id)
       );
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id && i.selectedUnit === item.selectedUnit
+          isMatch(i, item.id, item.selectedUnit, item.variant_id)
             ? { ...i, quantity: i.quantity + item.quantity }
             : i
         );
@@ -67,17 +79,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartToastItem({ ...item });
   };
 
-  const removeFromCart = (id: string, selectedUnit?: string) => {
-    setCart((prev) => prev.filter((i) => !(i.id === id && i.selectedUnit === selectedUnit)));
+  const removeFromCart = (id: string, selectedUnit?: string, variantId?: string) => {
+    setCart((prev) => prev.filter((i) => !isMatch(i, id, selectedUnit, variantId)));
   };
 
-  const updateQuantity = (id: string, quantity: number, selectedUnit?: string) => {
+  const updateQuantity = (id: string, quantity: number, selectedUnit?: string, variantId?: string) => {
     if (quantity <= 0) {
-      removeFromCart(id, selectedUnit);
+      removeFromCart(id, selectedUnit, variantId);
       return;
     }
     setCart((prev) =>
-      prev.map((i) => (i.id === id && i.selectedUnit === selectedUnit ? { ...i, quantity } : i))
+      prev.map((i) => (isMatch(i, id, selectedUnit, variantId) ? { ...i, quantity } : i))
     );
   };
 

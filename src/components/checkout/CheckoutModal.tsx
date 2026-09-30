@@ -250,7 +250,13 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        unit: item.selectedUnit || (item as any).unit || ''
+        unit: item.selectedUnit || (item as any).unit || '',
+        variant_id: item.variant_id || '',
+        color: item.color || '',
+        storage: item.storage || '',
+        ram: item.ram || '',
+        rom: item.rom || '',
+        sku: item.sku || ''
       }))
     };
 

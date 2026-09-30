@@ -97,7 +97,7 @@ export default function CartPage() {
                 <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold text-secondary mb-1">{item.category}</p>
-                    <h3 className="text-lg font-black text-gray-800 mb-1 flex items-center gap-2">
+                    <h3 className="text-lg font-black text-gray-800 mb-1 flex items-center gap-2 flex-wrap">
                       {item.name}
                       {item.selectedUnit && (
                         <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
@@ -105,7 +105,21 @@ export default function CartPage() {
                         </span>
                       )}
                     </h3>
-                    <p className="text-secondary font-black">₹{Math.floor(item.price)}</p>
+                    {(item.storage || item.color) && (
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                        {item.storage && (
+                          <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-bold">
+                            {item.storage}
+                          </span>
+                        )}
+                        {item.color && (
+                          <span className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/60 px-2 py-0.5 rounded-md font-bold">
+                            {item.color}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-secondary font-black">₹{Math.floor(item.price).toLocaleString("en-IN")}</p>
                   </div>
 
                   <div className="flex items-center justify-between md:justify-end gap-8">

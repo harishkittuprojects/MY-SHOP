@@ -23,6 +23,12 @@ export async function placeOrderAction(orderData: {
     quantity: number;
     price: number;
     unit?: string;
+    variant_id?: string;
+    color?: string;
+    storage?: string;
+    ram?: string;
+    rom?: string;
+    sku?: string;
   }[];
 }) {
   try {
@@ -43,7 +49,13 @@ export async function placeOrderAction(orderData: {
       name: i.name || 'Product',
       quantity: Number(i.quantity) || 1,
       price: Number(i.price) || 0,
-      unit: i.unit || ''
+      unit: i.unit || '',
+      variant_id: i.variant_id || (i as any).variantId || '',
+      color: i.color || '',
+      storage: i.storage || '',
+      ram: i.ram || '',
+      rom: i.rom || '',
+      sku: i.sku || ''
     }));
 
     const result = await OrdersDB.create({

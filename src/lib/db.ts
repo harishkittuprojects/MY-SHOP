@@ -363,14 +363,45 @@ export const ProductsDB = {
     return true;
   },
 
-  async adjustStock(productId: string, quantityChange: number, reason: string, adminName: string = 'System') {
+  async adjustStock(
+    productId: string, 
+    quantityChange: number, 
+    reason: string, 
+    adminName: string = 'System', 
+    variantId?: string
+  ) {
     const current = await this.getById(productId);
     if (!current) return null;
+
+    let variants = Array.isArray(current.variants) ? [...current.variants] : [];
+    let variantName = "";
+    let previousVariantStock = 0;
+    let newVariantStock = 0;
+
+    if (variantId && variants.length > 0) {
+      variants = variants.map(v => {
+        if (v.id === variantId || (v.sku && v.sku === variantId)) {
+          previousVariantStock = Number(v.stock_quantity) || 0;
+          newVariantStock = Math.max(0, previousVariantStock + quantityChange);
+          variantName = `${v.storage_label || (v.ram && v.rom ? `${v.ram} + ${v.rom}` : "")} - ${v.color || ""}`.trim();
+          return {
+            ...v,
+            stock_quantity: newVariantStock
+          };
+        }
+        return v;
+      });
+    }
 
     const currentStock = current.stock_quantity !== undefined && current.stock_quantity !== null && !isNaN(Number(current.stock_quantity))
       ? Number(current.stock_quantity)
       : (current.is_available !== false ? 25 : 0);
-    const newStock = Math.max(0, currentStock + quantityChange);
+    
+    // If product has variants, total stock is sum of active variants
+    const newStock = variants.length > 0 
+      ? variants.reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0)
+      : Math.max(0, currentStock + quantityChange);
+    
     const isAvailable = newStock > 0;
 
     const cleanRecord: any = {
@@ -392,7 +423,7 @@ export const ProductsDB = {
       is_popular: Boolean(current.is_popular),
       rating: Number(current.rating) || 4.8,
       reviews_count: Number(current.reviews_count) || 0,
-      variants: Array.isArray(current.variants) ? current.variants : [],
+      variants: variants,
       updated_at: new Date().toISOString()
     };
 
@@ -404,17 +435,137 @@ export const ProductsDB = {
     try {
       await supabase.from('inventory_logs').insert([{
         product_id: current.id,
-        product_name: current.name,
+        product_name: variantName ? `${current.name} (${variantName})` : current.name,
         change_type: quantityChange < 0 ? 'order_deduct' : 'restock',
-        previous_stock: currentStock,
+        previous_stock: variantId ? previousVariantStock : currentStock,
         change_amount: quantityChange,
-        new_stock: newStock,
+        new_stock: variantId ? newVariantStock : newStock,
         reason: reason,
         admin_name: adminName
       }]);
     } catch { /* ignore log error */ }
 
-    return newStock;
+    return { totalStock: newStock, variantStock: newVariantStock, variants };
+  },
+
+  async getVariants(productId: string) {
+    const product = await this.getById(productId);
+    return product ? (Array.isArray(product.variants) ? product.variants : []) : [];
+  },
+
+  async addVariant(productId: string, variantData: any, adminName: string = 'Admin') {
+    const product = await this.getById(productId);
+    if (!product) throw new Error('Product not found');
+
+    const variants = Array.isArray(product.variants) ? [...product.variants] : [];
+    const ram = variantData.ram || '';
+    const rom = variantData.rom || '';
+    const storageLabel = variantData.storage_label || (ram && rom ? `${ram} RAM + ${rom} ROM` : (rom ? `${rom} ROM` : 'Standard'));
+    
+    const newVariant = {
+      id: variantData.id || `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      ram,
+      rom,
+      storage_label: storageLabel,
+      color: variantData.color || 'Standard',
+      color_code: variantData.color_code || '#334155',
+      price: Number(variantData.price) || Number(product.price) || 0,
+      original_price: Number(variantData.original_price) || Number(product.original_price) || Number(variantData.price) || 0,
+      stock_quantity: Number(variantData.stock_quantity) || 0,
+      sku: variantData.sku || `${product.sku || product.id}-${(variantData.color || 'STD').toUpperCase().slice(0, 3)}`,
+      image_url: variantData.image_url || product.image_url || '',
+      is_active: variantData.is_active !== undefined ? Boolean(variantData.is_active) : true,
+    };
+
+    variants.push(newVariant);
+    const totalStock = variants.reduce((acc, v) => acc + (Number(v.stock_quantity) || 0), 0);
+
+    await this.update(productId, {
+      variants,
+      stock_quantity: totalStock,
+      is_available: totalStock > 0
+    }, adminName);
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'add_variant',
+      entity_type: 'product_variant',
+      entity_id: newVariant.id,
+      details: { product_name: product.name, variant: newVariant }
+    });
+
+    return newVariant;
+  },
+
+  async updateVariant(productId: string, variantId: string, updates: any, adminName: string = 'Admin') {
+    const product = await this.getById(productId);
+    if (!product) throw new Error('Product not found');
+
+    let variants = Array.isArray(product.variants) ? [...product.variants] : [];
+    let updatedVariant: any = null;
+
+    variants = variants.map(v => {
+      if (v.id === variantId) {
+        const prevStock = v.stock_quantity;
+        const newStock = updates.stock_quantity !== undefined ? Number(updates.stock_quantity) : v.stock_quantity;
+        
+        updatedVariant = {
+          ...v,
+          ...updates,
+          price: updates.price !== undefined ? Number(updates.price) : v.price,
+          original_price: updates.original_price !== undefined ? Number(updates.original_price) : v.original_price,
+          stock_quantity: newStock,
+          is_active: updates.is_active !== undefined ? Boolean(updates.is_active) : v.is_active,
+        };
+
+        if (prevStock !== newStock) {
+          logActivity({
+            admin_name: adminName,
+            action: 'variant_stock_update',
+            entity_type: 'product_variant',
+            entity_id: variantId,
+            details: { product_name: product.name, variant: updatedVariant.storage_label, previous: prevStock, new: newStock }
+          }).catch(() => {});
+        }
+
+        return updatedVariant;
+      }
+      return v;
+    });
+
+    const totalStock = variants.reduce((acc, v) => acc + (Number(v.stock_quantity) || 0), 0);
+
+    await this.update(productId, {
+      variants,
+      stock_quantity: totalStock,
+      is_available: totalStock > 0
+    }, adminName);
+
+    return updatedVariant;
+  },
+
+  async deleteVariant(productId: string, variantId: string, adminName: string = 'Admin') {
+    const product = await this.getById(productId);
+    if (!product) throw new Error('Product not found');
+
+    const variants = (Array.isArray(product.variants) ? product.variants : []).filter((v: any) => v.id !== variantId);
+    const totalStock = variants.reduce((acc: number, v: any) => acc + (Number(v.stock_quantity) || 0), 0);
+
+    await this.update(productId, {
+      variants,
+      stock_quantity: totalStock,
+      is_available: totalStock > 0
+    }, adminName);
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'delete_variant',
+      entity_type: 'product_variant',
+      entity_id: variantId,
+      details: { product_name: product.name, variant_id: variantId }
+    });
+
+    return true;
   }
 };
 
@@ -484,7 +635,8 @@ export const OrdersDB = {
         if (item.id || item.product_id) {
           const pId = item.id || item.product_id;
           const qty = Number(item.quantity) || 1;
-          await ProductsDB.adjustStock(pId, -qty, `Order placed #${orderId}`, 'Order System');
+          const variantId = item.variant_id || (item as any).variantId || undefined;
+          await ProductsDB.adjustStock(pId, -qty, `Order placed #${orderId}`, 'Order System', variantId);
         }
       }
     } catch (e) {
@@ -556,8 +708,9 @@ export const OrdersDB = {
       for (const item of items) {
         const pId = item.id || item.product_id;
         const qty = Number(item.quantity) || 1;
+        const variantId = item.variant_id || (item as any).variantId || undefined;
         if (pId) {
-          await ProductsDB.adjustStock(pId, qty, `Restored from Cancelled Order #${orderId}`, adminName);
+          await ProductsDB.adjustStock(pId, qty, `Restored from Cancelled Order #${orderId}`, adminName, variantId);
         }
       }
     }
