@@ -19,6 +19,7 @@ import HomeBanners from "@/components/home/HomeBanners";
 import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
+import HomeCardMatrix from "@/components/home/HomeCardMatrix";
 import S26UltraSpotlightAd from "@/components/home/S26UltraSpotlightAd";
 import { useRouter } from "next/navigation";
 
@@ -101,6 +102,9 @@ export default function HomeContent() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden">
       <Hero />
+
+      {/* Structured 4-Column Boxed-Card Sections (2x2 grid in each card) */}
+      <HomeCardMatrix />
 
       {/* 1. Shop by Category (SHOW FIRST AS REQUESTED) */}
       <section className="container py-4 sm:py-6 md:py-10">
