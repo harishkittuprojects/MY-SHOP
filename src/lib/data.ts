@@ -21,11 +21,18 @@ export const categories = [
     sub_categories: ["Chargers & Adapters", "Cases & Covers", "Tempered Glass", "Power Banks", "Cables"]
   },
   { 
-    name: "Fashion & Jewellery", 
+    name: "Fashion", 
+    icon: "👜", 
+    id: "fashion", 
+    image_url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600",
+    sub_categories: ["Handbags & Purses", "Watches & Chronographs", "Fashion Accessories", "Apparel & Bags"]
+  },
+  { 
+    name: "Jewellery", 
     icon: "💍", 
-    id: "fashion-jewellery", 
+    id: "jewellery", 
     image_url: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600",
-    sub_categories: ["Gold & Diamond Jewellery", "Jewellery", "Watches & Bracelets", "Fashion Accessories"]
+    sub_categories: ["Gold & Diamond Jewellery", "Silver & Moissanite", "Necklace Sets & Chokers", "Rings & Bangles"]
   },
   { 
     name: "EV Vehicles", 
@@ -1013,12 +1020,12 @@ export const products = [
     description: "Hands-free magnetic wireless dashboard/air-vent car charger with smart overheating protection and ultra-firm grip over bumpy roads."
   },
 
-  // ==================== 4. FASHION & JEWELLERY ====================
+  // ==================== 4. JEWELLERY ====================
   {
     id: "royal-gold-necklace-set",
-    category: "Fashion & Jewellery",
-    category_id: "fashion-jewellery",
-    sub_category: "Gold & Diamond Jewellery",
+    category: "Jewellery",
+    category_id: "jewellery",
+    sub_category: "Necklace Sets & Chokers",
     name: "22K Gold Plated Royal Kundan & Pearl Choker Necklace Set with Jhumkas",
     unit: "22K Gold Polish • Handcrafted Kundan • Matching Jhumka Earrings",
     price: 4999,
@@ -1035,9 +1042,9 @@ export const products = [
   },
   {
     id: "solitaire-diamond-ring",
-    category: "Fashion & Jewellery",
-    category_id: "fashion-jewellery",
-    sub_category: "Jewellery",
+    category: "Jewellery",
+    category_id: "jewellery",
+    sub_category: "Silver & Moissanite",
     name: "925 Sterling Silver 2.0 Carat Solitaire Moissanite Diamond Ring (VVS1)",
     unit: "Pure 925 Silver • 2ct GRA Certified Moissanite • Anti-Tarnish",
     price: 3499,
@@ -1052,11 +1059,13 @@ export const products = [
     reviews_count: 640,
     description: "Brilliant 2.0 carat round cut GRA certified Moissanite diamond set in pure 925 sterling silver with rhodium polish. Passes diamond tester, superior fire & brilliance."
   },
+
+  // ==================== 4.5. FASHION ====================
   {
     id: "luxury-chronograph-watch",
-    category: "Fashion & Jewellery",
-    category_id: "fashion-jewellery",
-    sub_category: "Watches & Bracelets",
+    category: "Fashion",
+    category_id: "fashion",
+    sub_category: "Watches & Chronographs",
     name: "Men's Luxury Sapphire Glass Waterproof Quartz Chronograph Watch",
     unit: "Solid Stainless Steel • Sapphire Crystal Glass • 5ATM Water Resistant",
     price: 2999,
@@ -1073,9 +1082,9 @@ export const products = [
   },
   {
     id: "designer-leather-handbag",
-    category: "Fashion & Jewellery",
-    category_id: "fashion-jewellery",
-    sub_category: "Fashion Accessories",
+    category: "Fashion",
+    category_id: "fashion",
+    sub_category: "Handbags & Purses",
     name: "Italian Structured Vegan Leather Shoulder Handbag & Crossbody Bag",
     unit: "Premium Vegan Leather • Gold Hardware • Multi-Compartment",
     price: 2499,

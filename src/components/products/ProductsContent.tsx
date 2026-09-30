@@ -160,6 +160,22 @@ function Content() {
   );
 
   const activeSubcategories = useMemo(() => {
+    if (categoryFilter?.toLowerCase() === "fashion") {
+      return [
+        "Handbags & Purses",
+        "Watches & Chronographs",
+        "Fashion Accessories",
+        "Apparel & Bags"
+      ];
+    }
+    if (categoryFilter?.toLowerCase() === "jewellery") {
+      return [
+        "Gold & Diamond Jewellery",
+        "Silver & Moissanite",
+        "Necklace Sets & Chokers",
+        "Rings & Bangles"
+      ];
+    }
     if (isMobilesOnlyFilter) {
       return [
         "Flagship Phones",
@@ -291,6 +307,29 @@ function Content() {
             prodSubCategory.includes("power") ||
             prodSubCategory.includes("cable") ||
             prodSubCategory.includes("storage");
+        } else if (categoryFilter.toLowerCase() === "fashion") {
+          matchesCategory = 
+            prodCategoryName.toLowerCase() === "fashion" ||
+            prodCategoryId.toLowerCase() === "fashion" ||
+            prodSubCategory.includes("handbag") ||
+            prodSubCategory.includes("watch") ||
+            prodSubCategory.includes("fashion") ||
+            prodSubCategory.includes("apparel") ||
+            prodSubCategory.includes("bag") ||
+            Boolean(product.name && (product.name.toLowerCase().includes("handbag") || product.name.toLowerCase().includes("watch") || product.name.toLowerCase().includes("bag")));
+        } else if (categoryFilter.toLowerCase() === "jewellery" || categoryFilter.toLowerCase() === "jewelry") {
+          matchesCategory = 
+            prodCategoryName.toLowerCase() === "jewellery" ||
+            prodCategoryName.toLowerCase() === "jewelry" ||
+            prodCategoryId.toLowerCase() === "jewellery" ||
+            prodCategoryId.toLowerCase() === "jewelry" ||
+            prodSubCategory.includes("jewellery") ||
+            prodSubCategory.includes("gold") ||
+            prodSubCategory.includes("silver") ||
+            prodSubCategory.includes("moissanite") ||
+            prodSubCategory.includes("necklace") ||
+            prodSubCategory.includes("ring") ||
+            Boolean(product.name && (product.name.toLowerCase().includes("necklace") || product.name.toLowerCase().includes("ring") || product.name.toLowerCase().includes("gold") || product.name.toLowerCase().includes("diamond") || product.name.toLowerCase().includes("moissanite") || product.name.toLowerCase().includes("kundan")));
         } else if (isMobileAndAccessoriesFilter) {
           matchesCategory = 
             prodCategoryName.toLowerCase().includes("mobile") ||

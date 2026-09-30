@@ -317,7 +317,8 @@ export default function Navbar() {
             { label: "Mobiles", href: "/products?category=Mobiles" },
             { label: "Mobile Accessories", href: "/products?category=Mobile%20Accessories" },
             { label: "Old / Refurbished Mobiles", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
-            { label: "Fashion & Jewellery", href: "/products?category=Fashion%20%26%20Jewellery" },
+            { label: "Fashion", href: "/products?category=Fashion" },
+            { label: "Jewellery", href: "/products?category=Jewellery" },
             { label: "EV Vehicles", href: "/products?category=EV%20Vehicles" },
             { label: "Display Replacement", href: "/services/display-replacement" },
           ].map((catItem) => (
