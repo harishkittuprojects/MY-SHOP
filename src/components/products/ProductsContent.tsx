@@ -45,6 +45,7 @@ function Content() {
   const router = useRouter();
   const categoryFilter = searchParams.get("category");
   const urlSearchTerm = searchParams.get("search") || "";
+  const urlBrandParam = searchParams.get("brand") || "all";
   
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -53,7 +54,8 @@ function Content() {
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
   
   // Faceted Filters (Amazon-style)
-  const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [selectedBrand, setSelectedBrand] = useState<string>(urlBrandParam);
+  const [brandSearchTerm, setBrandSearchTerm] = useState<string>("");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [minRating, setMinRating] = useState<number>(0);
   const [conditionFilter, setConditionFilter] = useState<string>("all");
@@ -101,9 +103,44 @@ function Content() {
   }, [urlSearchTerm]);
 
   useEffect(() => {
+    if (urlBrandParam) {
+      setSelectedBrand(urlBrandParam);
+    }
+  }, [urlBrandParam]);
+
+  useEffect(() => {
     setSelectedSubCategory("all");
-    setSelectedBrand("all");
+    if (!urlBrandParam || urlBrandParam === "all") {
+      setSelectedBrand("all");
+    }
   }, [categoryFilter]);
+
+  // Helper for smart brand recognition
+  const getProductBrand = (p: any): string => {
+    if (p.brand && typeof p.brand === "string" && p.brand.trim()) {
+      return p.brand.trim();
+    }
+    const name = (p.name || "").toLowerCase();
+    if (name.includes("iphone") || name.includes("apple") || name.includes("airpods") || name.includes("ipad") || name.includes("macbook")) return "Apple";
+    if (name.includes("samsung") || name.includes("galaxy")) return "Samsung";
+    if (name.includes("oneplus") || name.includes("nord")) return "OnePlus";
+    if (name.includes("pixel") || name.includes("google")) return "Google";
+    if (name.includes("vivo") || name.includes("iqoo")) return "Vivo";
+    if (name.includes("realme") || name.includes("narzo")) return "Realme";
+    if (name.includes("redmi") || name.includes("xiaomi") || name.includes("poco")) return "Xiaomi";
+    if (name.includes("nothing") || name.includes("cmf")) return "Nothing";
+    if (name.includes("motorola") || name.includes("moto")) return "Motorola";
+    if (name.includes("boat")) return "boAt";
+    if (name.includes("sony")) return "Sony";
+    if (name.includes("sandisk")) return "SanDisk";
+    if (name.includes("noise")) return "Noise";
+    if (name.includes("jbl")) return "JBL";
+    if (name.includes("anker")) return "Anker";
+    if (name.includes("portronics")) return "Portronics";
+    
+    const firstWord = (p.name || "").split(" ")[0];
+    return firstWord && firstWord.length > 2 ? firstWord : "Other";
+  };
 
   const isMobileAndAccessoriesFilter = 
     categoryFilter?.toLowerCase() === "mobiles & accessories" || 
@@ -149,17 +186,30 @@ function Content() {
     return subs;
   }, [activeCategoryObj, categoryFilter, isMobileAndAccessoriesFilter, products]);
 
-  // Extract available brands
-  const availableBrands = useMemo(() => {
-    const brandsSet = new Set<string>();
+  // Extract available brands with counts
+  const availableBrandsWithCount = useMemo(() => {
+    const brandMap = new Map<string, number>();
     products.forEach((p) => {
-      const nameFirst = (p.name || "").split(" ")[0];
-      if (nameFirst && nameFirst.length > 2) {
-        brandsSet.add(nameFirst);
-      }
+      const brand = getProductBrand(p);
+      brandMap.set(brand, (brandMap.get(brand) || 0) + 1);
     });
-    return Array.from(brandsSet).sort();
+
+    return Array.from(brandMap.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ name, count }));
   }, [products]);
+
+  const availableBrands = useMemo(() => {
+    return availableBrandsWithCount.map((b) => b.name);
+  }, [availableBrandsWithCount]);
+
+  // Filtered brands for sidebar search
+  const displayedBrandsInSidebar = useMemo(() => {
+    if (!brandSearchTerm.trim()) return availableBrandsWithCount;
+    return availableBrandsWithCount.filter((b) =>
+      b.name.toLowerCase().includes(brandSearchTerm.toLowerCase())
+    );
+  }, [availableBrandsWithCount, brandSearchTerm]);
 
   // Active filters count
   const activeFiltersCount = useMemo(() => {
@@ -233,11 +283,13 @@ function Content() {
       }
 
       // 3. Brand Filter
+      const prodBrand = getProductBrand(product);
       const matchesBrand =
         selectedBrand === "all"
           ? true
-          : (product.name || "").toLowerCase().startsWith(selectedBrand.toLowerCase()) ||
-            (product.brand && product.brand.toLowerCase() === selectedBrand.toLowerCase());
+          : prodBrand.toLowerCase() === selectedBrand.toLowerCase() ||
+            (product.name || "").toLowerCase().includes(selectedBrand.toLowerCase()) ||
+            (product.brand && product.brand.toLowerCase().includes(selectedBrand.toLowerCase()));
 
       // 4. Price Range Filter
       let matchesPrice = true;
@@ -471,33 +523,83 @@ function Content() {
           </div>
 
           {/* 2. Brand Filter */}
-          {availableBrands.length > 0 && (
+          {availableBrandsWithCount.length > 0 && (
             <div className="pt-4 border-t border-slate-100">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-3">
-                Brand
-              </h4>
-              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1 no-scrollbar text-xs">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                  Brand ({availableBrandsWithCount.length})
+                </h4>
+                {selectedBrand !== "all" && (
+                  <button
+                    onClick={() => setSelectedBrand("all")}
+                    className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Brand Search Input if many brands */}
+              {availableBrandsWithCount.length > 6 && (
+                <div className="mb-2 relative">
+                  <input
+                    type="text"
+                    value={brandSearchTerm}
+                    onChange={(e) => setBrandSearchTerm(e.target.value)}
+                    placeholder="Search brands..."
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 outline-none focus:border-secondary"
+                  />
+                  {brandSearchTerm && (
+                    <button
+                      onClick={() => setBrandSearchTerm("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1 max-h-52 overflow-y-auto pr-1 no-scrollbar text-xs">
                 <button
                   onClick={() => setSelectedBrand("all")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors ${
-                    selectedBrand === "all" ? "bg-slate-100 text-secondary font-bold" : "text-slate-600 hover:bg-slate-50"
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                    selectedBrand === "all" ? "bg-slate-900 text-white font-bold shadow-xs" : "text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   <span>All Brands</span>
-                  {selectedBrand === "all" && <FontAwesomeIcon icon={faCheck} className="text-secondary text-xs" />}
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                    selectedBrand === "all" ? "bg-white/20 text-white" : "text-slate-400 bg-slate-100"
+                  }`}>
+                    {products.length}
+                  </span>
                 </button>
-                {availableBrands.map((brand) => (
-                  <button
-                    key={brand}
-                    onClick={() => setSelectedBrand(selectedBrand === brand ? "all" : brand)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors ${
-                      selectedBrand === brand ? "bg-slate-100 text-secondary font-bold" : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span>{brand}</span>
-                    {selectedBrand === brand && <FontAwesomeIcon icon={faCheck} className="text-secondary text-xs" />}
-                  </button>
-                ))}
+                {displayedBrandsInSidebar.map((brandObj) => {
+                  const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
+                  return (
+                    <button
+                      key={brandObj.name}
+                      onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        isSelected ? "bg-secondary text-white font-bold shadow-xs" : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] border ${
+                          isSelected ? "bg-white text-secondary border-white" : "border-slate-300 bg-white text-transparent"
+                        }`}>
+                          ✓
+                        </span>
+                        <span>{brandObj.name}</span>
+                      </span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                        isSelected ? "bg-white/20 text-white" : "text-slate-400 bg-slate-100"
+                      }`}>
+                        {brandObj.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -654,6 +756,50 @@ function Content() {
             </div>
           )}
 
+          {/* Top Brands Quick Selector Bar */}
+          {availableBrandsWithCount.length > 1 && (
+            <div className="mb-4 overflow-x-auto no-scrollbar px-3 md:px-0 pb-1">
+              <div className="flex items-center gap-1.5 min-w-max">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">
+                  Brands:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBrand("all")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    selectedBrand === "all"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  All
+                </button>
+                {availableBrandsWithCount.map((brandObj) => {
+                  const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
+                  return (
+                    <button
+                      key={brandObj.name}
+                      type="button"
+                      onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isSelected
+                          ? "bg-secondary text-white shadow-md shadow-secondary/20 font-black"
+                          : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                      }`}
+                    >
+                      <span>{brandObj.name}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                        isSelected ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {brandObj.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Controls & Sorting Toolbar */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mx-3 md:mx-0">
             {/* Left: Product count + active pills */}
@@ -790,29 +936,47 @@ function Content() {
             {/* Modal Scroll Content */}
             <div className="p-4 overflow-y-auto space-y-5 text-xs flex-1">
               {/* Brand Filter */}
-              {availableBrands.length > 0 && (
+              {availableBrandsWithCount.length > 0 && (
                 <div>
-                  <h4 className="font-black uppercase tracking-wider text-slate-700 mb-2">Brand</h4>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-black uppercase tracking-wider text-slate-700">Brand</h4>
+                    {selectedBrand !== "all" && (
+                      <button
+                        onClick={() => setSelectedBrand("all")}
+                        className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto no-scrollbar py-1">
                     <button
                       onClick={() => setSelectedBrand("all")}
-                      className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                        selectedBrand === "all" ? "bg-secondary text-white" : "bg-slate-100 text-slate-700"
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        selectedBrand === "all" ? "bg-slate-900 text-white shadow-xs" : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       All Brands
                     </button>
-                    {availableBrands.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => setSelectedBrand(selectedBrand === brand ? "all" : brand)}
-                        className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                          selectedBrand === brand ? "bg-secondary text-white" : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {brand}
-                      </button>
-                    ))}
+                    {availableBrandsWithCount.map((brandObj) => {
+                      const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
+                      return (
+                        <button
+                          key={brandObj.name}
+                          onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                            isSelected ? "bg-secondary text-white shadow-xs font-black" : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <span>{brandObj.name}</span>
+                          <span className={`text-[10px] px-1 py-0.2 rounded-full font-mono font-bold ${
+                            isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                          }`}>
+                            {brandObj.count}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

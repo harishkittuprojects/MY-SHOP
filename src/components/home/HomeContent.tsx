@@ -195,6 +195,56 @@ export default function HomeContent() {
           </div>
         </div>
       </section>
+
+      {/* 2.5. Shop by Smartphone Brands */}
+      <section className="container py-4 sm:py-6 md:py-8">
+        <div className="flex items-center justify-between mb-3 sm:mb-5 px-1">
+          <div>
+            <h2 className="text-base sm:text-xl md:text-2xl font-black flex items-center gap-2 md:gap-3 text-slate-900 tracking-tight">
+              <span className="w-1.5 sm:w-2 h-5 sm:h-7 bg-amber-500 rounded-full"></span>
+              Shop by Top Brands
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">Official warranty with exchange offers &amp; instant cashback</p>
+          </div>
+          <Link 
+            href="/products" 
+            className="text-xs sm:text-sm font-bold text-secondary hover:underline flex items-center gap-1.5"
+          >
+            Explore All <FontAwesomeIcon icon={faArrowRight} size="xs" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
+          {[
+            { name: "Samsung", label: "Galaxy 5G", color: "from-blue-600 to-indigo-800", count: "Flagship" },
+            { name: "Apple", label: "iPhone Pro", color: "from-slate-800 to-slate-950", count: "iOS" },
+            { name: "Google", label: "Pixel AI", color: "from-emerald-600 to-teal-800", count: "Gemini AI" },
+            { name: "OnePlus", label: "Nord & Pro", color: "from-red-600 to-rose-800", count: "SuperVOOC" },
+            { name: "Vivo", label: "ZEISS Camera", color: "from-sky-600 to-blue-800", count: "Aura Light" },
+            { name: "Realme", label: "Speed & Power", color: "from-amber-500 to-orange-600", count: "5G Series" },
+          ].map((brand) => (
+            <Link
+              key={brand.name}
+              href={`/products?brand=${encodeURIComponent(brand.name)}`}
+              className="group relative bg-white border border-slate-200/90 hover:border-secondary p-3.5 sm:p-4 rounded-2xl shadow-xs hover:shadow-lg transition-all flex flex-col justify-between overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-1 mb-2">
+                <span className="text-base sm:text-lg font-black text-slate-900 group-hover:text-secondary transition-colors">
+                  {brand.name}
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-800 transition-colors">
+                  {brand.count}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-semibold">{brand.label}</p>
+              <div className="mt-3 flex items-center justify-between text-[11px] font-bold text-secondary">
+                <span>View Models</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
       
       {/* 3. SAMSUNG GALAXY S26 ULTRA 5G SPOTLIGHT */}
       <S26UltraSpotlightAd />
