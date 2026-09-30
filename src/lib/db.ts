@@ -45,7 +45,27 @@ export const CategoriesDB = {
       console.error('CategoriesDB.getAll Error:', err);
     }
 
-    const dbCategoryIds = new Set(dbCategories.map((c) => String(c.id)));
+    const mappedDbCategories = dbCategories.map((c) => {
+      if (c.id === 'mobiles-accessories' || c.name === 'Mobiles & Accessories') {
+        return {
+          ...c,
+          id: 'mobiles',
+          name: 'Mobiles',
+          sub_categories: ['Flagship Phones', '5G Phones', 'Gaming Phones', 'Budget Phones'],
+        };
+      }
+      if (c.name === 'Fashion & Jewellery' || c.id === 'fashion-jewellery') {
+        return {
+          ...c,
+          id: 'fashion',
+          name: 'Fashion',
+          sub_categories: ['Handbags & Purses', 'Watches & Chronographs', 'Fashion Accessories', 'Apparel & Bags'],
+        };
+      }
+      return c;
+    });
+
+    const dbCategoryIds = new Set(mappedDbCategories.map((c) => String(c.id)));
     const defaultList = defaultCategories.map((c, idx) => ({
       id: c.id,
       name: c.name,
@@ -57,7 +77,7 @@ export const CategoriesDB = {
     }));
 
     return [
-      ...dbCategories,
+      ...mappedDbCategories,
       ...defaultList.filter((dc) => !dbCategoryIds.has(String(dc.id))),
     ];
   },

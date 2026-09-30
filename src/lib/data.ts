@@ -2,7 +2,7 @@ export const categories = [
   { 
     name: "Mobiles", 
     icon: "📱", 
-    id: "mobiles-accessories", 
+    id: "mobiles", 
     image_url: "/products/iphone-16-pro-max.png",
     sub_categories: ["Flagship Phones", "5G Phones", "Gaming Phones", "Budget Phones"]
   },
