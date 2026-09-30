@@ -120,24 +120,24 @@ export default function ProductCard({
       {/* ===================== 1. MOBILE VIEW (EXACT FLIPKART SCREENMATCH) ===================== */}
       <div 
         onClick={() => router.push(`/products/${product.id}`)}
-        className="block md:hidden bg-white border-b border-slate-200/90 py-3.5 px-3 active:bg-slate-50 transition-colors cursor-pointer relative"
+        className="block md:hidden bg-white rounded-2xl border border-slate-200/90 py-3.5 px-3.5 active:bg-slate-50 transition-all cursor-pointer relative shadow-2xs hover:shadow-xs"
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3.5">
           {/* Left Column: Image with Bestseller Badge */}
-          <div className="flex flex-col items-start flex-shrink-0 w-24 sm:w-28">
+          <div className="flex flex-col items-start flex-shrink-0 w-28 sm:w-32">
             {product.is_popular && (
               <span className="bg-[#00796b] text-white text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-xs mb-1">
                 BESTSELLER
               </span>
             )}
             
-            <div className="relative w-full h-32 bg-white flex items-center justify-center p-1">
+            <div className="relative w-full h-32 sm:h-36 bg-slate-50/50 rounded-xl flex items-center justify-center p-1 border border-slate-100/80 overflow-hidden">
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain p-0.5" 
+                  className="object-contain p-1" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />

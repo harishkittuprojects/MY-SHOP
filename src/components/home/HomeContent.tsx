@@ -560,7 +560,7 @@ export default function HomeContent() {
 
                   {/* Product Cards Shelf */}
                   <div className="p-3 sm:p-5 md:p-6 bg-slate-50/30">
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
                       ))}
