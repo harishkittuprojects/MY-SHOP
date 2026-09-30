@@ -318,7 +318,6 @@ export default function Navbar() {
             { label: "Old / Refurbished Mobiles", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
             { label: "Fashion & Jewellery", href: "/products?category=Fashion%20%26%20Jewellery" },
             { label: "EV Vehicles", href: "/products?category=EV%20Vehicles" },
-            { label: "Mobile Accessories", href: "/products?category=Mobile%20Accessories" },
             { label: "Display Replacement", href: "/services/display-replacement" },
           ].map((catItem) => (
             <Link
