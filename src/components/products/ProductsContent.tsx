@@ -63,6 +63,7 @@ function Content() {
   const [cashbackOnly, setCashbackOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [showBrandGrid, setShowBrandGrid] = useState(false);
 
   // View Style & Grid Column Controls
   const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
@@ -943,47 +944,67 @@ function Content() {
             </div>
           )}
 
-          {/* Top Brands Quick Selector Bar */}
+          {/* Top Brands Toggle & Quick Selector Bar */}
           {availableBrandsWithCount.length > 1 && (
-            <div className="mb-4 overflow-x-auto no-scrollbar px-3 md:px-0 pb-1">
-              <div className="flex items-center gap-1.5 min-w-max">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">
-                  Brands:
-                </span>
+            <div className="mb-4 px-3 md:px-0">
+              <div className="flex items-center justify-between gap-2 mb-2">
                 <button
                   type="button"
-                  onClick={() => setSelectedBrand("all")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    selectedBrand === "all"
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                  }`}
+                  onClick={() => setShowBrandGrid(!showBrandGrid)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
                 >
-                  All
+                  <svg className="w-3 h-3 fill-current text-slate-600" viewBox="0 0 16 16">
+                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                  </svg>
+                  <span>{showBrandGrid ? "Hide Brands Grid" : `Brands Grid (${availableBrandsWithCount.length})`}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{showBrandGrid ? "▲" : "▼"}</span>
                 </button>
-                {availableBrandsWithCount.map((brandObj) => {
-                  const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
-                  return (
+                {selectedBrand !== "all" && (
+                  <span className="text-xs font-semibold text-slate-500">
+                    Active: <strong className="text-secondary">{selectedBrand}</strong>
+                  </span>
+                )}
+              </div>
+
+              {showBrandGrid && (
+                <div className="overflow-x-auto no-scrollbar pb-1 p-2.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div className="flex items-center gap-1.5 min-w-max flex-wrap">
                     <button
-                      key={brandObj.name}
                       type="button"
-                      onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isSelected
-                          ? "bg-secondary text-white shadow-md shadow-secondary/20 font-black"
+                      onClick={() => setSelectedBrand("all")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedBrand === "all"
+                          ? "bg-slate-900 text-white shadow-xs"
                           : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
                       }`}
                     >
-                      <span>{brandObj.name}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                        isSelected ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
-                      }`}>
-                        {brandObj.count}
-                      </span>
+                      All Brands
                     </button>
-                  );
-                })}
-              </div>
+                    {availableBrandsWithCount.map((brandObj) => {
+                      const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
+                      return (
+                        <button
+                          key={brandObj.name}
+                          type="button"
+                          onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? "bg-secondary text-white shadow-md shadow-secondary/20 font-black"
+                              : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                          }`}
+                        >
+                          <span>{brandObj.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                            isSelected ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
+                          }`}>
+                            {brandObj.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
