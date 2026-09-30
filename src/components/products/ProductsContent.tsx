@@ -130,6 +130,18 @@ function Content() {
     if (name.includes("redmi") || name.includes("xiaomi") || name.includes("poco")) return "Xiaomi";
     if (name.includes("nothing") || name.includes("cmf")) return "Nothing";
     if (name.includes("motorola") || name.includes("moto")) return "Motorola";
+    if (name.includes("levi")) return "Levi's";
+    if (name.includes("tommy")) return "Tommy Hilfiger";
+    if (name.includes("nike")) return "Nike";
+    if (name.includes("zara")) return "Zara";
+    if (name.includes("polo")) return "US Polo Assn";
+    if (name.includes("manyavar")) return "Manyavar";
+    if (name.includes("biba")) return "Biba";
+    if (name.includes("raymond")) return "Raymond";
+    if (name.includes("puma")) return "Puma";
+    if (name.includes("calvin") || name.includes(" ck ")) return "Calvin Klein";
+    if (name.includes("adidas")) return "Adidas";
+    if (name.includes("fabindia")) return "FabIndia";
     if (name.includes("boat")) return "boAt";
     if (name.includes("sony")) return "Sony";
     if (name.includes("sandisk")) return "SanDisk";
@@ -162,10 +174,14 @@ function Content() {
   const activeSubcategories = useMemo(() => {
     if (categoryFilter?.toLowerCase() === "fashion") {
       return [
+        "Jeans & Trousers",
+        "Men's Shirts & Polos",
+        "T-Shirts & Sportswear",
+        "Women's Dresses & Kurtis",
+        "Ethnic & Kurta Sets",
+        "Jackets & Outerwear",
         "Handbags & Purses",
-        "Watches & Chronographs",
-        "Fashion Accessories",
-        "Apparel & Bags"
+        "Watches & Chronographs"
       ];
     }
     if (categoryFilter?.toLowerCase() === "jewellery") {
@@ -221,10 +237,92 @@ function Content() {
     return subs;
   }, [activeCategoryObj, categoryFilter, isMobileAndAccessoriesFilter, products]);
 
-  // Extract available brands with counts
+  // Extract available brands with counts for current category
+  const categoryBaseProducts = useMemo(() => {
+    if (!categoryFilter || categoryFilter.toLowerCase() === "all" || categoryFilter.toLowerCase() === "all products") {
+      return products;
+    }
+    return products.filter((product) => {
+      const prodCategoryName = product.category_name || product.categories?.name || product.category || "";
+      const prodCategoryId = product.category_id || "";
+      const prodSubCategory = (product.sub_category || "").toLowerCase();
+
+      if (isMobilesOnlyFilter) {
+        return (
+          (prodCategoryName.toLowerCase().includes("mobile") || prodCategoryId.toLowerCase().includes("mobile") || (product.category && product.category.toLowerCase().includes("mobile"))) &&
+          !prodSubCategory.includes("case") &&
+          !prodSubCategory.includes("cover") &&
+          !prodSubCategory.includes("charger") &&
+          !prodSubCategory.includes("adapter") &&
+          !prodSubCategory.includes("glass") &&
+          !prodSubCategory.includes("cable") &&
+          !prodSubCategory.includes("power") &&
+          !prodSubCategory.includes("storage")
+        );
+      } else if (isAccessoryOnlyFilter) {
+        return (
+          prodCategoryName.toLowerCase().includes("accessories") ||
+          prodCategoryId.toLowerCase().includes("accessories") ||
+          prodSubCategory.includes("charger") ||
+          prodSubCategory.includes("adapter") ||
+          prodSubCategory.includes("case") ||
+          prodSubCategory.includes("cover") ||
+          prodSubCategory.includes("glass") ||
+          prodSubCategory.includes("power") ||
+          prodSubCategory.includes("cable") ||
+          prodSubCategory.includes("storage")
+        );
+      } else if (categoryFilter.toLowerCase() === "fashion") {
+        const isSmartTech = prodCategoryName.toLowerCase().includes("smart") || prodCategoryId.toLowerCase().includes("smart") || (product.category && product.category.toLowerCase().includes("smart"));
+        const isJewellery = prodCategoryName.toLowerCase().includes("jewel") || prodCategoryId.toLowerCase().includes("jewel") || (product.category && product.category.toLowerCase().includes("jewel"));
+        return !isSmartTech && !isJewellery && (
+          prodCategoryName.toLowerCase() === "fashion" ||
+          prodCategoryId.toLowerCase() === "fashion" ||
+          prodSubCategory.includes("handbag") ||
+          prodSubCategory.includes("apparel") ||
+          prodSubCategory.includes("clothing") ||
+          prodSubCategory.includes("shirt") ||
+          prodSubCategory.includes("polo") ||
+          prodSubCategory.includes("jeans") ||
+          prodSubCategory.includes("trouser") ||
+          prodSubCategory.includes("dress") ||
+          prodSubCategory.includes("kurta") ||
+          prodSubCategory.includes("jacket") ||
+          prodSubCategory.includes("fashion") ||
+          prodSubCategory.includes("bag") ||
+          prodSubCategory.includes("watch")
+        );
+      } else if (categoryFilter.toLowerCase() === "jewellery" || categoryFilter.toLowerCase() === "jewelry") {
+        return (
+          prodCategoryName.toLowerCase() === "jewellery" ||
+          prodCategoryName.toLowerCase() === "jewelry" ||
+          prodCategoryId.toLowerCase() === "jewellery" ||
+          prodCategoryId.toLowerCase() === "jewelry" ||
+          prodSubCategory.includes("jewellery") ||
+          prodSubCategory.includes("gold") ||
+          prodSubCategory.includes("silver") ||
+          prodSubCategory.includes("moissanite") ||
+          prodSubCategory.includes("necklace") ||
+          prodSubCategory.includes("ring")
+        );
+      } else if (isMobileAndAccessoriesFilter) {
+        return (
+          prodCategoryName.toLowerCase().includes("mobile") ||
+          prodCategoryId.toLowerCase().includes("mobile")
+        );
+      } else {
+        return (
+          prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() ||
+          prodCategoryId.toLowerCase() === categoryFilter.toLowerCase() ||
+          prodCategoryName.toLowerCase().includes(categoryFilter.toLowerCase())
+        );
+      }
+    });
+  }, [categoryFilter, isMobilesOnlyFilter, isAccessoryOnlyFilter, isMobileAndAccessoriesFilter, products]);
+
   const availableBrandsWithCount = useMemo(() => {
     const brandMap = new Map<string, number>();
-    products.forEach((p) => {
+    categoryBaseProducts.forEach((p) => {
       const brand = getProductBrand(p);
       brandMap.set(brand, (brandMap.get(brand) || 0) + 1);
     });
@@ -232,7 +330,7 @@ function Content() {
     return Array.from(brandMap.entries())
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .map(([name, count]) => ({ name, count }));
-  }, [products]);
+  }, [categoryBaseProducts]);
 
   const availableBrands = useMemo(() => {
     return availableBrandsWithCount.map((b) => b.name);
@@ -308,15 +406,25 @@ function Content() {
             prodSubCategory.includes("cable") ||
             prodSubCategory.includes("storage");
         } else if (categoryFilter.toLowerCase() === "fashion") {
-          matchesCategory = 
+          const isSmartTech = prodCategoryName.toLowerCase().includes("smart") || prodCategoryId.toLowerCase().includes("smart") || (product.category && product.category.toLowerCase().includes("smart"));
+          const isJewellery = prodCategoryName.toLowerCase().includes("jewel") || prodCategoryId.toLowerCase().includes("jewel") || (product.category && product.category.toLowerCase().includes("jewel"));
+          matchesCategory = !isSmartTech && !isJewellery && (
             prodCategoryName.toLowerCase() === "fashion" ||
             prodCategoryId.toLowerCase() === "fashion" ||
             prodSubCategory.includes("handbag") ||
-            prodSubCategory.includes("watch") ||
-            prodSubCategory.includes("fashion") ||
             prodSubCategory.includes("apparel") ||
+            prodSubCategory.includes("clothing") ||
+            prodSubCategory.includes("shirt") ||
+            prodSubCategory.includes("polo") ||
+            prodSubCategory.includes("jeans") ||
+            prodSubCategory.includes("trouser") ||
+            prodSubCategory.includes("dress") ||
+            prodSubCategory.includes("kurta") ||
+            prodSubCategory.includes("jacket") ||
+            prodSubCategory.includes("fashion") ||
             prodSubCategory.includes("bag") ||
-            Boolean(product.name && (product.name.toLowerCase().includes("handbag") || product.name.toLowerCase().includes("watch") || product.name.toLowerCase().includes("bag")));
+            prodSubCategory.includes("watch")
+          );
         } else if (categoryFilter.toLowerCase() === "jewellery" || categoryFilter.toLowerCase() === "jewelry") {
           matchesCategory = 
             prodCategoryName.toLowerCase() === "jewellery" ||
