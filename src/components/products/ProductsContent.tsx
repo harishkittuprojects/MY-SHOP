@@ -142,23 +142,42 @@ function Content() {
     return firstWord && firstWord.length > 2 ? firstWord : "Other";
   };
 
-  const isMobileAndAccessoriesFilter = 
-    categoryFilter?.toLowerCase() === "mobiles & accessories" || 
-    categoryFilter?.toLowerCase() === "mobiles" || 
-    categoryFilter?.toLowerCase() === "mobiles-accessories";
+  const isMobilesOnlyFilter =
+    categoryFilter?.toLowerCase() === "mobiles";
 
   const isAccessoryOnlyFilter =
     categoryFilter?.toLowerCase() === "mobile accessories" ||
     categoryFilter?.toLowerCase() === "mobile-accessories";
 
+  const isMobileAndAccessoriesFilter = 
+    categoryFilter?.toLowerCase() === "mobiles & accessories" || 
+    categoryFilter?.toLowerCase() === "mobiles-accessories";
+
   const activeCategoryObj = categories.find(
     (c) =>
       c.name.toLowerCase() === categoryFilter?.toLowerCase() ||
-      c.id.toLowerCase() === categoryFilter?.toLowerCase() ||
-      (isMobileAndAccessoriesFilter && (c.name.toLowerCase().includes("mobile") || c.id.toLowerCase().includes("mobile")))
+      c.id.toLowerCase() === categoryFilter?.toLowerCase()
   );
 
   const activeSubcategories = useMemo(() => {
+    if (isMobilesOnlyFilter) {
+      return [
+        "Flagship Phones",
+        "5G Phones",
+        "Gaming Phones",
+        "Budget Phones"
+      ];
+    }
+    if (isAccessoryOnlyFilter) {
+      return [
+        "Chargers & Adapters",
+        "Cases & Covers",
+        "Tempered Glass",
+        "Power Banks",
+        "Cables",
+        "Storage"
+      ];
+    }
     if (isMobileAndAccessoriesFilter) {
       return [
         "Flagship Phones",
@@ -247,14 +266,35 @@ function Content() {
       // 1. Category Filter
       let matchesCategory = true;
       if (categoryFilter) {
-        if (isMobileAndAccessoriesFilter) {
-          matchesCategory = 
-            prodCategoryName.toLowerCase().includes("mobile") ||
-            prodCategoryId.toLowerCase().includes("mobile");
+        if (isMobilesOnlyFilter) {
+          // Strictly smartphones only
+          const isPhone = 
+            (prodCategoryName.toLowerCase().includes("mobile") || prodCategoryId.toLowerCase().includes("mobile") || (product.category && product.category.toLowerCase().includes("mobile"))) &&
+            !prodSubCategory.includes("case") &&
+            !prodSubCategory.includes("cover") &&
+            !prodSubCategory.includes("charger") &&
+            !prodSubCategory.includes("adapter") &&
+            !prodSubCategory.includes("glass") &&
+            !prodSubCategory.includes("cable") &&
+            !prodSubCategory.includes("power") &&
+            !prodSubCategory.includes("storage");
+          matchesCategory = isPhone;
         } else if (isAccessoryOnlyFilter) {
           matchesCategory = 
             prodCategoryName.toLowerCase().includes("accessories") ||
-            prodCategoryId.toLowerCase().includes("accessories");
+            prodCategoryId.toLowerCase().includes("accessories") ||
+            prodSubCategory.includes("charger") ||
+            prodSubCategory.includes("adapter") ||
+            prodSubCategory.includes("case") ||
+            prodSubCategory.includes("cover") ||
+            prodSubCategory.includes("glass") ||
+            prodSubCategory.includes("power") ||
+            prodSubCategory.includes("cable") ||
+            prodSubCategory.includes("storage");
+        } else if (isMobileAndAccessoriesFilter) {
+          matchesCategory = 
+            prodCategoryName.toLowerCase().includes("mobile") ||
+            prodCategoryId.toLowerCase().includes("mobile");
         } else {
           matchesCategory = 
             prodCategoryName.toLowerCase() === categoryFilter.toLowerCase() ||

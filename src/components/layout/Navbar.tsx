@@ -314,7 +314,8 @@ export default function Navbar() {
       <div className="bg-white border-t border-b border-slate-100 hidden md:block py-2.5">
         <div className="container flex items-center justify-between gap-4 lg:gap-8 overflow-x-auto no-scrollbar px-2 sm:px-4">
           {[
-            { label: "Mobiles & Accessories", href: "/products?category=Mobiles%20%26%20Accessories" },
+            { label: "Mobiles", href: "/products?category=Mobiles" },
+            { label: "Mobile Accessories", href: "/products?category=Mobile%20Accessories" },
             { label: "Old / Refurbished Mobiles", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
             { label: "Fashion & Jewellery", href: "/products?category=Fashion%20%26%20Jewellery" },
             { label: "EV Vehicles", href: "/products?category=EV%20Vehicles" },
