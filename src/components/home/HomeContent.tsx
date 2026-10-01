@@ -409,60 +409,136 @@ export default function HomeContent() {
     return sections;
   }, [products, categories]);
 
+  // Flipkart-style top icon categories
+  const TOP_FLIPKART_CATEGORIES = [
+    { id: "for-you", name: "For You", icon: "🛍️", url: "/products", isActive: true },
+    { id: "fashion", name: "Fashion", icon: "👗", url: "/products?category=Fashion" },
+    { id: "mobiles", name: "Mobiles", icon: "📱", url: "/products?category=Mobiles" },
+    { id: "electronics", name: "Electronics", icon: "💻", url: "/products?category=Smart%20Technology" },
+    { id: "refurbished", name: "Refurbished", icon: "♻️", url: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+    { id: "jewellery", name: "Jewellery", icon: "💎", url: "/products?category=Jewellery" },
+    { id: "ev", name: "EV Vehicles", icon: "⚡", url: "/products?category=EV%20Vehicles" },
+    { id: "laptops", name: "Laptops", icon: "🖥️", url: "/products?category=Computers%20%26%20Tablets" },
+    { id: "appliances", name: "Appliances", icon: "🍳", url: "/products?category=Kitchen%20Appliances" },
+    { id: "tv-audio", name: "TV & Audio", icon: "📺", url: "/products?category=TV%20%26%20Audio" },
+    { id: "accessories", name: "Accessories", icon: "🔌", url: "/products?category=Mobile%20Accessories" },
+    { id: "beauty", name: "Beauty & Care", icon: "💄", url: "/products?category=Fashion&search=Beauty" },
+    { id: "sports", name: "Sports & Gym", icon: "🏏", url: "/products?category=Fashion&search=Sport" },
+  ];
+
+  // Visual Category & Subcategory Cards (Flipkart 2-Row Style)
+  const VISUAL_CATEGORY_CARDS = [
+    { name: "Monsoon Deals", label: "Special Offers", img: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=400", url: "/products?category=Mobiles" },
+    { name: "T-Shirts & Tops", label: "Polo & Casual", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=T-Shirt" },
+    { name: "Dresses, Co-ords", label: "Western & Party", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Dress" },
+    { name: "Casual Shoes", label: "Sneakers & Boots", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Shoes" },
+    { name: "Kids' Clothing", label: "Ages 2-14", img: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Kids" },
+    { name: "Luggage & Bags", label: "Trolleys & Travel", img: "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Bag" },
+    { name: "Jeans & Trousers", label: "Slim & Baggy Fit", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Jeans" },
+    { name: "Kurtis & Ethnic", label: "Festive & Daily", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Kurti" },
+    { name: "Sports Wear", label: "Active & Gym", img: "https://images.unsplash.com/photo-1483721074577-738b71569429?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Sport" },
+    { name: "Sandals & Sliders", label: "Comfort Walk", img: "https://images.unsplash.com/photo-1562273138-f46be4ebdf33?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Sandals" },
+    { name: "Smartwatches", label: "AMOLED & Fitness", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400", url: "/products?category=Smart%20Technology" },
+    { name: "Flagship Mobiles", label: "iPhone & Galaxy", img: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=400", url: "/products?category=Mobiles" },
+    { name: "Kurta Sets", label: "Royal Festive", img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Kurta" },
+    { name: "Backpacks", label: "Laptop & Daily", img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Backpack" },
+    { name: "Jewellery & Gold", label: "BIS Hallmarked", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=400", url: "/products?category=Jewellery" },
+    { name: "Sarees & Silk", label: "Traditional Banarasi", img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&q=80&w=400", url: "/products?category=Fashion&search=Saree" },
+    { name: "Refurbished Phones", label: "Inspected & Warranty", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=400", url: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+    { name: "Fast Chargers", label: "GaN 65W & MagSafe", img: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=400", url: "/products?category=Mobile%20Accessories" },
+    { name: "EV Scooters & Bikes", label: "Zero Emission", img: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=400", url: "/products?category=EV%20Vehicles" },
+    { name: "Laptops & iPads", label: "Apple & Windows", img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=400", url: "/products?category=Computers%20%26%20Tablets" },
+    { name: "4K OLED TVs", label: "Dolby Vision", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=400", url: "/products?category=TV%20%26%20Audio" },
+    { name: "Air Fryers & Home", label: "Kitchen Essentials", img: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=400", url: "/products?category=Kitchen%20Appliances" },
+  ];
+
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#fafafa]">
-      {/* 1. Main Hero Banner Carousel */}
+    <div className="flex flex-col gap-3 sm:gap-5 md:gap-6 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+      {/* 1. Flipkart-Style Top Category Icons Bar (Above Hero) */}
+      <section className="bg-white border-b border-slate-200/90 py-2 sm:py-3 shadow-xs sticky top-[58px] md:top-[68px] z-30">
+        <div className="container px-2 sm:px-4 md:px-6">
+          <div className="flex items-center justify-start lg:justify-between gap-4 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
+            {TOP_FLIPKART_CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={cat.url}
+                className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-1 min-w-[56px] sm:min-w-[68px]"
+              >
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-50 group-hover:bg-blue-50 border border-slate-200/60 group-hover:border-blue-300 flex items-center justify-center text-xl sm:text-2xl transition-all group-hover:scale-110 shadow-2xs">
+                  <span>{cat.icon}</span>
+                </div>
+                <span className={`text-[11px] sm:text-xs font-bold mt-1 text-center transition-colors whitespace-nowrap ${
+                  cat.isActive ? "text-blue-600 font-black" : "text-slate-700 group-hover:text-blue-600"
+                }`}>
+                  {cat.name}
+                </span>
+                {cat.isActive && (
+                  <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-600 rounded-full" />
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Main Hero Banner Carousel */}
       <Hero />
 
-      {/* 2. Top Category Quick Navigation Rail (Amazon & Flipkart Style) */}
-      <section className="bg-white border-y border-slate-200/80 py-3 sm:py-5 shadow-xs sticky top-[60px] md:top-[70px] z-20 backdrop-blur-md bg-white/95">
-        <div className="container px-3 sm:px-4 md:px-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3 px-1">
-            <h2 className="text-xs sm:text-sm md:text-base font-black flex items-center gap-2 text-slate-800 uppercase tracking-wider">
-              <span className="w-1.5 h-4 bg-secondary rounded-full"></span>
-              Explore All Categories
-            </h2>
+      {/* 3. Flipkart-Style 2-Row Visual Curated Category & Subcategory Cards Grid */}
+      <section className="container px-2 sm:px-4 md:px-6">
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 p-3.5 sm:p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
+            <div>
+              <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span className="w-1.5 h-4 sm:h-5 bg-blue-600 rounded-full" />
+                <span>Shop by Category &amp; Trending Styles</span>
+              </h2>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                Explore curated fashion, top smartphones, jewellery &amp; gadgets
+              </p>
+            </div>
             <Link 
               href="/categories" 
-              className="text-xs sm:text-sm font-bold text-secondary hover:underline flex items-center gap-1.5"
+              className="text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 shrink-0"
             >
-              All Categories ({categories.length || 10}) <FontAwesomeIcon icon={faArrowRight} size="xs" />
+              <span>View All</span>
+              <FontAwesomeIcon icon={faArrowRight} size="xs" />
             </Link>
           </div>
 
-          <div className="flex items-center justify-start sm:justify-center gap-3 sm:gap-5 md:gap-8 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
-            {(categories.length > 0 ? categories : PREDEFINED_CATEGORIES).map((cat) => {
-              const catName = cat.name || cat.id;
-              const catImg = cat.image_url || cat.image;
-              const targetUrl = `/products?category=${encodeURIComponent(cat.name || cat.categoryQuery || cat.id)}`;
-              
-              return (
+          {/* 2-Row Horizontal Scrollable Grid of Visual Rounded Cards */}
+          <div className="overflow-x-auto no-scrollbar pb-2 scroll-smooth">
+            <div className="grid grid-rows-2 grid-flow-col gap-3 sm:gap-4 min-w-max">
+              {VISUAL_CATEGORY_CARDS.map((card, idx) => (
                 <Link
-                  key={cat.id || cat.name}
-                  href={targetUrl}
-                  className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-transform"
+                  key={idx}
+                  href={card.url}
+                  className="flex flex-col items-center group cursor-pointer active:scale-95 transition-all w-[92px] sm:w-[110px] md:w-[124px]"
                 >
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-2xl bg-slate-50 border border-slate-200/90 group-hover:border-secondary group-hover:shadow-lg transition-all p-1.5 flex items-center justify-center overflow-hidden relative shadow-xs group-hover:scale-105">
-                    <div className="relative w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 border border-slate-100">
-                      {catImg ? (
-                        <Image
-                          src={normalizeImageUrl(catImg)}
-                          alt={catName}
-                          fill
-                          className="object-contain p-1 group-hover:scale-110 transition-transform duration-300"
-                          sizes="(max-width: 768px) 70px, 90px"
-                        />
-                      ) : (
-                        <span className="text-2xl">{cat.icon || "📦"}</span>
-                      )}
+                  {/* Rounded Cream Card Container */}
+                  <div className="w-[88px] h-[88px] sm:w-[105px] sm:h-[105px] md:w-[118px] md:h-[118px] rounded-2xl bg-[#fffbf2] border border-amber-100/80 group-hover:border-blue-400 group-hover:shadow-md transition-all p-1.5 flex items-center justify-center overflow-hidden relative shadow-2xs group-hover:scale-105">
+                    <div className="relative w-full h-full rounded-xl overflow-hidden bg-white">
+                      <Image
+                        src={card.img}
+                        alt={card.name}
+                        fill
+                        className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                        sizes="(max-width: 768px) 95px, 120px"
+                        unoptimized
+                      />
                     </div>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 text-center max-w-[75px] sm:max-w-[95px] md:max-w-[105px] leading-tight line-clamp-2 group-hover:text-secondary transition-colors mt-1.5">
-                    {catName}
+
+                  {/* Title & Subtitle Below Card */}
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-900 text-center leading-tight line-clamp-1 group-hover:text-blue-600 transition-colors mt-1.5 w-full">
+                    {card.name}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium text-center truncate w-full">
+                    {card.label}
                   </span>
                 </Link>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </section>
