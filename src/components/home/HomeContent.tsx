@@ -49,6 +49,28 @@ const PREDEFINED_CATEGORIES: CategoryConfig[] = [
     subcategories: ["Flagship Phones", "5G Phones", "Gaming Phones", "Budget Phones"]
   },
   {
+    id: "old-refurbished-mobiles",
+    name: "Certified Refurbished & Pre-Owned Mobiles",
+    badge: "32-Point Inspected",
+    icon: "♻️",
+    accentColor: "from-teal-600 to-emerald-700",
+    tagColor: "bg-teal-50 text-teal-800 border-teal-200",
+    description: "100% Quality Tested with 6-Month Warranty, 85%+ Battery Health, and Instant 7-Day Replacement",
+    categoryQuery: "Old / Refurbished Mobiles",
+    subcategories: ["Superb Grade A+", "Like New", "Refurbished iPhones", "Refurbished Android"]
+  },
+  {
+    id: "mobile-accessories",
+    name: "Mobile Accessories & Fast Chargers",
+    badge: "Power & Protection",
+    icon: "🔌",
+    accentColor: "from-cyan-600 to-blue-600",
+    tagColor: "bg-cyan-50 text-cyan-800 border-cyan-200",
+    description: "GaN 65W Fast Chargers, MagSafe Wireless, Armor Cases, 9H Tempered Glass, Cables & Power Banks",
+    categoryQuery: "Mobile Accessories",
+    subcategories: ["Chargers & Adapters", "Cases & Covers", "Tempered Glass", "Power Banks", "Cables"]
+  },
+  {
     id: "fashion",
     name: "Fashion, Apparel & Top Brands",
     badge: "Trending Styles",
@@ -80,28 +102,6 @@ const PREDEFINED_CATEGORIES: CategoryConfig[] = [
     description: "High-performance EV scooters and AI electric bikes with up to 8-Year battery warranty & fast charging",
     categoryQuery: "EV Vehicles",
     subcategories: ["Electric Scooters", "Electric Bikes", "EV Accessories & Chargers"]
-  },
-  {
-    id: "mobile-accessories",
-    name: "Mobile Accessories & Fast Chargers",
-    badge: "Power & Protection",
-    icon: "🔌",
-    accentColor: "from-cyan-600 to-blue-600",
-    tagColor: "bg-cyan-50 text-cyan-800 border-cyan-200",
-    description: "GaN 65W Fast Chargers, MagSafe Wireless, Armor Cases, 9H Tempered Glass, Cables & Power Banks",
-    categoryQuery: "Mobile Accessories",
-    subcategories: ["Chargers & Adapters", "Cases & Covers", "Tempered Glass", "Power Banks", "Cables"]
-  },
-  {
-    id: "old-refurbished-mobiles",
-    name: "Certified Refurbished & Pre-Owned Mobiles",
-    badge: "32-Point Inspected",
-    icon: "♻️",
-    accentColor: "from-teal-600 to-emerald-700",
-    tagColor: "bg-teal-50 text-teal-800 border-teal-200",
-    description: "100% Quality Tested with 6-Month Warranty, 85%+ Battery Health, and Instant 7-Day Replacement",
-    categoryQuery: "Old / Refurbished Mobiles",
-    subcategories: ["Superb Grade A+", "Like New", "Refurbished iPhones", "Refurbished Android"]
   },
   {
     id: "smart-technology",
@@ -224,11 +224,55 @@ export default function HomeContent() {
     
     if (key === "mobiles") {
       return allProducts.filter(p => {
-        const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
+        const cat = (p.category_name || p.category || "").toLowerCase();
+        const catId = (p.category_id || "").toLowerCase();
         const sub = (p.sub_category || "").toLowerCase();
-        const isAcc = cat.includes("accessories") || sub.includes("charger") || sub.includes("adapter") || sub.includes("case") || sub.includes("cover") || sub.includes("glass") || sub.includes("cable") || sub.includes("power") || sub.includes("storage");
-        const isRefurb = cat.includes("refurbished") || cat.includes("old") || (p.condition && p.condition.toLowerCase() !== "new");
-        return (cat.includes("mobile") || p.category_id === "mobiles") && !isAcc && !isRefurb;
+        const name = (p.name || "").toLowerCase();
+        const cond = (p.condition || "").toLowerCase();
+
+        // 1. Must NOT be an accessory
+        const isAcc = cat === "mobile accessories" || catId === "mobile-accessories" || 
+                      sub.includes("charger") || sub.includes("adapter") || sub.includes("case") || 
+                      sub.includes("cover") || sub.includes("glass") || sub.includes("cable") || 
+                      sub.includes("power") || sub.includes("storage");
+        if (isAcc) return false;
+
+        // 2. Must NOT be refurbished / pre-owned
+        const isRefurb = cat.includes("refurbished") || cat.includes("old") || 
+                         catId.includes("refurbished") || catId.includes("old") ||
+                         sub.includes("refurbished") || name.includes("refurbished") ||
+                         cond.includes("refurbished") || cond.includes("grade") || 
+                         cond.includes("like new") || cond.includes("pre-owned") || 
+                         (cond.includes("used") && !cond.includes("brand new"));
+        if (isRefurb) return false;
+
+        // 3. Must be a mobile / smartphone
+        return (
+          cat === "mobiles" || catId === "mobiles" || catId === "mobiles-accessories" ||
+          sub.includes("phone") || sub.includes("flagship") || sub.includes("mobile") ||
+          name.includes("galaxy") || name.includes("iphone") || name.includes("oneplus") || 
+          name.includes("pixel") || name.includes("vivo") || name.includes("realme") || 
+          name.includes("redmi") || name.includes("poco") || name.includes("motorola")
+        );
+      });
+    }
+
+    if (key === "old-refurbished-mobiles" || key === "refurbished" || key === "old / refurbished mobiles") {
+      return allProducts.filter(p => {
+        const cat = (p.category_name || p.category || "").toLowerCase();
+        const catId = (p.category_id || "").toLowerCase();
+        const sub = (p.sub_category || "").toLowerCase();
+        const name = (p.name || "").toLowerCase();
+        const cond = (p.condition || "").toLowerCase();
+
+        return (
+          cat.includes("refurbished") || cat.includes("old") || 
+          catId.includes("refurbished") || catId.includes("old") ||
+          sub.includes("refurbished") || name.includes("refurbished") ||
+          cond.includes("refurbished") || cond.includes("grade") || 
+          cond.includes("like new") || cond.includes("pre-owned") || 
+          (cond.includes("used") && !cond.includes("brand new"))
+        );
       });
     }
     
@@ -266,16 +310,15 @@ export default function HomeContent() {
     
     if (key === "mobile-accessories" || key === "mobile accessories" || key === "accessories") {
       return allProducts.filter(p => {
-        const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
+        const cat = (p.category_name || p.category || "").toLowerCase();
+        const catId = (p.category_id || "").toLowerCase();
         const sub = (p.sub_category || "").toLowerCase();
-        return cat.includes("accessories") || sub.includes("charger") || sub.includes("adapter") || sub.includes("case") || sub.includes("cover") || sub.includes("glass") || sub.includes("power") || sub.includes("cable") || sub.includes("storage");
-      });
-    }
-    
-    if (key === "old-refurbished-mobiles" || key === "refurbished" || key === "old / refurbished mobiles") {
-      return allProducts.filter(p => {
-        const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
-        return cat.includes("refurbished") || cat.includes("old") || (p.condition && p.condition.toLowerCase() !== "new");
+        return (
+          cat === "mobile accessories" || catId === "mobile-accessories" ||
+          sub.includes("charger") || sub.includes("adapter") || sub.includes("case") || 
+          sub.includes("cover") || sub.includes("glass") || sub.includes("power") || 
+          sub.includes("cable") || sub.includes("storage")
+        );
       });
     }
     

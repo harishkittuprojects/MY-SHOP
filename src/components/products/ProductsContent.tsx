@@ -20,7 +20,11 @@ import {
   faRotateLeft,
   faShieldHalved,
   faWandMagicSparkles,
-  faBolt
+  faBolt,
+  faMobileAlt,
+  faMobileScreen,
+  faCheckCircle,
+  faLayerGroup
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
@@ -55,6 +59,9 @@ function Content() {
   
   // Faceted Filters (Amazon-style)
   const [selectedBrand, setSelectedBrand] = useState<string>(urlBrandParam);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(
+    urlBrandParam && urlBrandParam !== "all" ? urlBrandParam.split(",") : []
+  );
   const [brandSearchTerm, setBrandSearchTerm] = useState<string>("");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [minRating, setMinRating] = useState<number>(0);
@@ -64,6 +71,8 @@ function Content() {
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showBrandGrid, setShowBrandGrid] = useState(false);
+  const [isBrandsModalOpen, setIsBrandsModalOpen] = useState(false);
+  const [brandModalSearch, setBrandModalSearch] = useState("");
 
   // View Style & Grid Column Controls
   const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
@@ -122,15 +131,18 @@ function Content() {
       return p.brand.trim();
     }
     const name = (p.name || "").toLowerCase();
-    if (name.includes("iphone") || name.includes("apple") || name.includes("airpods") || name.includes("ipad") || name.includes("macbook")) return "Apple";
     if (name.includes("samsung") || name.includes("galaxy")) return "Samsung";
-    if (name.includes("oneplus") || name.includes("nord")) return "OnePlus";
-    if (name.includes("pixel") || name.includes("google")) return "Google";
-    if (name.includes("vivo") || name.includes("iqoo")) return "Vivo";
-    if (name.includes("realme") || name.includes("narzo")) return "Realme";
-    if (name.includes("redmi") || name.includes("xiaomi") || name.includes("poco")) return "Xiaomi";
-    if (name.includes("nothing") || name.includes("cmf")) return "Nothing";
     if (name.includes("motorola") || name.includes("moto")) return "Motorola";
+    if (name.includes("oneplus") || name.includes("nord")) return "OnePlus";
+    if (name.includes("redmi")) return "Redmi";
+    if (name.includes("realme") || name.includes("narzo")) return "realme";
+    if (name.includes("iqoo")) return "iQOO";
+    if (name.includes("poco")) return "POCO";
+    if (name.includes("iphone") || name.includes("apple") || name.includes("airpods") || name.includes("ipad") || name.includes("macbook")) return "Apple";
+    if (name.includes("pixel") || name.includes("google")) return "Google";
+    if (name.includes("vivo")) return "Vivo";
+    if (name.includes("xiaomi") || name.includes(" mi ")) return "Xiaomi";
+    if (name.includes("nothing") || name.includes("cmf")) return "Nothing";
     if (name.includes("levi")) return "Levi's";
     if (name.includes("tommy")) return "Tommy Hilfiger";
     if (name.includes("nike")) return "Nike";
@@ -333,17 +345,72 @@ function Content() {
       .map(([name, count]) => ({ name, count }));
   }, [categoryBaseProducts]);
 
-  const availableBrands = useMemo(() => {
-    return availableBrandsWithCount.map((b) => b.name);
-  }, [availableBrandsWithCount]);
+  const POPULAR_MOBILE_BRANDS = [
+    "Samsung",
+    "Motorola",
+    "OnePlus",
+    "Redmi",
+    "realme",
+    "iQOO",
+    "POCO",
+    "Apple",
+    "Vivo",
+    "Google",
+    "Xiaomi",
+    "Nothing"
+  ];
+
+  // Map of counts for every brand
+  const brandProductCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    products.forEach((p) => {
+      const b = getProductBrand(p);
+      map.set(b.toLowerCase(), (map.get(b.toLowerCase()) || 0) + 1);
+    });
+    return map;
+  }, [products]);
+
+  // Combined full mobile brands list
+  const allMobileBrandsList = useMemo(() => {
+    const list = [...POPULAR_MOBILE_BRANDS];
+    products.forEach((p) => {
+      const cat = (p.category_name || p.categories?.name || p.category || "").toLowerCase();
+      if (cat.includes("mobile") || cat.includes("phone")) {
+        const b = getProductBrand(p);
+        if (b && b !== "Other" && !list.some(existing => existing.toLowerCase() === b.toLowerCase())) {
+          list.push(b);
+        }
+      }
+    });
+    return list;
+  }, [products]);
+
+  const toggleBrand = (brandName: string) => {
+    setSelectedBrands((prev) => {
+      const isAlready = prev.some((b) => b.toLowerCase() === brandName.toLowerCase());
+      let next: string[];
+      if (isAlready) {
+        next = prev.filter((b) => b.toLowerCase() !== brandName.toLowerCase());
+      } else {
+        next = [...prev, brandName];
+      }
+      setSelectedBrand(next.length === 0 ? "all" : next[0]);
+      return next;
+    });
+  };
+
+  const isBrandChecked = (brandName: string) => {
+    return selectedBrands.some(b => b.toLowerCase() === brandName.toLowerCase()) || 
+      (selectedBrand !== "all" && selectedBrand.toLowerCase() === brandName.toLowerCase());
+  };
 
   // Filtered brands for sidebar search
   const displayedBrandsInSidebar = useMemo(() => {
-    if (!brandSearchTerm.trim()) return availableBrandsWithCount;
-    return availableBrandsWithCount.filter((b) =>
-      b.name.toLowerCase().includes(brandSearchTerm.toLowerCase())
+    if (!brandSearchTerm.trim()) return allMobileBrandsList;
+    return allMobileBrandsList.filter((b) =>
+      b.toLowerCase().includes(brandSearchTerm.toLowerCase())
     );
-  }, [availableBrandsWithCount, brandSearchTerm]);
+  }, [allMobileBrandsList, brandSearchTerm]);
 
   // Active filters count
   const activeFiltersCount = useMemo(() => {
@@ -472,12 +539,20 @@ function Content() {
 
       // 3. Brand Filter
       const prodBrand = getProductBrand(product);
-      const matchesBrand =
-        selectedBrand === "all"
-          ? true
-          : prodBrand.toLowerCase() === selectedBrand.toLowerCase() ||
-            (product.name || "").toLowerCase().includes(selectedBrand.toLowerCase()) ||
-            (product.brand && product.brand.toLowerCase().includes(selectedBrand.toLowerCase()));
+      let matchesBrand = true;
+      if (selectedBrands.length > 0) {
+        matchesBrand = selectedBrands.some(
+          (b) =>
+            prodBrand.toLowerCase() === b.toLowerCase() ||
+            (product.name || "").toLowerCase().includes(b.toLowerCase()) ||
+            (product.brand && product.brand.toLowerCase().includes(b.toLowerCase()))
+        );
+      } else if (selectedBrand !== "all") {
+        matchesBrand =
+          prodBrand.toLowerCase() === selectedBrand.toLowerCase() ||
+          (product.name || "").toLowerCase().includes(selectedBrand.toLowerCase()) ||
+          (product.brand && product.brand.toLowerCase().includes(selectedBrand.toLowerCase()));
+      }
 
       // 4. Price Range Filter
       let matchesPrice = true;
@@ -710,87 +785,73 @@ function Content() {
             </div>
           </div>
 
-          {/* 2. Brand Filter */}
-          {availableBrandsWithCount.length > 0 && (
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
-                  Brand ({availableBrandsWithCount.length})
-                </h4>
-                {selectedBrand !== "all" && (
-                  <button
-                    onClick={() => setSelectedBrand("all")}
-                    className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Brand Search Input if many brands */}
-              {availableBrandsWithCount.length > 6 && (
-                <div className="mb-2 relative">
-                  <input
-                    type="text"
-                    value={brandSearchTerm}
-                    onChange={(e) => setBrandSearchTerm(e.target.value)}
-                    placeholder="Search brands..."
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 outline-none focus:border-secondary"
-                  />
-                  {brandSearchTerm && (
-                    <button
-                      onClick={() => setBrandSearchTerm("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-1 max-h-52 overflow-y-auto pr-1 no-scrollbar text-xs">
+          {/* 2. Brand Filter (Exact match with user screenshot) */}
+          <div className="pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-base font-bold text-black tracking-tight">
+                Brands
+              </h4>
+              {(selectedBrands.length > 0 || selectedBrand !== "all") && (
                 <button
-                  onClick={() => setSelectedBrand("all")}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                    selectedBrand === "all" ? "bg-slate-900 text-white font-bold shadow-xs" : "text-slate-600 hover:bg-slate-50"
-                  }`}
+                  onClick={() => {
+                    setSelectedBrands([]);
+                    setSelectedBrand("all");
+                  }}
+                  className="text-[11px] font-bold text-slate-400 hover:text-slate-800 underline cursor-pointer"
                 >
-                  <span>All Brands</span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                    selectedBrand === "all" ? "bg-white/20 text-white" : "text-slate-400 bg-slate-100"
-                  }`}>
-                    {products.length}
-                  </span>
+                  Clear
                 </button>
-                {displayedBrandsInSidebar.map((brandObj) => {
-                  const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
-                  return (
-                    <button
-                      key={brandObj.name}
-                      onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                        isSelected ? "bg-secondary text-white font-bold shadow-xs" : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] border ${
-                          isSelected ? "bg-white text-secondary border-white" : "border-slate-300 bg-white text-transparent"
-                        }`}>
-                          ✓
-                        </span>
-                        <span>{brandObj.name}</span>
-                      </span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                        isSelected ? "bg-white/20 text-white" : "text-slate-400 bg-slate-100"
-                      }`}>
-                        {brandObj.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              )}
             </div>
-          )}
+
+            {/* Brand Search Input if many brands */}
+            <div className="mb-2.5 relative">
+              <input
+                type="text"
+                value={brandSearchTerm}
+                onChange={(e) => setBrandSearchTerm(e.target.value)}
+                placeholder="Search brands..."
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 outline-none focus:border-secondary"
+              />
+              {brandSearchTerm && (
+                <button
+                  onClick={() => setBrandSearchTerm("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1 select-none">
+              {displayedBrandsInSidebar.map((brandName) => {
+                const isChecked = isBrandChecked(brandName);
+                const count = brandProductCounts.get(brandName.toLowerCase()) || 0;
+
+                return (
+                  <label
+                    key={brandName}
+                    className="flex items-center gap-2.5 cursor-pointer py-0.5 hover:text-blue-600 transition-colors group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleBrand(brandName)}
+                      className="w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 accent-[#2874f0] cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-slate-900 group-hover:text-black">
+                      {brandName}
+                    </span>
+                    {count > 0 && (
+                      <span className="text-xs text-slate-400 ml-auto font-mono">
+                        ({count})
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
           {/* 3. Price Range Filter */}
           <div className="pt-4 border-t border-slate-100">
@@ -1040,10 +1101,32 @@ function Content() {
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(true)}
-                className="lg:hidden px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200"
+                className="lg:hidden px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 cursor-pointer active:scale-95"
               >
                 <FontAwesomeIcon icon={faSliders} className="text-xs" />
                 <span>Filters {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}</span>
+              </button>
+
+              {/* Available Brands in Mobiles Trigger Button (Opens Brand List) */}
+              <button
+                type="button"
+                onClick={() => setIsBrandsModalOpen(true)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer active:scale-95 shadow-xs ${
+                  selectedBrand !== "all"
+                    ? "bg-secondary text-white border-secondary shadow-md shadow-secondary/20"
+                    : "bg-emerald-50 hover:bg-emerald-100/90 text-secondary border-emerald-200"
+                }`}
+                title="Show all available brands in Mobiles"
+              >
+                <FontAwesomeIcon icon={faList} className="text-xs" />
+                <span className="font-extrabold whitespace-nowrap">
+                  {selectedBrand !== "all" ? selectedBrand : "Mobile Brands"}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                  selectedBrand !== "all" ? "bg-white/25 text-white" : "bg-secondary/15 text-secondary"
+                }`}>
+                  {allMobileBrandsList.length}
+                </span>
               </button>
 
               {/* Sort By Dropdown (Amazon style) */}
@@ -1062,13 +1145,13 @@ function Content() {
                 </select>
               </div>
 
-              {/* View Switcher (Grid vs List) */}
+              {/* View Switcher & Brand List Icon Button */}
               <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60">
                 <button
                   type="button"
                   onClick={() => setViewStyle("grid")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                    viewStyle === "grid" 
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    viewStyle === "grid" && !isBrandsModalOpen
                       ? "bg-secondary text-white shadow-xs" 
                       : "text-slate-600 hover:text-slate-900"
                   }`}
@@ -1078,13 +1161,13 @@ function Content() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setViewStyle("list")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                    viewStyle === "list" 
+                  onClick={() => setIsBrandsModalOpen(true)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    isBrandsModalOpen || selectedBrand !== "all" || viewStyle === "list"
                       ? "bg-secondary text-white shadow-xs" 
                       : "text-slate-600 hover:text-slate-900"
                   }`}
-                  title="List View"
+                  title="Show all available brands in Mobiles"
                 >
                   <FontAwesomeIcon icon={faList} className="text-xs" />
                 </button>
@@ -1143,51 +1226,51 @@ function Content() {
 
             {/* Modal Scroll Content */}
             <div className="p-4 overflow-y-auto space-y-5 text-xs flex-1">
-              {/* Brand Filter */}
-              {availableBrandsWithCount.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-black uppercase tracking-wider text-slate-700">Brand</h4>
-                    {selectedBrand !== "all" && (
-                      <button
-                        onClick={() => setSelectedBrand("all")}
-                        className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto no-scrollbar py-1">
+              {/* Brand Filter (Exact match with user screenshot) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-black tracking-tight">Brands</h4>
+                  {(selectedBrands.length > 0 || selectedBrand !== "all") && (
                     <button
-                      onClick={() => setSelectedBrand("all")}
-                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                        selectedBrand === "all" ? "bg-slate-900 text-white shadow-xs" : "bg-slate-100 text-slate-700"
-                      }`}
+                      onClick={() => {
+                        setSelectedBrands([]);
+                        setSelectedBrand("all");
+                      }}
+                      className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline"
                     >
-                      All Brands
+                      Clear
                     </button>
-                    {availableBrandsWithCount.map((brandObj) => {
-                      const isSelected = selectedBrand.toLowerCase() === brandObj.name.toLowerCase();
-                      return (
-                        <button
-                          key={brandObj.name}
-                          onClick={() => setSelectedBrand(isSelected ? "all" : brandObj.name)}
-                          className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
-                            isSelected ? "bg-secondary text-white shadow-xs font-black" : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          <span>{brandObj.name}</span>
-                          <span className={`text-[10px] px-1 py-0.2 rounded-full font-mono font-bold ${
-                            isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
-                          }`}>
-                            {brandObj.count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  )}
                 </div>
-              )}
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {allMobileBrandsList.map((brandName) => {
+                    const isChecked = isBrandChecked(brandName);
+                    const count = brandProductCounts.get(brandName.toLowerCase()) || 0;
+
+                    return (
+                      <label
+                        key={brandName}
+                        className="flex items-center gap-2.5 cursor-pointer py-0.5 hover:text-blue-600 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleBrand(brandName)}
+                          className="w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 accent-[#2874f0] cursor-pointer"
+                        />
+                        <span className="text-xs font-medium text-slate-900">
+                          {brandName}
+                        </span>
+                        {count > 0 && (
+                          <span className="text-[10px] text-slate-400 ml-auto font-mono">
+                            ({count})
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Price Filter */}
               <div>
@@ -1303,6 +1386,99 @@ function Content() {
                 className="w-2/3 py-3 bg-secondary text-white rounded-xl font-black shadow-md hover:bg-[#255732] transition-colors text-center"
               >
                 Show {filteredProducts.length} Results
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ======================= BRANDS CHECKBOX MODAL (EXACT MATCH WITH USER SCREENSHOT) ======================= */}
+      {isBrandsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div 
+            className="fixed inset-0"
+            onClick={() => setIsBrandsModalOpen(false)}
+          />
+          <div className="relative bg-white w-full max-w-[320px] sm:max-w-[360px] rounded-2xl shadow-2xl z-10 overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-bold text-black tracking-tight">
+                Brands
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsBrandsModalOpen(false)}
+                className="w-7 h-7 rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <FontAwesomeIcon icon={faTimes} className="text-sm" />
+              </button>
+            </div>
+
+            {/* Quick Search */}
+            <div className="px-5 pt-3 pb-2">
+              <div className="relative">
+                <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                <input
+                  type="text"
+                  value={brandModalSearch}
+                  onChange={(e) => setBrandModalSearch(e.target.value)}
+                  placeholder="Search brands..."
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 outline-none focus:border-secondary"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Checkbox List (Exact visual format of screenshot) */}
+            <div className="px-5 py-2 max-h-72 overflow-y-auto space-y-2 select-none">
+              {allMobileBrandsList
+                .filter(b => !brandModalSearch.trim() || b.toLowerCase().includes(brandModalSearch.toLowerCase()))
+                .map((brandName) => {
+                  const isChecked = isBrandChecked(brandName);
+                  const count = brandProductCounts.get(brandName.toLowerCase()) || 0;
+
+                  return (
+                    <label
+                      key={brandName}
+                      className="flex items-center gap-3 cursor-pointer py-1 hover:text-blue-600 transition-colors group"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleBrand(brandName)}
+                        className="w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 accent-[#2874f0] cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-slate-900 group-hover:text-black">
+                        {brandName}
+                      </span>
+                      {count > 0 && (
+                        <span className="text-xs text-slate-400 ml-auto font-mono">
+                          ({count})
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBrands([]);
+                  setSelectedBrand("all");
+                }}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+              >
+                Clear all
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsBrandsModalOpen(false)}
+                className="px-4 py-1.5 bg-secondary text-white text-xs font-bold rounded-xl shadow-xs hover:bg-secondary/90 transition-colors cursor-pointer"
+              >
+                Apply ({filteredProducts.length})
               </button>
             </div>
           </div>

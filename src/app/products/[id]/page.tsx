@@ -25,7 +25,16 @@ import {
   faCircleCheck,
   faPlus,
   faMinus,
+  faCopy,
+  faTimes,
+  faLink,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  faWhatsapp,
+  faTelegram,
+  faFacebook,
+  faXTwitter,
+} from "@fortawesome/free-brands-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -98,6 +107,8 @@ export default function ProductDetailPage({
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifySubmitted, setNotifySubmitted] = useState(false);
   const [showNotifyModal, setShowNotifyModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
@@ -456,22 +467,26 @@ export default function ProductDetailPage({
               {/* Wishlist & Share Buttons */}
               <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
                 <button
-                  onClick={handleShare}
-                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                  title="Share product"
+                  type="button"
+                  onClick={() => setShowShareModal(true)}
+                  className="w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-emerald-700 flex items-center justify-center transition-all cursor-pointer shadow-md hover:shadow-lg border border-slate-200/90 active:scale-95 hover:scale-105"
+                  title="Share this product"
+                  aria-label="Share product"
                 >
-                  <FontAwesomeIcon icon={faShareNodes} />
+                  <FontAwesomeIcon icon={faShareNodes} className="text-base" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => product && toggleWishlist(product as any)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md hover:shadow-lg border border-slate-200/90 active:scale-95 hover:scale-105 ${
                     isWishlisted
-                      ? "bg-rose-50 text-rose-500 scale-105"
-                      : "bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500"
+                      ? "bg-rose-50 text-rose-500 border-rose-200"
+                      : "bg-white/95 hover:bg-rose-50 text-slate-500 hover:text-rose-500"
                   }`}
                   title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
+                  aria-label="Wishlist"
                 >
-                  <FontAwesomeIcon icon={faHeart} />
+                  <FontAwesomeIcon icon={faHeart} className="text-base" />
                 </button>
               </div>
 
@@ -559,11 +574,22 @@ export default function ProductDetailPage({
           <div className="lg:col-span-7 space-y-6">
             {/* Header info */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-                  {displayCategory}
-                </span>
-                <span className="text-xs text-slate-400 font-semibold">SKU: {product.sku || product.id}</span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                    {displayCategory}
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold">SKU: {product.sku || product.id}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowShareModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 border border-slate-200/80"
+                  title="Share this product"
+                >
+                  <FontAwesomeIcon icon={faShareNodes} className="text-emerald-700 text-xs" />
+                  <span>Share</span>
+                </button>
               </div>
 
               <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-tight">
@@ -667,6 +693,41 @@ export default function ProductDetailPage({
                     <span className="text-blue-700 font-black shrink-0">⚡ No Cost EMI:</span>
                     <span>Starts from <strong>₹{emiPerMonth.toLocaleString("en-IN")}/month</strong> with standard credit cards.</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Quick Share with Friends & Family */}
+              <div className="bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-slate-50 border border-emerald-200/70 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 flex-wrap shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <FontAwesomeIcon icon={faShareNodes} className="text-xs" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-900 leading-tight">Share deal with friends & family</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Get opinions or send a direct product recommendation</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+                      const shareText = `Check out ${product.name} on MY SHOP for ₹${Math.floor(currentPrice).toLocaleString("en-IN")}!\n${shareUrl}`;
+                      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, "_blank");
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <FontAwesomeIcon icon={faWhatsapp} className="text-sm" />
+                    <span>WhatsApp</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowShareModal(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-emerald-700 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 border border-slate-200"
+                  >
+                    <FontAwesomeIcon icon={faLink} className="text-xs text-slate-500" />
+                    <span>More</span>
+                  </button>
                 </div>
               </div>
 
@@ -1178,6 +1239,184 @@ export default function ProductDetailPage({
                 </button>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= SHARE MODAL ======================= */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm cursor-pointer transition-colors"
+              title="Close"
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg shrink-0">
+                <FontAwesomeIcon icon={faShareNodes} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900 leading-tight">
+                  Share this Product
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Share this deal with friends or across your social apps
+                </p>
+              </div>
+            </div>
+
+            {/* Product Summary Card */}
+            <div className="flex items-center gap-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 mb-5">
+              <div className="relative w-14 h-14 bg-white rounded-xl border border-slate-200/60 p-1 shrink-0 overflow-hidden">
+                <Image
+                  src={selectedImage || normalizeImageUrl(product.image_url || product.image)}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-1"
+                  unoptimized
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="text-xs font-black text-slate-900 line-clamp-1">
+                  {product.name}
+                </h4>
+                <p className="text-[11px] text-slate-500 font-semibold">
+                  {selectedStorage} • {selectedColor}
+                </p>
+                <p className="text-xs font-black text-emerald-700 mt-0.5">
+                  ₹{Math.floor(currentPrice).toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+
+            {/* Social Share Grid */}
+            <div className="grid grid-cols-4 gap-2.5 mb-5">
+              {/* WhatsApp */}
+              <button
+                type="button"
+                onClick={() => {
+                  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+                  const shareText = `Check out ${product.name} (${selectedStorage}, ${selectedColor}) on MY SHOP for ₹${Math.floor(currentPrice).toLocaleString("en-IN")}!\n\n${shareUrl}`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, "_blank");
+                }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-all cursor-pointer group active:scale-95 border border-[#25D366]/20"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center text-lg shadow-xs group-hover:scale-110 transition-transform">
+                  <FontAwesomeIcon icon={faWhatsapp} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">WhatsApp</span>
+              </button>
+
+              {/* Telegram */}
+              <button
+                type="button"
+                onClick={() => {
+                  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+                  const shareText = `Check out ${product.name} for ₹${Math.floor(currentPrice).toLocaleString("en-IN")} on MY SHOP`;
+                  window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, "_blank");
+                }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-[#229ED9]/10 hover:bg-[#229ED9]/20 text-[#229ED9] transition-all cursor-pointer group active:scale-95 border border-[#229ED9]/20"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#229ED9] text-white flex items-center justify-center text-base shadow-xs group-hover:scale-110 transition-transform">
+                  <FontAwesomeIcon icon={faTelegram} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">Telegram</span>
+              </button>
+
+              {/* X / Twitter */}
+              <button
+                type="button"
+                onClick={() => {
+                  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+                  const shareText = `Check out ${product.name} on MY SHOP for ₹${Math.floor(currentPrice).toLocaleString("en-IN")}`;
+                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
+                }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-slate-900/5 hover:bg-slate-900/10 text-slate-900 transition-all cursor-pointer group active:scale-95 border border-slate-200"
+              >
+                <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm shadow-xs group-hover:scale-110 transition-transform">
+                  <FontAwesomeIcon icon={faXTwitter} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">X (Twitter)</span>
+              </button>
+
+              {/* Facebook */}
+              <button
+                type="button"
+                onClick={() => {
+                  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+                  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, "_blank");
+                }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] transition-all cursor-pointer group active:scale-95 border border-[#1877F2]/20"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#1877F2] text-white flex items-center justify-center text-base shadow-xs group-hover:scale-110 transition-transform">
+                  <FontAwesomeIcon icon={faFacebook} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">Facebook</span>
+              </button>
+            </div>
+
+            {/* Copy Link Input Section */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                Copy Product Link
+              </label>
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-1.5 pr-2 focus-within:border-emerald-600 transition-colors">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== "undefined" ? window.location.href : ""}
+                  className="bg-transparent px-3 text-xs font-medium text-slate-700 flex-1 outline-none truncate select-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      navigator.clipboard.writeText(window.location.href);
+                      setLinkCopied(true);
+                      setTimeout(() => setLinkCopied(false), 2000);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                    linkCopied
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-900 hover:bg-emerald-700 text-white active:scale-95"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={linkCopied ? faCheck : faCopy} className="text-xs" />
+                  <span>{linkCopied ? "Copied!" : "Copy Link"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Native Mobile Share fallback if supported */}
+            {typeof navigator !== "undefined" && typeof (navigator as any).share === "function" && (
+              <div className="pt-4 mt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.share({
+                        title: product.name,
+                        text: `Check out ${product.name} on MY SHOP for ₹${Math.floor(currentPrice).toLocaleString("en-IN")}`,
+                        url: window.location.href,
+                      });
+                    } catch (err) {
+                      // user dismissed or cancelled share dialog
+                    }
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                >
+                  <FontAwesomeIcon icon={faShareNodes} className="text-xs text-emerald-700" />
+                  <span>Open System Share Menu</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
