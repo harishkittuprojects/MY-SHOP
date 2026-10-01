@@ -731,12 +731,28 @@ export default function ProductDetailPage({
                 </div>
               </div>
 
-              {/* 1. RAM & ROM / Storage Combination Selector */}
+              {/* 1. Dynamic Size / Storage / Variant Selector */}
               {availableStorages.length > 0 && (
                 <div className="pt-4 border-t border-slate-100 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-700 uppercase tracking-wider">
-                      Select Storage / Configuration:
+                      {(() => {
+                        const cat = `${displayCategory} ${product?.category_name || product?.category || product?.category_id || ""}`.toLowerCase();
+                        const sub = (product?.sub_category || "").toLowerCase();
+                        if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("apparel") || sub.includes("shirt") || sub.includes("jean") || sub.includes("dress") || sub.includes("shoe")) {
+                          return "Select Size / Fit:";
+                        }
+                        if (cat.includes("jewel") || cat.includes("gold") || cat.includes("silver")) {
+                          return "Select Size / Purity:";
+                        }
+                        if (cat.includes("ev") || cat.includes("vehicle") || cat.includes("scooter")) {
+                          return "Select Battery & Range:";
+                        }
+                        if (cat.includes("tv") || cat.includes("audio") || cat.includes("appliance")) {
+                          return "Select Screen / Capacity:";
+                        }
+                        return "Select Storage / Configuration:";
+                      })()}
                     </span>
                     <span className="font-black text-emerald-700">{selectedStorage}</span>
                   </div>

@@ -74,6 +74,215 @@ export default function AdminProductsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [customSizeInput, setCustomSizeInput] = useState("");
 
+  const getCategoryVariantConfig = (categoryId?: string, categoryName?: string, subCategory?: string) => {
+    const cat = `${categoryId || ""} ${categoryName || ""}`.toLowerCase();
+    const sub = (subCategory || "").toLowerCase();
+
+    // 1. Fashion / Apparel / Clothing / Footwear / Bags
+    if (
+      cat.includes("fashion") || cat.includes("apparel") || cat.includes("cloth") || 
+      cat.includes("wear") || cat.includes("shirt") || cat.includes("dress") || 
+      sub.includes("shirt") || sub.includes("tshirt") || sub.includes("t-shirt") || 
+      sub.includes("jean") || sub.includes("pant") || sub.includes("trouser") || 
+      sub.includes("cloth") || sub.includes("kurti") || sub.includes("dress") || 
+      sub.includes("shoe") || sub.includes("sneaker") || sub.includes("footwear") || 
+      sub.includes("jacket") || sub.includes("bag") || sub.includes("handbag")
+    ) {
+      return {
+        type: "fashion",
+        sectionTitle: "👕 Apparel & Clothing Sizes / Fit Options",
+        badge: "Fashion Sizes (S, M, L, XL...)",
+        sectionSubtitle: "Add clothing sizes (S, M, L, XL, XXL) or waist & shoe measurements (28, 30, UK 8, UK 9). Customers will pick their size on the product page.",
+        inputPlaceholder: "Type custom size (e.g. XL, 32, UK 9, 3XL, Free Size) and press Enter",
+        addButtonLabel: "+ Add Apparel Size",
+        activeBadgeTitle: "Configured Apparel Sizes:",
+        presetGroups: [
+          {
+            groupName: "👕 Standard Apparel Sizes",
+            presets: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "Free Size"]
+          },
+          {
+            groupName: "👖 Waist / Denim Sizes (Inches)",
+            presets: ["28", "30", "32", "34", "36", "38", "40", "42"]
+          },
+          {
+            groupName: "👟 Footwear & Shoe Sizes (UK / US / EU)",
+            presets: ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "EU 40", "EU 41", "EU 42", "EU 43", "EU 44"]
+          },
+          {
+            groupName: "👶 Kids & Age Sizes",
+            presets: ["2-3 Yrs", "3-4 Yrs", "5-6 Yrs", "7-8 Yrs", "9-10 Yrs", "11-12 Yrs", "13-14 Yrs"]
+          }
+        ]
+      };
+    }
+
+    // 2. Jewellery
+    if (
+      cat.includes("jewel") || cat.includes("gold") || cat.includes("silver") || 
+      cat.includes("diamond") || cat.includes("ring") || sub.includes("ring") || 
+      sub.includes("necklace") || sub.includes("bangle") || sub.includes("earring")
+    ) {
+      return {
+        type: "jewellery",
+        sectionTitle: "💍 Jewellery Sizes, Metal Purity & Length Variants",
+        badge: "Jewellery Sizes",
+        sectionSubtitle: "Add ring sizes, chain lengths, or gold/silver purity weights for this jewellery item.",
+        inputPlaceholder: "Type jewellery variant (e.g. Size 14, 18-inch, 22K 8g, 925 Silver) and press Enter",
+        addButtonLabel: "+ Add Jewellery Variant",
+        activeBadgeTitle: "Configured Jewellery Sizes / Variants:",
+        presetGroups: [
+          {
+            groupName: "💍 Ring & Bangle Sizes",
+            presets: ["Size 10", "Size 12", "Size 14", "Size 16", "Size 18", "Size 20", "2.4 Bangle", "2.6 Bangle", "2.8 Bangle", "Adjustable Size"]
+          },
+          {
+            groupName: "✨ Chain & Necklace Lengths",
+            presets: ["14 Inch (Choker)", "16 Inch", "18 Inch (Standard)", "20 Inch", "22 Inch", "24 Inch (Long)"]
+          },
+          {
+            groupName: "🏆 Gold Purity & Certified Metals",
+            presets: ["22K (916 BIS Hallmarked)", "18K Gold", "14K Gold", "925 Sterling Silver", "Solitaire Diamond VVS1", "Rose Gold"]
+          },
+          {
+            groupName: "⚖️ Weight Options",
+            presets: ["2 Grams", "4 Grams", "8 Grams (1 Sovereign / Pavan)", "10 Grams", "16 Grams", "20 Grams"]
+          }
+        ]
+      };
+    }
+
+    // 3. EV Vehicles & Electric Scooters / Bikes
+    if (
+      cat.includes("ev") || cat.includes("vehicle") || cat.includes("scooter") || 
+      cat.includes("bike") || sub.includes("scooter") || sub.includes("bike")
+    ) {
+      return {
+        type: "ev",
+        sectionTitle: "⚡ Battery Capacity, Range & Charger Variants",
+        badge: "EV Trims & Battery",
+        sectionSubtitle: "Add battery packs and range specifications (e.g. 3.7 kWh - 150 km Range, Dual Battery).",
+        inputPlaceholder: "Type EV trim / battery (e.g. 3.7 kWh (150km), Fast Charger 3.3kW) and press Enter",
+        addButtonLabel: "+ Add EV Trim / Variant",
+        activeBadgeTitle: "Configured EV Trims:",
+        presetGroups: [
+          {
+            groupName: "⚡ Battery Packs & Certified IDC Range",
+            presets: ["2.5 kWh (85 km Range)", "3.4 kWh (120 km Range)", "3.7 kWh (150 km Range)", "4.0 kWh (195 km Pro Range)", "Dual Battery (220 km Pro Max)"]
+          },
+          {
+            groupName: "🔌 Charger Bundles & Warranty",
+            presets: ["Standard Home Charger 750W", "Fast Charger 3.3 kW", "Hypercharger Pro 6 kW", "8-Year Battery Warranty Pack"]
+          }
+        ]
+      };
+    }
+
+    // 4. Computers, Laptops & Tablets
+    if (
+      cat.includes("computer") || cat.includes("laptop") || cat.includes("tablet") || 
+      cat.includes("ipad") || sub.includes("laptop") || sub.includes("tablet")
+    ) {
+      return {
+        type: "computers",
+        sectionTitle: "💻 Processor, RAM & SSD Storage Variants",
+        badge: "Computer Specs",
+        sectionSubtitle: "Add RAM, SSD, or display size options for laptops and tablets.",
+        inputPlaceholder: "Type configuration (e.g. 16GB RAM + 512GB SSD, 14 Inch OLED) and press Enter",
+        addButtonLabel: "+ Add Configuration",
+        activeBadgeTitle: "Configured Configurations:",
+        presetGroups: [
+          {
+            groupName: "💻 Memory & SSD Combinations",
+            presets: ["8GB RAM + 256GB SSD", "8GB RAM + 512GB SSD", "16GB RAM + 512GB SSD", "16GB RAM + 1TB SSD", "32GB RAM + 1TB SSD", "64GB RAM + 2TB SSD"]
+          },
+          {
+            groupName: "🖥️ Display Sizes & Panel Types",
+            presets: ["11 Inch iPad", "13.3 Inch Retina", "14 Inch OLED 120Hz", "15.6 Inch Full HD", "16 Inch Pro Max", "17.3 Inch Gaming 165Hz"]
+          }
+        ]
+      };
+    }
+
+    // 5. TV, Audio & Home Entertainment
+    if (
+      cat.includes("tv") || cat.includes("audio") || cat.includes("sound") || 
+      cat.includes("speaker") || sub.includes("tv") || sub.includes("audio")
+    ) {
+      return {
+        type: "tv-audio",
+        sectionTitle: "📺 Display Screen Size & Audio Power Variants",
+        badge: "TV & Audio Sizes",
+        sectionSubtitle: "Add TV screen inches or soundbar wattage configurations.",
+        inputPlaceholder: "Type screen size or wattage (e.g. 55 Inch 4K OLED, 300W Dolby Atmos) and press Enter",
+        addButtonLabel: "+ Add Screen / Audio Size",
+        activeBadgeTitle: "Configured Screen / Audio Sizes:",
+        presetGroups: [
+          {
+            groupName: "📺 TV Screen Sizes",
+            presets: ["32 Inch HD Smart", "43 Inch 4K UHD", "50 Inch 4K HDR", "55 Inch 4K OLED", "65 Inch 4K QLED", "75 Inch 4K Ultra Cinema", "85 Inch 8K Master"]
+          },
+          {
+            groupName: "🔊 Sound Output & Configurations",
+            presets: ["100W 2.1 Stereo", "300W with Wireless Subwoofer", "500W Dolby Atmos 5.1", "800W 7.1.2 Spatial Surround"]
+          }
+        ]
+      };
+    }
+
+    // 6. Kitchen & Home Appliances
+    if (
+      cat.includes("kitchen") || cat.includes("appliance") || cat.includes("home") || 
+      sub.includes("grinder") || sub.includes("fryer") || sub.includes("fridge") || 
+      sub.includes("refrigerator") || sub.includes("washing")
+    ) {
+      return {
+        type: "appliances",
+        sectionTitle: "🏠 Appliance Capacity, Wattage & Size Variants",
+        badge: "Appliance Sizes",
+        sectionSubtitle: "Add appliance capacity (Liters, Kg), motor wattage, or jar packs.",
+        inputPlaceholder: "Type capacity or wattage (e.g. 750W 4 Jars, 7.5 Kg, 260 Liters) and press Enter",
+        addButtonLabel: "+ Add Appliance Option",
+        activeBadgeTitle: "Configured Appliance Options:",
+        presetGroups: [
+          {
+            groupName: "🍳 Kitchen Appliances & Wattage",
+            presets: ["500W (3 Jars)", "750W Heavy Duty (4 Jars)", "1000W Commercial", "1.5 Liters", "4.0 Liters (Air Fryer)", "6.5 Liters Family Size"]
+          },
+          {
+            groupName: "🏠 Home Appliances & Refrigerators",
+            presets: ["6.5 Kg Front Load", "7.5 Kg Fully Automatic", "8.5 Kg 5-Star", "190 Liters Single Door", "260 Liters Double Door Frost Free", "450 Liters Side-by-Side"]
+          }
+        ]
+      };
+    }
+
+    // 7. Mobiles, Smartphones & Accessories (Default for tech / phones)
+    return {
+      type: "mobiles",
+      sectionTitle: "📱 Storage & RAM / Device Variants",
+      badge: "Mobile Storage & RAM",
+      sectionSubtitle: "Add available storage capacities, RAM configurations, or dial sizes (e.g. 128 GB, 256 GB, 512 GB, 45mm). Customers will select their preferred variant on the product page.",
+      inputPlaceholder: "Type storage/variant (e.g. 128 GB, 256 GB, 512 GB, 8GB/256GB, 45mm) and press Enter",
+      addButtonLabel: "+ Add Storage / Variant",
+      activeBadgeTitle: "Configured Storage & RAM:",
+      presetGroups: [
+        {
+          groupName: "📱 RAM + Storage Combinations (Flagships & 5G)",
+          presets: ["6GB RAM + 128GB ROM", "8GB RAM + 128GB ROM", "8GB RAM + 256GB ROM", "12GB RAM + 256GB ROM", "12GB RAM + 512GB ROM", "16GB RAM + 512GB ROM", "16GB RAM + 1TB ROM"]
+        },
+        {
+          groupName: "💾 Internal Storage Only",
+          presets: ["64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "2 TB"]
+        },
+        {
+          groupName: "⌚ Smartwatch Dials & Fast Chargers",
+          presets: ["40mm", "41mm", "44mm", "45mm", "49mm Ultra", "25W Charger", "45W Fast Charger", "65W GaN Pro"]
+        }
+      ]
+    };
+  };
+
   const getCurrentSizes = (): string[] => {
     if (!formData.unit) return [];
     return formData.unit
@@ -700,111 +909,134 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* Storage & RAM / Device Variants Section */}
-              <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-900">
-                    Storage &amp; RAM / Device Variants
-                  </label>
-                  <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                    {getCurrentSizes().length} Variants Configured
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 mb-3">
-                  Add available storage capacities, RAM configurations, or dial sizes (e.g. 128 GB, 256 GB, 512 GB, 45mm). Customers will select their preferred variant on the product page.
-                </p>
+              {/* Dynamic Category Variant & Sizes Section */}
+              {(() => {
+                const variantConfig = getCategoryVariantConfig(
+                  formData.category_id,
+                  formData.category_name,
+                  formData.sub_category
+                );
 
-                {/* Active Sizes Badges */}
-                <div className="flex flex-wrap gap-2 mb-3 min-h-[42px] p-2.5 bg-white rounded-xl border border-slate-200 items-center">
-                  {getCurrentSizes().length === 0 ? (
-                    <span className="text-xs text-slate-400 italic">No sizes configured yet. Click suggestions below or add your own size.</span>
-                  ) : (
-                    getCurrentSizes().map((size, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-bold shadow-xs animate-in zoom-in-95"
-                      >
-                        <span>{size}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSize(idx)}
-                          className="w-4 h-4 rounded-full bg-emerald-200/80 hover:bg-rose-500 hover:text-white text-emerald-800 text-[10px] flex items-center justify-center transition-colors cursor-pointer"
-                          title="Remove size"
-                        >
-                          ✕
-                        </button>
+                return (
+                  <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <label className="block text-xs font-black uppercase tracking-wider text-slate-900">
+                          {variantConfig.sectionTitle}
+                        </label>
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-full">
+                          {variantConfig.badge}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-emerald-700 font-bold bg-white border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                        {getCurrentSizes().length} Sizes / Variants Added
                       </span>
-                    ))
-                  )}
-                </div>
+                    </div>
 
-                {/* Add Custom Size Input */}
-                <div className="flex gap-2 mb-3">
-                  <input
-                    type="text"
-                    value={customSizeInput}
-                    onChange={(e) => setCustomSizeInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSize(customSizeInput);
-                      }
-                    }}
-                    placeholder="Type storage/variant (e.g. 128 GB, 256 GB, 512 GB, 8GB/256GB, 45mm) and press Enter"
-                    className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-emerald-600 shadow-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAddSize(customSizeInput)}
-                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
-                  >
-                    + Add Storage / Variant
-                  </button>
-                </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                      {variantConfig.sectionSubtitle}
+                    </p>
 
-                {/* Quick Presets */}
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Quick Smartphone &amp; Gadget Suggestions:
+                    {/* Active Configured Sizes Badges */}
+                    <div className="space-y-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        {variantConfig.activeBadgeTitle}
+                      </div>
+                      <div className="flex flex-wrap gap-2 min-h-[44px] p-2.5 bg-white rounded-xl border border-slate-200 items-center shadow-2xs">
+                        {getCurrentSizes().length === 0 ? (
+                          <span className="text-xs text-slate-400 italic">
+                            No sizes configured yet. Click the 1-tap suggestions below or enter custom sizes.
+                          </span>
+                        ) : (
+                          getCurrentSizes().map((size, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-950 border border-emerald-300 rounded-lg text-xs font-black shadow-xs animate-in zoom-in-95"
+                            >
+                              <span>{size}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSize(idx)}
+                                className="w-4 h-4 rounded-full bg-emerald-200/80 hover:bg-rose-500 hover:text-white text-emerald-800 text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                                title="Remove"
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Add Custom Variant / Size Input */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customSizeInput}
+                        onChange={(e) => setCustomSizeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddSize(customSizeInput);
+                          }
+                        }}
+                        placeholder={variantConfig.inputPlaceholder}
+                        className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-emerald-600 shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddSize(customSizeInput)}
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                      >
+                        {variantConfig.addButtonLabel}
+                      </button>
+                    </div>
+
+                    {/* 1-Tap Category Presets Groups */}
+                    <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        ⚡ 1-Tap {variantConfig.badge} Presets (Click to Add / Remove):
+                      </div>
+
+                      <div className="space-y-2">
+                        {variantConfig.presetGroups.map((group, gIdx) => (
+                          <div key={gIdx} className="bg-white/80 p-2.5 rounded-xl border border-slate-200/80 space-y-1.5">
+                            <div className="text-[10px] font-bold text-slate-600">
+                              {group.groupName}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {group.presets.map((preset) => {
+                                const isAdded = getCurrentSizes().includes(preset);
+                                return (
+                                  <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isAdded) {
+                                        const idx = getCurrentSizes().indexOf(preset);
+                                        if (idx !== -1) handleRemoveSize(idx);
+                                      } else {
+                                        handleAddSize(preset);
+                                      }
+                                    }}
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                                      isAdded
+                                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs scale-105"
+                                        : "bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 active:scale-95"
+                                    }`}
+                                  >
+                                    {isAdded ? `✓ ${preset}` : `+ ${preset}`}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      "64 GB",
-                      "128 GB",
-                      "256 GB",
-                      "512 GB",
-                      "1 TB",
-                      "6GB / 128GB",
-                      "8GB / 128GB",
-                      "8GB / 256GB",
-                      "12GB / 256GB",
-                      "12GB / 512GB",
-                      "16GB / 1TB",
-                      "40mm",
-                      "44mm",
-                      "45mm",
-                      "49mm Ultra",
-                      "1 Unit (Official Warranty)"
-                    ].map((preset) => {
-                      const isAdded = getCurrentSizes().includes(preset);
-                      return (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => handleAddSize(preset)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
-                            isAdded
-                              ? "bg-emerald-100 text-emerald-800 border-emerald-300 opacity-60"
-                              : "bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 active:scale-95"
-                          }`}
-                        >
-                          + {preset}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
