@@ -14,7 +14,8 @@ import {
   faCreditCard,
   faTag,
   faBolt,
-  faChevronRight
+  faChevronRight,
+  faChevronLeft
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "@/components/common/ProductCard";
 import HomeBanners from "@/components/home/HomeBanners";
@@ -35,6 +36,102 @@ interface CategoryConfig {
   categoryQuery: string;
   subcategories: string[];
 }
+
+interface NavCategoryItem {
+  id: string;
+  name: string;
+  shortName: string;
+  icon: string;
+  image?: string;
+  targetUrl: string;
+}
+
+const TOP_NAV_CATEGORIES: NavCategoryItem[] = [
+  {
+    id: "mobiles",
+    name: "Smartphones & Mobiles",
+    shortName: "Mobiles",
+    icon: "📱",
+    targetUrl: "/products?category=Mobiles"
+  },
+  {
+    id: "mobile-accessories",
+    name: "Mobile Accessories",
+    shortName: "Accessories",
+    icon: "🔌",
+    targetUrl: "/products?category=Mobile%20Accessories"
+  },
+  {
+    id: "old-refurbished-mobiles",
+    name: "Certified Refurbished Mobiles",
+    shortName: "Refurbished",
+    icon: "♻️",
+    targetUrl: "/products?category=Old%20%2F%20Refurbished%20Mobiles"
+  },
+  {
+    id: "fashion",
+    name: "Fashion & Apparel",
+    shortName: "Fashion",
+    icon: "👗",
+    targetUrl: "/products?category=Fashion"
+  },
+  {
+    id: "jewellery",
+    name: "Precious Jewellery",
+    shortName: "Jewellery",
+    icon: "💎",
+    targetUrl: "/products?category=Jewellery"
+  },
+  {
+    id: "ev-vehicles",
+    name: "Electric Vehicles & Scooters",
+    shortName: "EV Vehicles",
+    icon: "⚡",
+    targetUrl: "/products?category=EV%20Vehicles"
+  },
+  {
+    id: "display-replacement",
+    name: "Screen & Display Services",
+    shortName: "Display Services",
+    icon: "🛠️",
+    targetUrl: "/services"
+  },
+  {
+    id: "computers-tablets",
+    name: "Computers, Laptops & Tablets",
+    shortName: "Computers & Tabs",
+    icon: "💻",
+    targetUrl: "/products?category=Computers%20%26%20Tablets"
+  },
+  {
+    id: "tv-audio",
+    name: "TV & Audio Systems",
+    shortName: "TV & Audio",
+    icon: "📺",
+    targetUrl: "/products?category=TV%20%26%20Audio"
+  },
+  {
+    id: "kitchen-appliances",
+    name: "Kitchen Appliances",
+    shortName: "Kitchen",
+    icon: "🍳",
+    targetUrl: "/products?category=Kitchen%20Appliances"
+  },
+  {
+    id: "home-appliances",
+    name: "Home Appliances & Living",
+    shortName: "Home Appliances",
+    icon: "🏠",
+    targetUrl: "/products?category=Home%20Appliances"
+  },
+  {
+    id: "smart-technology",
+    name: "Smart Technology & Watches",
+    shortName: "Smart Tech",
+    icon: "💡",
+    targetUrl: "/products?category=Smart%20Technology"
+  },
+];
 
 const PREDEFINED_CATEGORIES: CategoryConfig[] = [
   {
@@ -146,6 +243,17 @@ const PREDEFINED_CATEGORIES: CategoryConfig[] = [
     description: "Mixer grinders, air fryers, microwave ovens, refrigerators & daily home essentials",
     categoryQuery: "Kitchen Appliances",
     subcategories: ["Mixer Grinders", "Air Fryers", "Refrigerators", "Microwaves"]
+  },
+  {
+    id: "home-appliances",
+    name: "Home Appliances & Furniture",
+    badge: "Home Living",
+    icon: "🏠",
+    accentColor: "from-teal-600 to-emerald-700",
+    tagColor: "bg-teal-50 text-teal-800 border-teal-200",
+    description: "Washing machines, air conditioners, vacuum cleaners, and premium home appliances",
+    categoryQuery: "Home Appliances",
+    subcategories: ["Washing Machines", "Air Conditioners", "Vacuum Cleaners", "Water Purifiers"]
   }
 ];
 
@@ -409,60 +517,116 @@ export default function HomeContent() {
     return sections;
   }, [products, categories]);
 
+  // Merge static Flipkart/Amazon top categories with dynamic DB categories
+  const navCategoriesList = useMemo(() => {
+    const list = [...TOP_NAV_CATEGORIES];
+    
+    // Enrich with any images or custom categories from API
+    categories.forEach(cat => {
+      const match = list.find(
+        c => c.id.toLowerCase() === cat.id?.toLowerCase() || 
+             c.name.toLowerCase() === cat.name?.toLowerCase() ||
+             c.shortName.toLowerCase() === cat.name?.toLowerCase()
+      );
+      if (match) {
+        if (cat.image_url || cat.image) {
+          match.image = cat.image_url || cat.image;
+        }
+      } else {
+        list.push({
+          id: cat.id || cat.name.toLowerCase().replace(/\s+/g, "-"),
+          name: cat.name,
+          shortName: cat.name.length > 14 ? `${cat.name.slice(0, 12)}...` : cat.name,
+          icon: cat.icon || "📦",
+          image: cat.image_url || cat.image,
+          targetUrl: `/products?category=${encodeURIComponent(cat.name)}`
+        });
+      }
+    });
+
+    return list;
+  }, [categories]);
+
   return (
     <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#fafafa]">
       {/* 1. Main Hero Banner Carousel */}
       <Hero />
 
-      {/* 2. Top Category Quick Navigation Rail (Amazon & Flipkart Style) */}
-      <section className="bg-white border-y border-slate-200/80 py-3 sm:py-5 shadow-xs sticky top-[60px] md:top-[70px] z-20 backdrop-blur-md bg-white/95">
-        <div className="container px-3 sm:px-4 md:px-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3 px-1">
-            <h2 className="text-xs sm:text-sm md:text-base font-black flex items-center gap-2 text-slate-800 uppercase tracking-wider">
-              <span className="w-1.5 h-4 bg-secondary rounded-full"></span>
-              Explore All Categories
-            </h2>
-            <Link 
-              href="/categories" 
-              className="text-xs sm:text-sm font-bold text-secondary hover:underline flex items-center gap-1.5"
+      {/* 2. Top Category Quick Navigation Rail (Flipkart & Amazon Clean Style) */}
+      <section className="bg-white border-b border-slate-200/80 shadow-[0_2px_4px_rgba(0,0,0,0.02)] py-2 sm:py-2.5 sticky top-[58px] md:top-[68px] z-20 backdrop-blur-md bg-white/98">
+        <div className="container px-2 sm:px-4 md:px-6 relative">
+          
+          <div className="relative flex items-center">
+            {/* Left Scroll Chevron (Desktop) */}
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("top-category-nav-rail");
+                if (el) el.scrollBy({ left: -260, behavior: "smooth" });
+              }}
+              className="hidden lg:flex absolute -left-2 z-10 w-7 h-7 rounded-full bg-white border border-slate-200 shadow-md items-center justify-center text-slate-600 hover:text-secondary hover:border-secondary transition-all cursor-pointer active:scale-90"
+              aria-label="Scroll left categories"
             >
-              All Categories ({categories.length || 10}) <FontAwesomeIcon icon={faArrowRight} size="xs" />
-            </Link>
-          </div>
+              <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
+            </button>
 
-          <div className="flex items-center justify-start sm:justify-center gap-3 sm:gap-5 md:gap-8 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
-            {(categories.length > 0 ? categories : PREDEFINED_CATEGORIES).map((cat) => {
-              const catName = cat.name || cat.id;
-              const catImg = cat.image_url || cat.image;
-              const targetUrl = `/products?category=${encodeURIComponent(cat.name || cat.categoryQuery || cat.id)}`;
-              
-              return (
-                <Link
-                  key={cat.id || cat.name}
-                  href={targetUrl}
-                  className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-transform"
-                >
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-2xl bg-slate-50 border border-slate-200/90 group-hover:border-secondary group-hover:shadow-lg transition-all p-1.5 flex items-center justify-center overflow-hidden relative shadow-xs group-hover:scale-105">
-                    <div className="relative w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 border border-slate-100">
+            {/* Categories Rail */}
+            <div 
+              id="top-category-nav-rail"
+              className="flex items-start justify-start lg:justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto no-scrollbar py-1 px-1 sm:px-2 scroll-smooth w-full"
+            >
+              {navCategoriesList.map((cat) => {
+                const catImg = cat.image;
+                
+                return (
+                  <Link
+                    key={cat.id || cat.name}
+                    href={cat.targetUrl}
+                    className="flex flex-col items-center group flex-shrink-0 cursor-pointer min-w-[62px] sm:min-w-[70px] md:min-w-[78px] py-1 px-1 transition-all text-center select-none active:scale-95"
+                  >
+                    {/* Clean Circular Thumbnail / Icon (No bulky boxes / no card background / no heavy shadows) */}
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-full bg-slate-50/80 border border-slate-200/70 group-hover:border-secondary group-hover:bg-emerald-50/60 group-hover:scale-110 group-hover:ring-2 group-hover:ring-secondary/20 flex items-center justify-center transition-all duration-200 ease-out relative shadow-2xs">
                       {catImg ? (
-                        <Image
-                          src={normalizeImageUrl(catImg)}
-                          alt={catName}
-                          fill
-                          className="object-contain p-1 group-hover:scale-110 transition-transform duration-300"
-                          sizes="(max-width: 768px) 70px, 90px"
-                        />
+                        <div className="relative w-8 h-8 sm:w-9 sm:h-9">
+                          <Image
+                            src={normalizeImageUrl(catImg)}
+                            alt={cat.name}
+                            fill
+                            className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
+                            sizes="48px"
+                          />
+                        </div>
                       ) : (
-                        <span className="text-2xl">{cat.icon || "📦"}</span>
+                        <span className="text-xl sm:text-2xl transition-transform duration-200 group-hover:scale-110">
+                          {cat.icon || "📦"}
+                        </span>
                       )}
                     </div>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 text-center max-w-[75px] sm:max-w-[95px] md:max-w-[105px] leading-tight line-clamp-2 group-hover:text-secondary transition-colors mt-1.5">
-                    {catName}
-                  </span>
-                </Link>
-              );
-            })}
+
+                    {/* Compact, Readable Category Name */}
+                    <span className="text-[11px] sm:text-xs font-semibold text-slate-700 group-hover:text-secondary group-hover:font-bold tracking-tight text-center leading-tight mt-1.5 transition-colors line-clamp-1 max-w-[68px] sm:max-w-[78px] md:max-w-[88px]">
+                      {cat.shortName || cat.name}
+                    </span>
+
+                    {/* Subtle Green Active/Hover Indicator */}
+                    <span className="w-0 group-hover:w-3.5 h-[2px] bg-secondary rounded-full transition-all duration-200 mt-1 opacity-0 group-hover:opacity-100" />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Right Scroll Chevron (Desktop) */}
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("top-category-nav-rail");
+                if (el) el.scrollBy({ left: 260, behavior: "smooth" });
+              }}
+              className="hidden lg:flex absolute -right-2 z-10 w-7 h-7 rounded-full bg-white border border-slate-200 shadow-md items-center justify-center text-slate-600 hover:text-secondary hover:border-secondary transition-all cursor-pointer active:scale-90"
+              aria-label="Scroll right categories"
+            >
+              <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+            </button>
           </div>
         </div>
       </section>
