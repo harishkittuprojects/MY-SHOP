@@ -73,20 +73,73 @@ export default function AdminProductsPage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [customSizeInput, setCustomSizeInput] = useState("");
+  const [selectedVariantPresetCategory, setSelectedVariantPresetCategory] = useState<string>("auto");
 
-  const getCategoryVariantConfig = (categoryId?: string, categoryName?: string, subCategory?: string) => {
+  // Common subcategories helper
+  const getSuggestedSubcategories = (catId?: string, catName?: string): string[] => {
+    const combined = `${catId || ""} ${catName || ""}`.toLowerCase();
+    if (combined.includes("fashion") || combined.includes("cloth") || combined.includes("apparel")) {
+      return ["T-Shirts & Polos", "Shirts", "Jeans & Denim", "Trousers & Pants", "Dresses & Kurtis", "Footwear & Shoes", "Ethnic Wear", "Jackets & Hoodies", "Accessories"];
+    }
+    if (combined.includes("jewel") || combined.includes("gold") || combined.includes("silver")) {
+      return ["Gold Jewellery", "Diamond Rings", "Silver 925", "Necklaces & Chains", "Bangles & Kadas", "Earrings", "Pendants", "Coins & Bars"];
+    }
+    if (combined.includes("ev") || combined.includes("scooter") || combined.includes("bike")) {
+      return ["Electric Scooters", "Electric Bikes", "Fast Chargers", "Battery Packs", "Riding Gear & Accessories"];
+    }
+    if (combined.includes("comp") || combined.includes("laptop") || combined.includes("tablet")) {
+      return ["Laptops", "Gaming Laptops", "Tablets & iPads", "Monitors & Displays", "Keyboards & Mouse", "Storage SSD"];
+    }
+    if (combined.includes("tv") || combined.includes("audio") || combined.includes("sound")) {
+      return ["Smart 4K TVs", "OLED TVs", "Soundbars & Home Theatres", "Bluetooth Speakers", "Party Speakers"];
+    }
+    if (combined.includes("appliance") || combined.includes("kitchen") || combined.includes("home")) {
+      return ["Mixer Grinders", "Air Fryers", "Refrigerators", "Washing Machines", "Microwave Ovens", "Water Purifiers"];
+    }
+    // Default Mobiles & Tech
+    return ["Flagship Phones", "5G Smartphones", "Budget Mobiles", "Chargers & Adapters", "Cases & Covers", "Power Banks", "Screen Protectors", "Smartwatches"];
+  };
+
+  const VARIANT_CATEGORY_OPTIONS = [
+    { id: "auto", label: "Auto (From Category)", icon: "🔄" },
+    { id: "fashion", label: "Fashion & Apparel", icon: "👕" },
+    { id: "mobiles", label: "Mobiles & Gadgets", icon: "📱" },
+    { id: "jewellery", label: "Jewellery & Purity", icon: "💍" },
+    { id: "ev", label: "EV Vehicles & Batteries", icon: "⚡" },
+    { id: "computers", label: "Laptops & Computers", icon: "💻" },
+    { id: "tv-audio", label: "TV & Audio Systems", icon: "📺" },
+    { id: "appliances", label: "Home & Kitchen Appliances", icon: "🏠" },
+    { id: "general", label: "General Sizes", icon: "📦" },
+  ];
+
+  const getCategoryVariantConfig = (
+    categoryId?: string,
+    categoryName?: string,
+    subCategory?: string,
+    overrideType?: string,
+    productName?: string
+  ) => {
+    const effectiveType = overrideType && overrideType !== "auto" ? overrideType : null;
+
     const cat = `${categoryId || ""} ${categoryName || ""}`.toLowerCase();
     const sub = (subCategory || "").toLowerCase();
+    const name = (productName || "").toLowerCase();
 
     // 1. Fashion / Apparel / Clothing / Footwear / Bags
     if (
-      cat.includes("fashion") || cat.includes("apparel") || cat.includes("cloth") || 
-      cat.includes("wear") || cat.includes("shirt") || cat.includes("dress") || 
-      sub.includes("shirt") || sub.includes("tshirt") || sub.includes("t-shirt") || 
-      sub.includes("jean") || sub.includes("pant") || sub.includes("trouser") || 
-      sub.includes("cloth") || sub.includes("kurti") || sub.includes("dress") || 
-      sub.includes("shoe") || sub.includes("sneaker") || sub.includes("footwear") || 
-      sub.includes("jacket") || sub.includes("bag") || sub.includes("handbag")
+      effectiveType === "fashion" ||
+      (!effectiveType && (
+        cat.includes("fashion") || cat.includes("apparel") || cat.includes("cloth") || 
+        cat.includes("wear") || cat.includes("shirt") || cat.includes("dress") || 
+        sub.includes("shirt") || sub.includes("tshirt") || sub.includes("t-shirt") || 
+        sub.includes("jean") || sub.includes("pant") || sub.includes("trouser") || 
+        sub.includes("cloth") || sub.includes("kurti") || sub.includes("dress") || 
+        sub.includes("shoe") || sub.includes("sneaker") || sub.includes("footwear") || 
+        sub.includes("jacket") || sub.includes("bag") || sub.includes("handbag") ||
+        name.includes("tshirt") || name.includes("t-shirt") || name.includes("shirt") ||
+        name.includes("jeans") || name.includes("trouser") || name.includes("dress") ||
+        name.includes("sneaker") || name.includes("shoe") || name.includes("cloth")
+      ))
     ) {
       return {
         type: "fashion",
@@ -119,9 +172,13 @@ export default function AdminProductsPage() {
 
     // 2. Jewellery
     if (
-      cat.includes("jewel") || cat.includes("gold") || cat.includes("silver") || 
-      cat.includes("diamond") || cat.includes("ring") || sub.includes("ring") || 
-      sub.includes("necklace") || sub.includes("bangle") || sub.includes("earring")
+      effectiveType === "jewellery" ||
+      (!effectiveType && (
+        cat.includes("jewel") || cat.includes("gold") || cat.includes("silver") || 
+        cat.includes("diamond") || cat.includes("ring") || sub.includes("ring") || 
+        sub.includes("necklace") || sub.includes("bangle") || sub.includes("earring") ||
+        name.includes("jewel") || name.includes("gold") || name.includes("ring") || name.includes("necklace")
+      ))
     ) {
       return {
         type: "jewellery",
@@ -154,8 +211,12 @@ export default function AdminProductsPage() {
 
     // 3. EV Vehicles & Electric Scooters / Bikes
     if (
-      cat.includes("ev") || cat.includes("vehicle") || cat.includes("scooter") || 
-      cat.includes("bike") || sub.includes("scooter") || sub.includes("bike")
+      effectiveType === "ev" ||
+      (!effectiveType && (
+        cat.includes("ev") || cat.includes("vehicle") || cat.includes("scooter") || 
+        cat.includes("bike") || sub.includes("scooter") || sub.includes("bike") ||
+        name.includes("scooter") || name.includes("ola") || name.includes("ather") || name.includes("tvs iqube")
+      ))
     ) {
       return {
         type: "ev",
@@ -180,8 +241,12 @@ export default function AdminProductsPage() {
 
     // 4. Computers, Laptops & Tablets
     if (
-      cat.includes("computer") || cat.includes("laptop") || cat.includes("tablet") || 
-      cat.includes("ipad") || sub.includes("laptop") || sub.includes("tablet")
+      effectiveType === "computers" ||
+      (!effectiveType && (
+        cat.includes("computer") || cat.includes("laptop") || cat.includes("tablet") || 
+        cat.includes("ipad") || sub.includes("laptop") || sub.includes("tablet") ||
+        name.includes("laptop") || name.includes("macbook") || name.includes("thinkpad") || name.includes("ipad")
+      ))
     ) {
       return {
         type: "computers",
@@ -206,8 +271,12 @@ export default function AdminProductsPage() {
 
     // 5. TV, Audio & Home Entertainment
     if (
-      cat.includes("tv") || cat.includes("audio") || cat.includes("sound") || 
-      cat.includes("speaker") || sub.includes("tv") || sub.includes("audio")
+      effectiveType === "tv-audio" ||
+      (!effectiveType && (
+        cat.includes("tv") || cat.includes("audio") || cat.includes("sound") || 
+        cat.includes("speaker") || sub.includes("tv") || sub.includes("audio") ||
+        name.includes("tv") || name.includes("soundbar") || name.includes("speaker") || name.includes("headphone")
+      ))
     ) {
       return {
         type: "tv-audio",
@@ -232,9 +301,13 @@ export default function AdminProductsPage() {
 
     // 6. Kitchen & Home Appliances
     if (
-      cat.includes("kitchen") || cat.includes("appliance") || cat.includes("home") || 
-      sub.includes("grinder") || sub.includes("fryer") || sub.includes("fridge") || 
-      sub.includes("refrigerator") || sub.includes("washing")
+      effectiveType === "appliances" ||
+      (!effectiveType && (
+        cat.includes("kitchen") || cat.includes("appliance") || cat.includes("home") || 
+        sub.includes("grinder") || sub.includes("fryer") || sub.includes("fridge") || 
+        sub.includes("refrigerator") || sub.includes("washing") ||
+        name.includes("grinder") || name.includes("fryer") || name.includes("refrigerator")
+      ))
     ) {
       return {
         type: "appliances",
@@ -257,7 +330,30 @@ export default function AdminProductsPage() {
       };
     }
 
-    // 7. Mobiles, Smartphones & Accessories (Default for tech / phones)
+    // 7. General / Custom Sizes
+    if (effectiveType === "general") {
+      return {
+        type: "general",
+        sectionTitle: "📦 General Package, Weight & Unit Sizes",
+        badge: "General Sizes",
+        sectionSubtitle: "Add custom pack sizes, weight quantities, or standard units.",
+        inputPlaceholder: "Type size/unit (e.g. 500g, 1 Kg, Pack of 2, 100ml, Standard) and press Enter",
+        addButtonLabel: "+ Add Unit Size",
+        activeBadgeTitle: "Configured Unit Sizes:",
+        presetGroups: [
+          {
+            groupName: "📦 Pack & Quantity Options",
+            presets: ["Single Item", "Pack of 2", "Pack of 3", "Pack of 4", "Combo Set"]
+          },
+          {
+            groupName: "⚖️ Weight & Volume",
+            presets: ["100 ml", "250 ml", "500 ml", "1 Litre", "250g", "500g", "1 Kg", "2 Kg", "5 Kg"]
+          }
+        ]
+      };
+    }
+
+    // 8. Mobiles, Smartphones & Accessories (Default)
     return {
       type: "mobiles",
       sectionTitle: "📱 Storage & RAM / Device Variants",
@@ -302,10 +398,139 @@ export default function AdminProductsPage() {
     setCustomSizeInput("");
   };
 
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorCode, setCustomColorCode] = useState("#18181b");
+
+  // Standard color hex mapping helper
+  const getColorHexFromName = (name: string): string => {
+    const n = name.toLowerCase().trim();
+    if (n.includes("black") || n.includes("obsidian") || n.includes("midnight")) return "#18181b";
+    if (n.includes("white") || n.includes("starlight") || n.includes("porcelain") || n.includes("snow")) return "#ffffff";
+    if (n.includes("navy")) return "#1e3a8a";
+    if (n.includes("royal blue")) return "#2563eb";
+    if (n.includes("blue") || n.includes("ocean") || n.includes("sky") || n.includes("teal")) return "#0284c7";
+    if (n.includes("crimson") || n.includes("maroon")) return "#991b1b";
+    if (n.includes("red") || n.includes("ruby")) return "#dc2626";
+    if (n.includes("emerald") || n.includes("green") || n.includes("mint")) return "#059669";
+    if (n.includes("olive")) return "#556b2f";
+    if (n.includes("titanium") || n.includes("silver") || n.includes("gray") || n.includes("grey") || n.includes("metallic")) return "#94a3b8";
+    if (n.includes("desert") || n.includes("gold") || n.includes("yellow") || n.includes("mustard")) return "#eab308";
+    if (n.includes("purple") || n.includes("violet") || n.includes("lavender")) return "#7c3aed";
+    if (n.includes("pink") || n.includes("rose") || n.includes("magenta")) return "#f43f5e";
+    if (n.includes("beige") || n.includes("cream") || n.includes("off white") || n.includes("khaki")) return "#f5f5dc";
+    if (n.includes("brown") || n.includes("tan") || n.includes("coffee") || n.includes("chocolate")) return "#78350f";
+    if (n.includes("orange") || n.includes("coral") || n.includes("peach")) return "#ea580c";
+    return "#475569";
+  };
+
+  const getCurrentColors = (): { name: string; code: string }[] => {
+    const varColors: { name: string; code: string }[] = [];
+    const seen = new Set<string>();
+    
+    // 1. Check explicit variants
+    if (Array.isArray(formData.variants) && formData.variants.length > 0) {
+      formData.variants.forEach((v: any) => {
+        if (v.color && !seen.has(v.color.toLowerCase())) {
+          seen.add(v.color.toLowerCase());
+          varColors.push({ name: v.color, code: v.color_code || getColorHexFromName(v.color) });
+        }
+      });
+    }
+
+    // 2. Check formData.colors
+    if (Array.isArray((formData as any).colors)) {
+      (formData as any).colors.forEach((c: any) => {
+        const cName = typeof c === 'string' ? c : c.name || c.color;
+        const cCode = typeof c === 'object' ? (c.code || c.color_code) : getColorHexFromName(cName);
+        if (cName && !seen.has(cName.toLowerCase())) {
+          seen.add(cName.toLowerCase());
+          varColors.push({ name: cName, code: cCode || getColorHexFromName(cName) });
+        }
+      });
+    }
+
+    return varColors;
+  };
+
+  const handleAddColor = (name: string, code?: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const finalCode = code || customColorCode || getColorHexFromName(trimmed);
+    const current = getCurrentColors();
+    if (!current.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) {
+      const nextColors = [...current, { name: trimmed, code: finalCode }];
+      
+      setFormData((prev) => {
+        const sizes = getCurrentSizes();
+        const activeSizes = sizes.length > 0 ? sizes : ["Standard"];
+        
+        const updatedVariants: any[] = [];
+        activeSizes.forEach((s) => {
+          nextColors.forEach((c) => {
+            const existingVar = (prev.variants || []).find(
+              (v: any) => (v.storage_label || v.size) === s && v.color?.toLowerCase() === c.name.toLowerCase()
+            );
+            if (existingVar) {
+              updatedVariants.push(existingVar);
+            } else {
+              updatedVariants.push({
+                id: `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                storage_label: s,
+                size: s,
+                color: c.name,
+                color_code: c.code,
+                price: prev.price || 0,
+                original_price: prev.original_price || 0,
+                stock_quantity: Math.max(5, Math.floor((prev.stock_quantity || 20) / Math.max(1, nextColors.length))),
+                sku: `${(prev.sku || "SKU").replace(/\s+/g, "")}-${s.replace(/[^a-zA-Z0-9]/g, "")}-${c.name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}`,
+                image_url: prev.image_url || "",
+                is_active: true,
+              });
+            }
+          });
+        });
+
+        return {
+          ...prev,
+          colors: nextColors,
+          variants: updatedVariants,
+        };
+      });
+    }
+    setCustomColorName("");
+  };
+
+  const handleRemoveColor = (colorName: string) => {
+    const current = getCurrentColors();
+    const nextColors = current.filter((c) => c.name.toLowerCase() !== colorName.toLowerCase());
+    
+    setFormData((prev) => {
+      const updatedVariants = (prev.variants || []).filter(
+        (v: any) => v.color?.toLowerCase() !== colorName.toLowerCase()
+      );
+      return {
+        ...prev,
+        colors: nextColors,
+        variants: updatedVariants,
+      };
+    });
+  };
+
   const handleRemoveSize = (indexToRemove: number) => {
     const current = getCurrentSizes();
+    const sizeToRemove = current[indexToRemove];
     const next = current.filter((_, idx) => idx !== indexToRemove);
-    setFormData((prev) => ({ ...prev, unit: next.join(", ") }));
+    
+    setFormData((prev) => {
+      const updatedVariants = (prev.variants || []).filter(
+        (v: any) => (v.storage_label || v.size) !== sizeToRemove
+      );
+      return {
+        ...prev,
+        unit: next.join(", "),
+        variants: updatedVariants,
+      };
+    });
   };
 
   const fetchData = async () => {
@@ -346,12 +571,15 @@ export default function AdminProductsPage() {
       image_url: "",
       images: [],
       description: "",
-      unit: "1 Unit",
+      unit: "",
       is_available: true,
       is_featured: false,
       is_popular: false,
       variants: [],
     });
+    setSelectedVariantPresetCategory("auto");
+    setCustomSizeInput("");
+    setCustomColorName("");
     setIsModalOpen(true);
   };
 
@@ -361,6 +589,9 @@ export default function AdminProductsPage() {
       ...product,
       images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image_url],
     });
+    setSelectedVariantPresetCategory("auto");
+    setCustomSizeInput("");
+    setCustomColorName("");
     setIsModalOpen(true);
   };
 
@@ -765,8 +996,9 @@ export default function AdminProductsPage() {
                         category_id: e.target.value,
                         category_name: cat?.name || "",
                       });
+                      setSelectedVariantPresetCategory("auto");
                     }}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600 cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600 cursor-pointer font-medium"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -775,17 +1007,40 @@ export default function AdminProductsPage() {
                     ))}
                   </select>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                    Sub-Category
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.sub_category}
-                    onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
-                    placeholder="e.g. Mobile, Chargers, Storage"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Sub-Category
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-medium">Select or type custom</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      value={formData.sub_category}
+                      onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                      placeholder="e.g. Mobile, T-Shirts, Chargers, Rings"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                    />
+                    {/* Quick Sub-Category Suggestions */}
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {getSuggestedSubcategories(formData.category_id, formData.category_name).slice(0, 5).map((sub) => (
+                        <button
+                          key={sub}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, sub_category: sub })}
+                          className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                            formData.sub_category?.toLowerCase() === sub.toLowerCase()
+                              ? "bg-emerald-600 text-white border-emerald-600 font-bold"
+                              : "bg-slate-100 hover:bg-emerald-50 text-slate-600 border-slate-200"
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -914,12 +1169,49 @@ export default function AdminProductsPage() {
                 const variantConfig = getCategoryVariantConfig(
                   formData.category_id,
                   formData.category_name,
-                  formData.sub_category
+                  formData.sub_category,
+                  selectedVariantPresetCategory,
+                  formData.name
                 );
 
                 return (
-                  <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
+                    {/* Category Select Option Pills Bar */}
+                    <div className="space-y-2 bg-slate-100/80 p-3 rounded-xl border border-slate-200">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                          <span>🏷️</span>
+                          <span>Category Variant Preset:</span>
+                        </label>
+                        <span className="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded-md">
+                          Active: {variantConfig.badge}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1.5">
+                        {VARIANT_CATEGORY_OPTIONS.map((opt) => {
+                          const isActive = selectedVariantPresetCategory === opt.id || 
+                            (selectedVariantPresetCategory === "auto" && variantConfig.type === opt.id);
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => setSelectedVariantPresetCategory(opt.id)}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 border ${
+                                isActive
+                                  ? "bg-emerald-600 text-white border-emerald-600 shadow-xs scale-105"
+                                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
+                              }`}
+                            >
+                              <span>{opt.icon}</span>
+                              <span>{opt.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 flex-wrap pt-1">
                       <div className="flex items-center gap-2">
                         <label className="block text-xs font-black uppercase tracking-wider text-slate-900">
                           {variantConfig.sectionTitle}
@@ -929,7 +1221,7 @@ export default function AdminProductsPage() {
                         </span>
                       </div>
                       <span className="text-[11px] text-emerald-700 font-bold bg-white border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
-                        {getCurrentSizes().length} Sizes / Variants Added
+                        {getCurrentSizes().length} Sizes Configured
                       </span>
                     </div>
 
@@ -1037,6 +1329,151 @@ export default function AdminProductsPage() {
                   </div>
                 );
               })()}
+
+              {/* Colour Selection & Palette Section (Available across All Categories) */}
+              <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-900">
+                      🎨 Available Colours &amp; Palette (All Categories)
+                    </label>
+                    <span className="text-[10px] font-bold text-blue-800 bg-blue-100/90 border border-blue-300 px-2 py-0.5 rounded-full">
+                      Color Selection
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-blue-700 font-bold bg-white border border-blue-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                    {getCurrentColors().length} Colours Configured
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                  Add color options for this product (e.g. Black, Navy Blue, Crimson Red, Olive, Silver, Gold). Customers will select their preferred color on the product page.
+                </p>
+
+                {/* Active Configured Colors Badges */}
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Configured Colours:
+                  </div>
+                  <div className="flex flex-wrap gap-2 min-h-[44px] p-2.5 bg-white rounded-xl border border-slate-200 items-center shadow-2xs">
+                    {getCurrentColors().length === 0 ? (
+                      <span className="text-xs text-slate-400 italic">
+                        No specific colors added. Click the 1-tap color swatches below or enter your own custom colors.
+                      </span>
+                    ) : (
+                      getCurrentColors().map((col, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold shadow-xs animate-in zoom-in-95"
+                        >
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/40 shrink-0"
+                            style={{ backgroundColor: col.code }}
+                          />
+                          <span>{col.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveColor(col.name)}
+                            className="w-4 h-4 rounded-full bg-white/20 hover:bg-rose-500 hover:text-white text-white text-[10px] flex items-center justify-center transition-colors cursor-pointer ml-0.5"
+                            title="Remove color"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Add Custom Color Input */}
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex items-center">
+                    <input
+                      type="color"
+                      value={customColorCode}
+                      onChange={(e) => setCustomColorCode(e.target.value)}
+                      className="w-10 h-10 rounded-xl border border-slate-200 p-0.5 bg-white cursor-pointer shadow-xs"
+                      title="Pick color hex code"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={customColorName}
+                    onChange={(e) => {
+                      setCustomColorName(e.target.value);
+                      const autoHex = getColorHexFromName(e.target.value);
+                      if (autoHex) setCustomColorCode(autoHex);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddColor(customColorName, customColorCode);
+                      }
+                    }}
+                    placeholder="Type custom colour name (e.g. Navy Blue, Olive Green, Space Gray, Emerald) and press Enter"
+                    className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-blue-600 shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddColor(customColorName, customColorCode)}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                  >
+                    + Add Colour
+                  </button>
+                </div>
+
+                {/* 1-Tap Popular Colour Presets */}
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    🎨 1-Tap Popular Colours (Click to Add / Remove):
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { name: "Black", code: "#18181b" },
+                      { name: "White", code: "#ffffff" },
+                      { name: "Navy Blue", code: "#1e3a8a" },
+                      { name: "Royal Blue", code: "#2563eb" },
+                      { name: "Crimson Red", code: "#dc2626" },
+                      { name: "Emerald Green", code: "#059669" },
+                      { name: "Olive Green", code: "#556b2f" },
+                      { name: "Titanium Silver", code: "#94a3b8" },
+                      { name: "Desert Gold", code: "#eab308" },
+                      { name: "Purple / Violet", code: "#7c3aed" },
+                      { name: "Rose Pink", code: "#f43f5e" },
+                      { name: "Beige / Cream", code: "#f5f5dc" },
+                      { name: "Brown / Tan", code: "#78350f" },
+                      { name: "Orange", code: "#ea580c" },
+                      { name: "Charcoal Grey", code: "#475569" },
+                    ].map((col) => {
+                      const isAdded = getCurrentColors().some((c) => c.name.toLowerCase() === col.name.toLowerCase());
+                      return (
+                        <button
+                          key={col.name}
+                          type="button"
+                          onClick={() => {
+                            if (isAdded) {
+                              handleRemoveColor(col.name);
+                            } else {
+                              handleAddColor(col.name, col.code);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                            isAdded
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs scale-105"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-blue-500 hover:bg-blue-50 active:scale-95"
+                          }`}
+                        >
+                          <span
+                            className="w-3 h-3 rounded-full border border-black/20 shrink-0"
+                            style={{ backgroundColor: col.code }}
+                          />
+                          <span>{isAdded ? `✓ ${col.name}` : `+ ${col.name}`}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">

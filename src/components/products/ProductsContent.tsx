@@ -64,6 +64,7 @@ function Content() {
   );
   const [brandSearchTerm, setBrandSearchTerm] = useState<string>("");
   const [priceRange, setPriceRange] = useState<string>("all");
+  const [selectedColor, setSelectedColor] = useState<string>("all");
   const [minRating, setMinRating] = useState<number>(0);
   const [conditionFilter, setConditionFilter] = useState<string>("all");
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
@@ -581,7 +582,22 @@ function Content() {
       // 8. Cashback Only
       const matchesCashback = cashbackOnly ? Boolean(product.cashback_amount && product.cashback_amount > 0) : true;
 
-      // 9. Search Term
+      // 9. Color Filter
+      let matchesColor = true;
+      if (selectedColor && selectedColor !== "all") {
+        const target = selectedColor.toLowerCase();
+        const hasVariantMatch = Array.isArray(product.variants) && product.variants.some((v: any) => 
+          (v.color && v.color.toLowerCase().includes(target)) ||
+          (v.color_name && v.color_name.toLowerCase().includes(target))
+        );
+        const hasDirectColorMatch = product.color && typeof product.color === 'string' && product.color.toLowerCase().includes(target);
+        const hasNameMatch = (product.name || "").toLowerCase().includes(target);
+        const hasDescMatch = (product.description || "").toLowerCase().includes(target);
+        const hasUnitMatch = (product.unit || "").toLowerCase().includes(target);
+        matchesColor = hasVariantMatch || hasDirectColorMatch || hasNameMatch || hasDescMatch || hasUnitMatch;
+      }
+
+      // 10. Search Term
       const cleanName = (product.name || "").toLowerCase().replace(/\s/g, "");
       const cleanProductCategory = (prodCategoryName || "").toLowerCase().replace(/\s/g, "");
       const cleanSub = (product.sub_category || "").toLowerCase().replace(/\s/g, "");
@@ -598,6 +614,7 @@ function Content() {
         matchesCondition && 
         matchesStock && 
         matchesCashback && 
+        matchesColor &&
         matchesSearch
       );
     });
@@ -622,6 +639,7 @@ function Content() {
     selectedSubCategory, 
     selectedBrand, 
     priceRange, 
+    selectedColor,
     minRating, 
     conditionFilter, 
     inStockOnly, 
@@ -634,6 +652,18 @@ function Content() {
   const isMobileCategory = !categoryFilter || 
     categoryFilter.toLowerCase().includes("mobile") || 
     categoryFilter.toLowerCase() === "mobiles & accessories";
+
+  const resetFilters = () => {
+    setSelectedBrand("all");
+    setSelectedBrands([]);
+    setSelectedSubCategory("all");
+    setPriceRange("all");
+    setSelectedColor("all");
+    setMinRating(0);
+    setConditionFilter("all");
+    setInStockOnly(false);
+    setCashbackOnly(false);
+  };
 
   // Layout Grid class
   const getLayoutGridClass = () => {
@@ -944,7 +974,50 @@ function Content() {
             </div>
           </div>
 
-          {/* 6. Availability & Perks Toggles */}
+          {/* 6. Colour Filter (All Categories) */}
+          <div className="pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2.5">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                Colour
+              </h4>
+              {selectedColor !== "all" && (
+                <button
+                  onClick={() => setSelectedColor("all")}
+                  className="text-[11px] font-bold text-slate-400 hover:text-slate-800 underline cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[
+                { name: "all", label: "All", bg: "bg-slate-200", border: "border-slate-300" },
+                { name: "black", label: "Black", bg: "bg-slate-900", border: "border-slate-900" },
+                { name: "white", label: "White", bg: "bg-white", border: "border-slate-300" },
+                { name: "blue", label: "Blue", bg: "bg-blue-600", border: "border-blue-600" },
+                { name: "red", label: "Red", bg: "bg-red-600", border: "border-red-600" },
+                { name: "green", label: "Green", bg: "bg-emerald-600", border: "border-emerald-600" },
+                { name: "silver", label: "Silver", bg: "bg-slate-300", border: "border-slate-400" },
+                { name: "gold", label: "Gold", bg: "bg-amber-400", border: "border-amber-400" },
+              ].map((c) => (
+                <button
+                  key={c.name}
+                  onClick={() => setSelectedColor(c.name)}
+                  className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all cursor-pointer ${
+                    selectedColor === c.name
+                      ? "border-emerald-600 bg-emerald-50/60 font-bold shadow-xs scale-105"
+                      : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                  }`}
+                  title={c.label}
+                >
+                  <span className={`w-4 h-4 rounded-full ${c.bg} ${c.border} border shadow-xs`} />
+                  <span className="text-[10px] text-slate-700 leading-none">{c.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 7. Availability & Perks Toggles */}
           <div className="pt-4 border-t border-slate-100 space-y-2 text-xs">
             <label className="flex items-center gap-2 cursor-pointer text-slate-700 font-medium">
               <input
@@ -1345,6 +1418,46 @@ function Content() {
                       }`}
                     >
                       {cond.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colour Filter */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-black uppercase tracking-wider text-slate-700">Colour</h4>
+                  {selectedColor !== "all" && (
+                    <button
+                      onClick={() => setSelectedColor("all")}
+                      className="text-xs text-slate-400 font-bold underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { name: "all", label: "All", bg: "bg-slate-200", border: "border-slate-300" },
+                    { name: "black", label: "Black", bg: "bg-slate-900", border: "border-slate-900" },
+                    { name: "white", label: "White", bg: "bg-white", border: "border-slate-300" },
+                    { name: "blue", label: "Blue", bg: "bg-blue-600", border: "border-blue-600" },
+                    { name: "red", label: "Red", bg: "bg-red-600", border: "border-red-600" },
+                    { name: "green", label: "Green", bg: "bg-emerald-600", border: "border-emerald-600" },
+                    { name: "silver", label: "Silver", bg: "bg-slate-300", border: "border-slate-400" },
+                    { name: "gold", label: "Gold", bg: "bg-amber-400", border: "border-amber-400" },
+                  ].map((c) => (
+                    <button
+                      key={c.name}
+                      onClick={() => setSelectedColor(c.name)}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
+                        selectedColor === c.name
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-900 font-bold shadow-xs"
+                          : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className={`w-5 h-5 rounded-full ${c.bg} ${c.border} border shadow-xs`} />
+                      <span className="text-[11px] leading-none">{c.label}</span>
                     </button>
                   ))}
                 </div>

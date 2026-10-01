@@ -187,14 +187,36 @@ export default function ProductDetailPage({
     return Array.isArray(product?.variants) ? product.variants : [];
   }, [product]);
 
-  // Distinct Available Storage Options (RAM + ROM combinations)
+  // Standard color hex mapping helper
+  const getColorHex = (name: string): string => {
+    const n = (name || "").toLowerCase().trim();
+    if (n.includes("black") || n.includes("obsidian") || n.includes("midnight")) return "#18181b";
+    if (n.includes("white") || n.includes("starlight") || n.includes("porcelain") || n.includes("snow")) return "#ffffff";
+    if (n.includes("navy")) return "#1e3a8a";
+    if (n.includes("royal blue")) return "#2563eb";
+    if (n.includes("blue") || n.includes("ocean") || n.includes("sky") || n.includes("teal")) return "#0284c7";
+    if (n.includes("crimson") || n.includes("maroon")) return "#991b1b";
+    if (n.includes("red") || n.includes("ruby")) return "#dc2626";
+    if (n.includes("emerald") || n.includes("green") || n.includes("mint")) return "#059669";
+    if (n.includes("olive")) return "#556b2f";
+    if (n.includes("titanium") || n.includes("silver") || n.includes("gray") || n.includes("grey") || n.includes("metallic")) return "#94a3b8";
+    if (n.includes("desert") || n.includes("gold") || n.includes("yellow") || n.includes("mustard")) return "#eab308";
+    if (n.includes("purple") || n.includes("violet") || n.includes("lavender")) return "#7c3aed";
+    if (n.includes("pink") || n.includes("rose") || n.includes("magenta")) return "#f43f5e";
+    if (n.includes("beige") || n.includes("cream") || n.includes("off white") || n.includes("khaki")) return "#f5f5dc";
+    if (n.includes("brown") || n.includes("tan") || n.includes("coffee") || n.includes("chocolate")) return "#78350f";
+    if (n.includes("orange") || n.includes("coral") || n.includes("peach")) return "#ea580c";
+    return "#475569";
+  };
+
+  // Distinct Available Storage / Size Options
   const availableStorages = React.useMemo(() => {
     if (productVariants.length === 0) {
       return product?.unit ? product.unit.split(",").map(u => u.trim()).filter(Boolean) : [];
     }
     const map = new Map<string, { label: string; minPrice: number; hasStock: boolean }>();
     productVariants.forEach(v => {
-      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
       const current = map.get(label);
       const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
       if (!current) {
@@ -210,21 +232,93 @@ export default function ProductDetailPage({
     return Array.from(map.values());
   }, [productVariants, product]);
 
-  // Available Colors for the currently selected Storage
+  // Available Colors for the currently selected Storage / Size
   const colorsForSelectedStorage = React.useMemo(() => {
     if (productVariants.length === 0) return [];
     const matchedVariants = productVariants.filter(v => {
-      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
       return label.toLowerCase() === selectedStorage.toLowerCase();
     });
     return matchedVariants;
   }, [productVariants, selectedStorage]);
 
+  // Universal Available Colors across ALL products & categories
+  const availableColors = React.useMemo(() => {
+    // 1. If explicit variants exist for selected size/storage
+    if (colorsForSelectedStorage.length > 0) {
+      return colorsForSelectedStorage.map(v => ({
+        id: v.id,
+        color: v.color,
+        color_code: v.color_code || getColorHex(v.color),
+        price: v.price || product?.price || 0,
+        stock_quantity: v.stock_quantity,
+        is_active: v.is_active,
+        image_url: v.image_url,
+      }));
+    }
+
+    // 2. If product has any variants with colors
+    if (productVariants.length > 0) {
+      const seen = new Set<string>();
+      const list: any[] = [];
+      productVariants.forEach(v => {
+        if (v.color && !seen.has(v.color.toLowerCase())) {
+          seen.add(v.color.toLowerCase());
+          list.push({
+            id: v.id,
+            color: v.color,
+            color_code: v.color_code || getColorHex(v.color),
+            price: v.price || product?.price || 0,
+            stock_quantity: v.stock_quantity,
+            is_active: v.is_active,
+            image_url: v.image_url,
+          });
+        }
+      });
+      if (list.length > 0) return list;
+    }
+
+    // 3. If product has `colors` array or string in metadata
+    const rawColors = (product as any)?.colors;
+    if (Array.isArray(rawColors) && rawColors.length > 0) {
+      return rawColors.map((c: any) => {
+        const cName = typeof c === 'string' ? c : c.name || c.color;
+        const cCode = typeof c === 'object' ? (c.code || c.color_code) : getColorHex(cName);
+        return {
+          id: cName,
+          color: cName,
+          color_code: cCode || getColorHex(cName),
+          price: product?.price || 0,
+          stock_quantity: product?.stock_quantity || 15,
+          is_active: true,
+        };
+      });
+    }
+    if (typeof rawColors === 'string' && rawColors) {
+      return rawColors.split(',').map((c: string) => c.trim()).filter(Boolean).map((cName: string) => ({
+        id: cName,
+        color: cName,
+        color_code: getColorHex(cName),
+        price: product?.price || 0,
+        stock_quantity: product?.stock_quantity || 15,
+        is_active: true,
+      }));
+    }
+
+    // 4. Default 4 popular colors for any product in all categories
+    return [
+      { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
+      { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
+      { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
+      { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
+    ];
+  }, [colorsForSelectedStorage, productVariants, product]);
+
   // Active Selected Variant Object
   const activeVariant = React.useMemo(() => {
     if (productVariants.length === 0) return null;
     return productVariants.find(v => {
-      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
       return label.toLowerCase() === selectedStorage.toLowerCase() &&
              v.color.toLowerCase() === selectedColor.toLowerCase();
     }) || colorsForSelectedStorage[0] || productVariants[0] || null;
@@ -233,9 +327,8 @@ export default function ProductDetailPage({
   // Handle Storage Change
   const handleStorageSelect = (newStorage: string) => {
     setSelectedStorage(newStorage);
-    // Check if the current color is in stock in the new storage
     const colorsInNewStorage = productVariants.filter(v => {
-      const label = v.storage_label || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
       return label.toLowerCase() === newStorage.toLowerCase();
     });
 
@@ -247,7 +340,6 @@ export default function ProductDetailPage({
       setSelectedColor(sameColorMatch.color);
       if (sameColorMatch.image_url) setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
     } else {
-      // Find first in-stock color or first available
       const firstInStock = colorsInNewStorage.find(c => (c.stock_quantity || 0) > 0) || colorsInNewStorage[0];
       if (firstInStock) {
         setSelectedColor(firstInStock.color);
@@ -257,7 +349,7 @@ export default function ProductDetailPage({
   };
 
   // Handle Color Select
-  const handleColorSelect = (variant: ProductVariant) => {
+  const handleColorSelect = (variant: any) => {
     setSelectedColor(variant.color);
     if (variant.image_url) {
       setSelectedImage(normalizeImageUrl(variant.image_url));
@@ -790,37 +882,37 @@ export default function ProductDetailPage({
                 </div>
               )}
 
-              {/* 2. Colour Availability Swatches (For Selected RAM/ROM) */}
-              {colorsForSelectedStorage.length > 0 && (
+              {/* 2. Colour Availability Swatches (Available for ALL Categories) */}
+              {availableColors.length > 0 && (
                 <div className="pt-4 border-t border-slate-100 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-700 uppercase tracking-wider">
                       Select Colour:
                     </span>
-                    <span className="font-black text-slate-900">{selectedColor}</span>
+                    <span className="font-black text-slate-900">{selectedColor || availableColors[0]?.color}</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                    {colorsForSelectedStorage.map((v) => {
-                      const isColorSelected = selectedColor.toLowerCase() === v.color.toLowerCase();
+                    {availableColors.map((v) => {
+                      const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
                       const isColorOutOfStock = (v.stock_quantity || 0) <= 0 || v.is_active === false;
 
                       return (
                         <button
-                          key={v.id}
+                          key={v.id || v.color}
                           type="button"
                           onClick={() => handleColorSelect(v)}
                           className={`p-2.5 rounded-2xl text-left transition-all border cursor-pointer relative flex flex-col justify-between gap-1.5 ${
                             isColorSelected
-                              ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10"
+                              ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.02]"
                               : isColorOutOfStock
                               ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60"
-                              : "bg-white border-slate-200 hover:border-slate-300 text-slate-800"
+                              : "bg-white border-slate-200 hover:border-slate-300 text-slate-800 hover:shadow-xs"
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <span
                               className="w-5 h-5 rounded-full border border-black/10 shrink-0 shadow-2xs"
-                              style={{ backgroundColor: v.color_code || "#334155" }}
+                              style={{ backgroundColor: v.color_code || getColorHex(v.color) }}
                             />
                             <span className="text-xs font-bold truncate">
                               {v.color}
@@ -828,14 +920,16 @@ export default function ProductDetailPage({
                           </div>
 
                           <div className="flex items-center justify-between gap-1 mt-1 text-[10px] font-bold">
-                            <span className={isColorSelected ? "text-emerald-300 font-black" : "text-slate-600"}>
-                              ₹{Math.floor(v.price).toLocaleString("en-IN")}
-                            </span>
+                            {v.price ? (
+                              <span className={isColorSelected ? "text-emerald-300 font-black" : "text-slate-600"}>
+                                ₹{Math.floor(v.price).toLocaleString("en-IN")}
+                              </span>
+                            ) : null}
                             {isColorOutOfStock ? (
                               <span className="text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
                                 Out of Stock
                               </span>
-                            ) : v.stock_quantity <= 3 ? (
+                            ) : v.stock_quantity && v.stock_quantity <= 3 ? (
                               <span className="text-amber-500 font-bold bg-amber-50 px-1.5 py-0.5 rounded">
                                 {v.stock_quantity} Left
                               </span>
