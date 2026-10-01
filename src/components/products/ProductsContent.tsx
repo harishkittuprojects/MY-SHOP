@@ -417,19 +417,22 @@ function Content() {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedSubCategory !== "all") count++;
-    if (selectedBrand !== "all") count++;
+    if (selectedBrand !== "all" || selectedBrands.length > 0) count++;
     if (priceRange !== "all") count++;
+    if (selectedColor !== "all") count++;
     if (minRating > 0) count++;
     if (conditionFilter !== "all") count++;
     if (inStockOnly) count++;
     if (cashbackOnly) count++;
     return count;
-  }, [selectedSubCategory, selectedBrand, priceRange, minRating, conditionFilter, inStockOnly, cashbackOnly]);
+  }, [selectedSubCategory, selectedBrand, selectedBrands, priceRange, selectedColor, minRating, conditionFilter, inStockOnly, cashbackOnly]);
 
   const resetFilters = () => {
     setSelectedSubCategory("all");
     setSelectedBrand("all");
+    setSelectedBrands([]);
     setPriceRange("all");
+    setSelectedColor("all");
     setMinRating(0);
     setConditionFilter("all");
     setInStockOnly(false);
@@ -652,18 +655,6 @@ function Content() {
   const isMobileCategory = !categoryFilter || 
     categoryFilter.toLowerCase().includes("mobile") || 
     categoryFilter.toLowerCase() === "mobiles & accessories";
-
-  const resetFilters = () => {
-    setSelectedBrand("all");
-    setSelectedBrands([]);
-    setSelectedSubCategory("all");
-    setPriceRange("all");
-    setSelectedColor("all");
-    setMinRating(0);
-    setConditionFilter("all");
-    setInStockOnly(false);
-    setCashbackOnly(false);
-  };
 
   // Layout Grid class
   const getLayoutGridClass = () => {
