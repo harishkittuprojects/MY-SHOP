@@ -144,22 +144,42 @@ export default function AdminCategoriesPage() {
 
     setSubmitting(true);
     try {
+      let adminName = "Admin";
+      if (typeof window !== "undefined") {
+        try {
+          const userStr = localStorage.getItem("adminUser") || sessionStorage.getItem("adminUser");
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            if (userObj.name) adminName = userObj.name;
+          }
+        } catch { /* ignore */ }
+      }
+
       let res;
       if (isEditing) {
         res = await fetch("/api/categoryList", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-admin-name": adminName,
+          },
           body: JSON.stringify(formData),
         });
       } else {
         res = await fetch("/api/categoryList", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-admin-name": adminName,
+          },
           body: JSON.stringify(formData),
         });
       }
 
-      if (!res.ok) throw new Error("Failed to save category");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save category");
+      }
 
       setIsModalOpen(false);
       await fetchCategories();

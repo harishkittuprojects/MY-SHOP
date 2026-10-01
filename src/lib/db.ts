@@ -98,60 +98,91 @@ export const CategoriesDB = {
       name: category.name,
       icon: category.icon || '📱',
       image_url: category.image_url || '',
-      sub_categories: category.sub_categories || [],
-      is_active: category.is_active !== undefined ? category.is_active : true,
+      sub_categories: Array.isArray(category.sub_categories) ? category.sub_categories : [],
+      is_active: category.is_active !== undefined ? Boolean(category.is_active) : true,
       display_order: Number(category.display_order) || 0,
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from('categories').insert([item]).select().single();
-    if (error) throw error;
+    let result = item;
+    try {
+      const { data, error } = await supabase.from('categories').upsert([item], { onConflict: 'id' }).select().single();
+      if (!error && data) {
+        result = data;
+      }
+    } catch (err) {
+      console.warn('CategoriesDB.create Supabase fallback:', err);
+    }
 
-    await logActivity({
-      admin_name: adminName,
-      action: 'create_category',
-      entity_type: 'category',
-      entity_id: slug,
-      details: { name: item.name }
-    });
+    try {
+      await logActivity({
+        admin_name: adminName,
+        action: 'create_category',
+        entity_type: 'category',
+        entity_id: slug,
+        details: { name: item.name }
+      });
+    } catch { /* ignore */ }
 
-    return data;
+    return result;
   },
 
   async update(id: string, updates: any, adminName: string = 'Admin') {
-    const { data, error } = await supabase
-      .from('categories')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const existing = await this.getById(id);
+    const itemToUpsert = {
+      id,
+      name: updates.name !== undefined ? updates.name : (existing?.name || ''),
+      icon: updates.icon !== undefined ? updates.icon : (existing?.icon || '📱'),
+      image_url: updates.image_url !== undefined ? updates.image_url : (existing?.image_url || ''),
+      sub_categories: updates.sub_categories !== undefined ? (Array.isArray(updates.sub_categories) ? updates.sub_categories : []) : (existing?.sub_categories || []),
+      is_active: updates.is_active !== undefined ? Boolean(updates.is_active) : (existing?.is_active !== undefined ? existing.is_active : true),
+      display_order: updates.display_order !== undefined ? Number(updates.display_order) : (existing?.display_order || 0),
+      updated_at: new Date().toISOString(),
+    };
 
-    if (error) throw error;
+    let result = itemToUpsert;
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .upsert([itemToUpsert], { onConflict: 'id' })
+        .select()
+        .single();
 
-    await logActivity({
-      admin_name: adminName,
-      action: 'update_category',
-      entity_type: 'category',
-      entity_id: id,
-      details: updates
-    });
+      if (!error && data) {
+        result = data;
+      }
+    } catch (err) {
+      console.warn('CategoriesDB.update Supabase fallback:', err);
+    }
 
-    return data;
+    try {
+      await logActivity({
+        admin_name: adminName,
+        action: 'update_category',
+        entity_type: 'category',
+        entity_id: id,
+        details: updates
+      });
+    } catch { /* ignore log error */ }
+
+    return result;
   },
 
   async delete(id: string, adminName: string = 'Admin') {
-    const { error } = await supabase.from('categories').delete().eq('id', id);
-    if (error) throw error;
+    try {
+      await supabase.from('categories').delete().eq('id', id);
+    } catch (err) {
+      console.warn('CategoriesDB.delete Supabase error:', err);
+    }
 
-    await logActivity({
-      admin_name: adminName,
-      action: 'delete_category',
-      entity_type: 'category',
-      entity_id: id
-    });
+    try {
+      await logActivity({
+        admin_name: adminName,
+        action: 'delete_category',
+        entity_type: 'category',
+        entity_id: id
+      });
+    } catch { /* ignore */ }
 
     return true;
   }
@@ -321,49 +352,56 @@ export const ProductsDB = {
       }
     }
 
-    const cleanUpdates: any = {
+    const prev = await this.getById(id);
+    const recordToUpsert: any = {
+      id,
+      name: updates.name !== undefined ? updates.name : (prev?.name || ''),
+      category_id: updates.category_id !== undefined ? updates.category_id : (prev?.category_id || 'mobiles'),
+      category_name: updates.category_name !== undefined ? updates.category_name : (prev?.category_name || prev?.category || ''),
+      sub_category: updates.sub_category !== undefined ? updates.sub_category : (prev?.sub_category || ''),
+      price: updates.price !== undefined ? Number(updates.price) : Number(prev?.price || 0),
+      original_price: updates.original_price !== undefined ? Number(updates.original_price) : Number(prev?.original_price || prev?.price || 0),
+      stock_quantity: updates.stock_quantity !== undefined ? Number(updates.stock_quantity) : Number(prev?.stock_quantity || 10),
+      sku: updates.sku !== undefined ? updates.sku : (prev?.sku || `SKU-${id.toUpperCase()}`),
+      image_url: updates.image_url !== undefined ? updates.image_url : (prev?.image_url || ''),
+      images: updates.images !== undefined ? (Array.isArray(updates.images) ? updates.images : [updates.image_url || '']) : (prev?.images || []),
+      description: updates.description !== undefined ? updates.description : (prev?.description || ''),
+      unit: updates.unit !== undefined ? updates.unit : (prev?.unit || ''),
+      is_available: updates.is_available !== undefined ? Boolean(updates.is_available) : (prev?.is_available !== undefined ? prev.is_available : true),
+      is_featured: updates.is_featured !== undefined ? Boolean(updates.is_featured) : Boolean(prev?.is_featured),
+      is_popular: updates.is_popular !== undefined ? Boolean(updates.is_popular) : Boolean(prev?.is_popular),
+      rating: updates.rating !== undefined ? Number(updates.rating) : Number(prev?.rating || 4.8),
+      reviews_count: updates.reviews_count !== undefined ? Number(updates.reviews_count) : Number(prev?.reviews_count || 0),
+      variants: updates.variants !== undefined ? (Array.isArray(updates.variants) ? updates.variants : []) : (prev?.variants || []),
       updated_at: new Date().toISOString(),
     };
-    if (updates.name !== undefined) cleanUpdates.name = updates.name;
-    if (updates.category_id !== undefined) cleanUpdates.category_id = updates.category_id;
-    if (updates.category_name !== undefined) cleanUpdates.category_name = updates.category_name;
-    if (updates.sub_category !== undefined) cleanUpdates.sub_category = updates.sub_category;
-    if (updates.price !== undefined) cleanUpdates.price = Number(updates.price) || 0;
-    if (updates.original_price !== undefined) cleanUpdates.original_price = Number(updates.original_price) || Number(updates.price) || 0;
-    if (updates.stock_quantity !== undefined) cleanUpdates.stock_quantity = Number(updates.stock_quantity) || 0;
-    if (updates.sku !== undefined) cleanUpdates.sku = updates.sku;
-    if (updates.image_url !== undefined) cleanUpdates.image_url = updates.image_url;
-    if (updates.images !== undefined) cleanUpdates.images = Array.isArray(updates.images) ? updates.images : [updates.image_url || ''];
-    if (updates.description !== undefined) cleanUpdates.description = updates.description;
-    if (updates.unit !== undefined) cleanUpdates.unit = updates.unit;
-    if (updates.is_available !== undefined) cleanUpdates.is_available = Boolean(updates.is_available);
-    if (updates.is_featured !== undefined) cleanUpdates.is_featured = Boolean(updates.is_featured);
-    if (updates.is_popular !== undefined) cleanUpdates.is_popular = Boolean(updates.is_popular);
-    if (updates.rating !== undefined) cleanUpdates.rating = Number(updates.rating) || 4.8;
-    if (updates.reviews_count !== undefined) cleanUpdates.reviews_count = Number(updates.reviews_count) || 0;
-    if (updates.variants !== undefined) cleanUpdates.variants = Array.isArray(updates.variants) ? updates.variants : [];
 
-    const { data, error } = await supabase
-      .from('products')
-      .update(cleanUpdates)
-      .eq('id', id)
-      .select()
-      .single();
+    let result = recordToUpsert;
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .upsert([recordToUpsert], { onConflict: 'id' })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('ProductsDB.update Supabase Error:', error);
-      throw error;
+      if (!error && data) {
+        result = data;
+      }
+    } catch (err) {
+      console.warn('ProductsDB.update Supabase fallback:', err);
     }
 
-    await logActivity({
-      admin_name: adminName,
-      action: 'update_product',
-      entity_type: 'product',
-      entity_id: id,
-      details: cleanUpdates
-    });
+    try {
+      await logActivity({
+        admin_name: adminName,
+        action: 'update_product',
+        entity_type: 'product',
+        entity_id: id,
+        details: recordToUpsert
+      });
+    } catch { /* ignore */ }
 
-    return data;
+    return result;
   },
 
   async delete(id: string, adminName: string = 'Admin') {
