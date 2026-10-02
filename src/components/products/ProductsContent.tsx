@@ -660,18 +660,18 @@ function Content() {
   const getLayoutGridClass = () => {
     if (viewStyle === "list") {
       if (listCols === 2) {
-        return "grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
+        return "grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 md:gap-5";
       }
-      return "grid grid-cols-1 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-5";
+      return "grid grid-cols-1 gap-3 sm:gap-4";
     }
 
     if (gridCols === 2) {
-      return "grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
+      return "grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-5";
     }
     if (gridCols === 3) {
-      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
+      return "grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5";
     }
-    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y md:divide-y-0 divide-slate-100 gap-0 md:gap-6";
+    return "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 md:gap-5";
   };
 
   return (

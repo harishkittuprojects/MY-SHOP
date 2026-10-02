@@ -14,9 +14,7 @@ import {
   faCartPlus, 
   faHeart, 
   faShieldHalved,
-  faChevronRight,
-  faArrowDown,
-  faTruckFast
+  faBagShopping
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -72,11 +70,8 @@ export default function ProductCard({
     ? product.original_price 
     : Math.round(product.price * 1.18);
   const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
-  const savings = Math.max(0, originalPrice - product.price);
-  const bankOfferPrice = Math.round(product.price * 0.92);
-  const emiPerMonth = Math.round(product.price / 12);
-  const reviewsDisplay = product.reviews_count ? `${(product.reviews_count / 1000).toFixed(1)}K+` : "4.3K+";
-  const brandName = product.name.split(" ")[0] || "Official";
+  const reviewsCount = product.reviews_count ?? (product.rating ? Math.round((product.rating * 28)) : 125);
+  const ratingScore = product.rating ? Number(product.rating).toFixed(1) : "4.7";
 
   React.useEffect(() => {
     setImgSrc(displayImage);
@@ -88,7 +83,34 @@ export default function ProductCard({
     setIsModalOpen(true);
   };
 
-  const handleAddToCart = (quantity: number, selectedUnit: string, price: number) => {
+  const handleDirectAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isOutOfStock) return;
+    addToCart({ 
+      ...product, 
+      quantity: 1, 
+      selectedUnit: product.unit || "1 Piece",
+      price: product.price,
+      image: displayImage,
+      category: displayCategory
+    });
+  };
+
+  const handleDirectBuyNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isOutOfStock) return;
+    addToCart({ 
+      ...product, 
+      quantity: 1, 
+      selectedUnit: product.unit || "1 Piece",
+      price: product.price,
+      image: displayImage,
+      category: displayCategory
+    });
+    router.push("/cart");
+  };
+
+  const handleAddToCartModal = (quantity: number, selectedUnit: string, price: number) => {
     if (isOutOfStock) return;
     addToCart({ 
       ...product, 
@@ -100,7 +122,7 @@ export default function ProductCard({
     });
   };
 
-  const handleBuyNow = (quantity: number, selectedUnit: string, price: number) => {
+  const handleBuyNowModal = (quantity: number, selectedUnit: string, price: number) => {
     if (isOutOfStock) return;
     addToCart({ 
       ...product, 
@@ -117,395 +139,281 @@ export default function ProductCard({
 
   return (
     <>
-      {/* ===================== 1. MOBILE VIEW (EXACT FLIPKART SCREENMATCH) ===================== */}
-      <div 
-        onClick={() => router.push(`/products/${product.id}`)}
-        className="block md:hidden bg-white rounded-2xl border border-slate-200/90 py-3.5 px-3.5 active:bg-slate-50 transition-all cursor-pointer relative shadow-2xs hover:shadow-xs"
-      >
-        <div className="flex items-start gap-3.5">
-          {/* Left Column: Image with Bestseller Badge */}
-          <div className="flex flex-col items-start flex-shrink-0 w-28 sm:w-32">
-            {product.is_popular && (
-              <span className="bg-[#00796b] text-white text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-xs mb-1">
-                BESTSELLER
-              </span>
+      {viewMode === "list" ? (
+        /* ===================== LIST VIEW CARD ===================== */
+        <div 
+          onClick={() => router.push(`/products/${product.id}`)}
+          className={`group bg-white rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
+            isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
+          }`}
+        >
+          {/* Fixed-Height / Square Image Container */}
+          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
+            {discountPercent > 0 && !isOutOfStock && (
+              <div className="absolute top-2 left-2 z-10">
+                <span className="bg-[#f97316] text-white font-black px-2 py-0.5 rounded-md text-[10px] uppercase tracking-tight shadow-xs">
+                  {discountPercent}% OFF
+                </span>
+              </div>
             )}
             
-            <div className="relative w-full h-32 sm:h-36 bg-slate-50/50 rounded-xl flex items-center justify-center p-1 border border-slate-100/80 overflow-hidden">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleWishlist(product as any);
+              }}
+              className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
+                isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
+              }`}
+              title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
+            >
+              <FontAwesomeIcon icon={faHeart} className="text-xs" />
+            </button>
+
+            {imgSrc ? (
+              <Image 
+                src={imgSrc} 
+                alt={product.name} 
+                fill 
+                className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
+                onError={() => setImgSrc("/placeholder.png")}
+                unoptimized
+              />
+            ) : (
+              <div className="text-xs text-gray-300">No Image</div>
+            )}
+
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20">
+                <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded text-[9px] uppercase tracking-wide">
+                  Out of Stock
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Details Column */}
+          <div className="flex-1 flex flex-col justify-between min-w-0">
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                  {displayCategory}
+                </span>
+                <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+                  <span>{ratingScore}</span>
+                  <FontAwesomeIcon icon={faStar} className="text-[7px]" />
+                </div>
+                <span className="text-xs text-slate-400 font-medium">({reviewsCount})</span>
+                <div className="flex items-center gap-0.5 text-[10px] font-black italic text-[#2874f0]">
+                  <FontAwesomeIcon icon={faShieldHalved} className="text-[9px]" />
+                  <span>Assured</span>
+                </div>
+              </div>
+
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
+                {product.name}
+              </h3>
+
+              <p className="text-xs text-slate-500 line-clamp-1 mb-2 font-medium">
+                {product.unit || "Official Brand Sealed • Genuine Product"}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-baseline gap-2 mb-3">
+              <span className="text-lg font-black text-slate-900">
+                ₹{Math.floor(product.price).toLocaleString("en-IN")}
+              </span>
+              {originalPrice > product.price && (
+                <span className="text-xs text-slate-400 line-through font-medium">
+                  ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
+                </span>
+              )}
+              {discountPercent > 0 && (
+                <span className="text-xs font-bold text-[#388e3c]">
+                  {discountPercent}% off
+                </span>
+              )}
+            </div>
+
+            {/* List Action Buttons */}
+            <div className="flex items-center gap-2 max-w-xs">
+              <button
+                type="button"
+                onClick={handleDirectAddToCart}
+                disabled={isOutOfStock}
+                className={`flex-1 font-bold py-2 px-3 rounded-xl border border-secondary text-secondary hover:bg-secondary hover:text-white text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+                  isOutOfStock ? "border-slate-200 text-slate-300 cursor-not-allowed hover:bg-transparent hover:text-slate-300" : ""
+                }`}
+              >
+                <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
+                <span>Add to Cart</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDirectBuyNow}
+                disabled={isOutOfStock}
+                className={`flex-1 font-bold py-2 px-3 rounded-xl bg-secondary text-white hover:bg-[#255732] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs ${
+                  isOutOfStock ? "bg-slate-200 text-slate-400 cursor-not-allowed hover:bg-slate-200" : ""
+                }`}
+              >
+                <FontAwesomeIcon icon={faBagShopping} className="text-xs" />
+                <span>Buy Now</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ===================== AMAZON / FLIPKART STYLE RECTANGULAR BOX GRID CARD ===================== */
+        <div 
+          onClick={() => router.push(`/products/${product.id}`)}
+          className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2.5 sm:p-3.5 ${
+            isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
+          }`}
+        >
+          <div>
+            {/* 1. FIXED-HEIGHT IMAGE CONTAINER */}
+            <div className="relative w-full h-36 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-xl flex items-center justify-center p-2 sm:p-3 overflow-hidden mb-2.5 shrink-0 border border-slate-100/80">
+              {/* Discount Badge */}
+              {discountPercent > 0 && !isOutOfStock && (
+                <div className="absolute top-2 left-2 z-10">
+                  <span className="bg-[#f97316] text-white font-black px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] uppercase tracking-tight shadow-xs">
+                    {discountPercent}% OFF
+                  </span>
+                </div>
+              )}
+
+              {/* Wishlist Button */}
+              <div className="absolute top-2 right-2 z-10">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist(product as any);
+                  }}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
+                    isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
+                  }`}
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
+                >
+                  <FontAwesomeIcon icon={faHeart} className="text-[11px] sm:text-xs" />
+                </button>
+              </div>
+
+              {/* Centered, Non-Stretched Product Image */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain p-1" 
+                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />
               ) : (
-                <div className="text-[10px] text-gray-300">No Image</div>
+                <div className="text-xs text-gray-300">No Image</div>
               )}
 
+              {/* Out of Stock Ribbon */}
               {isOutOfStock && (
-                <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20 rounded-md">
-                  <span className="bg-red-600 text-white font-black px-1.5 py-0.5 rounded text-[8px] uppercase">
+                <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20">
+                  <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded text-[8px] sm:text-[9px] uppercase tracking-wide">
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Right Column: Title, Ratings, Pricing, Bank Offer, Exchange, Warranty */}
-          <div className="flex-1 min-w-0">
-            {/* Title & Wishlist Header */}
-            <div className="flex items-start justify-between gap-1 mb-1">
-              <h3 className="text-[13px] sm:text-sm font-semibold text-[#212121] leading-snug line-clamp-2">
-                {product.name}
-              </h3>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWishlist(product as any);
-                }}
-                className={`p-1 rounded-full text-xs transition-colors shrink-0 ${
-                  isWishlisted ? "text-red-500" : "text-slate-300 hover:text-red-500"
-                }`}
-                title="Wishlist"
-              >
-                <FontAwesomeIcon icon={faHeart} />
-              </button>
-            </div>
-
-            {/* Rating Stars (Green Stars + Review Count + Assured Badge) */}
-            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-              <div className="flex items-center text-[#388e3c] text-xs">
-                {[...Array(5)].map((_, i) => (
-                  <FontAwesomeIcon 
-                    key={i} 
-                    icon={faStar} 
-                    className={`text-[10px] ${i < Math.floor(product.rating || 4.2) ? "text-[#388e3c]" : "text-slate-200"}`} 
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-[#878787] font-medium">({product.reviews_count?.toLocaleString() || "4,318"})</span>
-              <div className="flex items-center gap-0.5 text-[10px] font-black italic text-[#2874f0]">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-[9px]" />
+            {/* 2. PRODUCT DETAILS SECTION */}
+            {/* Category / Assured Tag */}
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[110px]">
+                {displayCategory}
+              </span>
+              <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black italic text-[#2874f0]">
+                <FontAwesomeIcon icon={faShieldHalved} className="text-[8px]" />
                 <span>Assured</span>
               </div>
             </div>
 
-            {/* Pricing Row: Discount % + MRP Strikethrough + Selling Price */}
-            <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
-              {discountPercent > 0 && (
-                <span className="text-xs sm:text-sm font-bold text-[#388e3c]">
-                  ↓{discountPercent}%
-                </span>
-              )}
-              {originalPrice > product.price && (
-                <span className="text-xs text-[#878787] line-through font-normal">
-                  ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
-                </span>
-              )}
-              <span className="text-sm sm:text-base font-bold text-[#212121]">
-                ₹{Math.floor(product.price).toLocaleString("en-IN")}
+            {/* Reserved Fixed-Height Product Title */}
+            <h3 className="h-9 sm:h-10 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
+              {product.name}
+            </h3>
+
+            {/* Ratings & Reviews Row */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="bg-[#388e3c] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span>{ratingScore}</span>
+                <FontAwesomeIcon icon={faStar} className="text-[7px]" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+                ({reviewsCount})
               </span>
             </div>
 
-            {/* Cashback and Refurbished Info Tags */}
-            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-              {Boolean(product.cashback_amount && product.cashback_amount > 0) && (
-                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
-                  ✨ ₹{product.cashback_amount} Cashback
+            {/* Price, MRP & Discount Row */}
+            <div className="flex items-baseline gap-1.5 flex-wrap mb-1">
+              <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
+                ₹{Math.floor(product.price).toLocaleString("en-IN")}
+              </span>
+              {originalPrice > product.price && (
+                <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
+                  ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
                 </span>
               )}
-              {product.battery_health && (
-                <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
-                  🔋 {product.battery_health}
+              {discountPercent > 0 && (
+                <span className="text-[10px] sm:text-xs font-bold text-[#388e3c]">
+                  {discountPercent}% off
                 </span>
               )}
-              {product.condition && (
-                <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
-                  {product.condition}
-                </span>
-              )}
-            </div>
-
-            {/* Warranty Line */}
-            <div className="text-[11px] text-[#878787] mb-1">
-              {product.warranty_period || `1 year warranty by ${brandName}`}
             </div>
           </div>
-        </div>
 
-        {/* Bottom Link: View All Variants */}
-        <div className="mt-1 pt-1.5 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-xs font-semibold text-[#2874f0] hover:underline">
-            View All Variants
-          </span>
-          <button
-            onClick={handleOpenModal}
-            disabled={isOutOfStock}
-            className={`text-[10px] font-black px-3 py-1 rounded-md transition-all flex items-center gap-1 shadow-xs active:scale-95 ${
-              isOutOfStock 
-                ? "bg-slate-100 text-slate-400" 
-                : "bg-secondary text-white hover:bg-[#255732]"
-            }`}
-          >
-            <FontAwesomeIcon icon={faCartPlus} className="text-[9px]" />
-            <span>ADD TO CART</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ===================== 2. DESKTOP VIEW (GRID / LIST MODE) ===================== */}
-      <div className="hidden md:block h-full">
-        {viewMode === "list" ? (
-          /* Desktop List Row */
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            onClick={() => router.push(`/products/${product.id}`)}
-            className={`group bg-white rounded-2xl p-4 md:p-5 border border-slate-200/90 hover:border-secondary/50 shadow-xs hover:shadow-md transition-all duration-300 flex items-center gap-6 relative cursor-pointer h-full ${isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""}`}
-          >
-            <div className="relative w-44 h-44 rounded-xl overflow-hidden bg-white border border-slate-100 flex items-center justify-center p-3 flex-shrink-0 group-hover:bg-slate-50/40 transition-colors">
-              {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-2 left-2 z-10">
-                  <span className="bg-[#f97316] text-white font-black px-2 py-0.5 rounded-md text-[10px] uppercase tracking-tight shadow-xs">
-                    {discountPercent}% OFF
-                  </span>
-                </div>
-              )}
-              {imgSrc ? (
-                <Image 
-                  src={imgSrc} 
-                  alt={product.name} 
-                  fill 
-                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-500" 
-                  onError={() => setImgSrc("/placeholder.png")}
-                  unoptimized
-                />
-              ) : (
-                <div className="text-xs text-gray-300">No Image</div>
-              )}
-            </div>
-
-            <div className="flex-1 flex flex-col justify-between min-w-0">
-              <div>
-                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span className="bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                    {displayCategory}
-                  </span>
-                  <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                    <span>{product.rating || 4.8}</span>
-                    <FontAwesomeIcon icon={faStar} className="text-[7px]" />
-                  </div>
-                  <span className="text-xs text-slate-400 font-medium">({reviewsDisplay} reviews)</span>
-                  <div className="flex items-center gap-1 text-[10px] font-black italic text-[#2874f0] bg-blue-50 px-1.5 py-0.5 rounded">
-                    <FontAwesomeIcon icon={faShieldHalved} className="text-[9px]" />
-                    <span>Assured</span>
-                  </div>
-                </div>
-
-                <h3 className="text-base font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
-                  {product.name}
-                </h3>
-
-                <p className="text-xs text-slate-600 font-medium line-clamp-1 mb-2">
-                  {product.unit || "Official Brand Warranty • 100% Genuine Device"}
-                </p>
-
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60 font-semibold">
-                    EMI from ₹{emiPerMonth.toLocaleString("en-IN")}/mo
-                  </span>
-                  {savings > 0 && (
-                    <span className="text-[#388e3c] font-bold">
-                      Save ₹{savings.toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="w-52 flex-shrink-0 flex flex-col justify-between items-end border-l border-slate-100 pl-5">
-              <div className="text-right mb-3">
-                <div className="flex items-baseline gap-2 justify-end">
-                  <span className="text-xl font-black text-slate-900 leading-none">
-                    ₹{Math.floor(product.price).toLocaleString("en-IN")}
-                  </span>
-                  {originalPrice > product.price && (
-                    <span className="text-xs text-slate-400 line-through font-medium">
-                      ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] text-[#2874f0] font-bold mt-1">
-                  wow! ₹{bankOfferPrice.toLocaleString("en-IN")} with Bank Offer
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 w-full">
+          {/* 3. CONSISTENT BOTTOM ACTION BUTTONS */}
+          <div className="mt-2.5 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2">
+            {isOutOfStock ? (
+              <button
+                disabled
+                className="w-full py-2 rounded-xl bg-slate-100 text-slate-400 text-[11px] sm:text-xs font-bold cursor-not-allowed text-center"
+              >
+                Out of Stock
+              </button>
+            ) : (
+              <>
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleWishlist(product as any);
-                  }}
-                  className={`p-2.5 rounded-xl border transition-all flex items-center justify-center ${
-                    isWishlisted ? "bg-red-50 text-red-500 border-red-200" : "bg-slate-50 text-slate-400 hover:text-red-500 border-slate-200"
-                  }`}
-                  title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
+                  onClick={handleDirectAddToCart}
+                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-xl border border-secondary text-secondary hover:bg-secondary hover:text-white text-[10px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap"
+                  title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-sm" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] sm:text-xs" />
+                  <span className="truncate">Add to Cart</span>
                 </button>
-                <button 
-                  onClick={handleOpenModal}
-                  disabled={isOutOfStock}
-                  className={`flex-1 font-black py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-all shadow-xs active:scale-95 whitespace-nowrap ${
-                    isOutOfStock 
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                      : "bg-secondary text-white hover:bg-[#255732]"
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
-                  <span>{isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}</span>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          /* Desktop Grid Card */
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            onClick={() => router.push(`/products/${product.id}`)}
-            className={`group bg-white rounded-2xl md:rounded-3xl p-3 sm:p-4 border border-slate-200/90 hover:border-secondary/50 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col h-full relative cursor-pointer ${isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""}`}
-          >
-            <div className="relative aspect-square w-full rounded-xl md:rounded-2xl overflow-hidden bg-white mb-2.5 border border-slate-100 flex items-center justify-center p-3 group-hover:bg-slate-50/40 transition-colors">
-              {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-2 left-2 z-10">
-                  <span className="bg-[#f97316] text-white font-black px-2 py-0.5 rounded-full text-[10px] uppercase tracking-tight shadow-xs">
-                    {discountPercent}% OFF
-                  </span>
-                </div>
-              )}
-              
-              <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleWishlist(product as any);
-                  }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md backdrop-blur-md transition-all active:scale-90 ${
-                    isWishlisted ? "bg-red-50 text-red-500 scale-105" : "bg-white/90 text-slate-400 hover:text-red-500"
-                  }`}
-                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                  title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
+                  onClick={handleDirectBuyNow}
+                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-xl bg-secondary hover:bg-[#255732] text-white text-[10px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs whitespace-nowrap"
+                  title="Buy Now"
                 >
-                  <FontAwesomeIcon icon={faHeart} className={`text-xs ${isWishlisted ? "text-red-500" : ""}`} />
+                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] sm:text-xs" />
+                  <span className="truncate">Buy Now</span>
                 </button>
-              </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
-              {imgSrc ? (
-                <Image 
-                  src={imgSrc} 
-                  alt={product.name} 
-                  fill 
-                  className="object-contain p-2 transition-transform duration-500 group-hover:scale-105" 
-                  onError={() => setImgSrc("/placeholder.png")}
-                  unoptimized
-                />
-              ) : (
-                <div className="text-xs text-gray-300">No Image</div>
-              )}
-            </div>
-
-            <div className="flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between gap-1 mb-1">
-                  <span className="bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded truncate">
-                    {displayCategory}
-                  </span>
-                  <div className="bg-[#388e3c] text-white text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                    <span>{product.rating || 4.8}</span>
-                    <FontAwesomeIcon icon={faStar} className="text-[7px]" />
-                  </div>
-                </div>
-
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-tight mb-1">
-                  {product.name}
-                </h3>
-
-                <p className="text-[10px] sm:text-[11px] text-slate-500 line-clamp-1 mb-1.5">
-                  {product.unit || "Official Brand Sealed • 1 Year"}
-                </p>
-
-                {/* Cashback / Refurbished Tag */}
-                <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                  {Boolean(product.cashback_amount && product.cashback_amount > 0) && (
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
-                      ✨ ₹{product.cashback_amount} Cashback
-                    </span>
-                  )}
-                  {product.battery_health && (
-                    <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
-                      🔋 {product.battery_health}
-                    </span>
-                  )}
-                  {product.condition && (
-                    <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold px-1.5 py-0.5 rounded">
-                      {product.condition}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-auto pt-1.5 border-t border-slate-100">
-                <div className="flex items-baseline gap-1.5 mb-1">
-                  <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
-                    ₹{Math.floor(product.price).toLocaleString("en-IN")}
-                  </span>
-                  {originalPrice > product.price && (
-                    <span className="text-xs text-slate-400 line-through font-medium">
-                      ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-
-                <div className="text-[11px] text-[#2874f0] font-bold mb-2">
-                  wow! ₹{bankOfferPrice.toLocaleString("en-IN")} with Bank Offer
-                </div>
-
-                <button 
-                  onClick={handleOpenModal}
-                  disabled={isOutOfStock}
-                  className={`w-full font-black py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-all shadow-xs active:scale-95 whitespace-nowrap ${
-                    isOutOfStock 
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                      : "bg-secondary text-white hover:bg-[#255732]"
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
-                  <span>{isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}</span>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Modals for spec selection and quick detail */}
+      {/* Modals for spec selection and quick detail if needed */}
       {!isOutOfStock && (
         <>
           <QuantityModal 
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onConfirm={handleAddToCart}
-            onBuyNow={handleBuyNow}
+            onConfirm={handleAddToCartModal}
+            onBuyNow={handleBuyNowModal}
             product={{
               ...product,
               image: displayImage,
@@ -515,8 +423,8 @@ export default function ProductCard({
           <ProductDetailModal
             isOpen={isDetailOpen}
             onClose={() => setIsDetailOpen(false)}
-            onAddToCart={handleAddToCart}
-            onBuyNow={handleBuyNow}
+            onAddToCart={handleAddToCartModal}
+            onBuyNow={handleBuyNowModal}
             product={{
               ...product,
               image: displayImage,
@@ -528,3 +436,4 @@ export default function ProductCard({
     </>
   );
 }
+

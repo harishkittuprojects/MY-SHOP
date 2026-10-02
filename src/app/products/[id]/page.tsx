@@ -45,6 +45,7 @@ interface ProductVariant {
   ram?: string;
   rom?: string;
   storage_label: string;
+  size?: string;
   color: string;
   color_code?: string;
   price: number;
