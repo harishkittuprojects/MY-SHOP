@@ -289,16 +289,29 @@ export default function AdminOrdersPage() {
                         </select>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(o);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold flex items-center gap-1.5 ml-auto transition-colors cursor-pointer"
-                        >
-                          <FontAwesomeIcon icon={faEye} />
-                          <span>View Details</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(o);
+                              setTimeout(() => window.print(), 200);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200/80"
+                            title="Print Tax Invoice"
+                          >
+                            <FontAwesomeIcon icon={faPrint} />
+                            <span className="hidden sm:inline">Invoice</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(o);
+                              setIsDetailModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-200"
+                          >
+                            <FontAwesomeIcon icon={faEye} />
+                            <span>Details</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
