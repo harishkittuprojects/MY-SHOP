@@ -208,8 +208,8 @@ export default function Navbar() {
 
         {/* Actions Area */}
         <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 z-50 flex-shrink-0">
-          {/* Live Search Bar with Amazon / Flipkart Style Suggestions */}
-          <div ref={searchContainerRef} className="relative">
+          {/* Live Search Bar (Desktop Only) */}
+          <div ref={searchContainerRef} className="relative hidden md:block">
             <form 
               onSubmit={(e) => handleSearch(e)}
               className="flex items-center bg-slate-100 hover:bg-slate-200/60 border border-slate-300/80 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-600 focus-within:bg-white w-32 xs:w-44 sm:w-60 md:w-72 lg:w-80 xl:w-96 shadow-xs"
@@ -430,13 +430,13 @@ export default function Navbar() {
           {/* Wishlist Icon */}
           <Link
             href="/account?tab=wishlist"
-            className="relative p-1.5 sm:p-2 transition-colors text-[#222222] hover:text-red-500 flex items-center justify-center active:scale-95 flex-shrink-0"
+            className="relative p-2 transition-colors text-slate-800 hover:text-red-500 flex items-center justify-center active:scale-95 flex-shrink-0"
             aria-label="Wishlist"
             title="Wishlist"
           >
-            <FontAwesomeIcon icon={faHeart} className="text-base sm:text-xl" />
+            <FontAwesomeIcon icon={faHeart} className="text-xl sm:text-2xl" />
             {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
+              <span className="absolute 0 top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
                 {wishlistCount}
               </span>
             )}
@@ -444,43 +444,34 @@ export default function Navbar() {
 
           {/* Profile Symbol */}
           {user ? (
-            <Link href="/account" className="flex items-center gap-1.5 sm:gap-2 text-[#222222] hover:text-primary transition-colors flex-shrink-0 p-1">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
-                <FontAwesomeIcon icon={faUser} className="text-xs sm:text-sm" />
+            <Link href="/account" className="flex items-center gap-1.5 text-slate-800 hover:text-primary transition-colors flex-shrink-0 p-1">
+              <div className="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
+                <FontAwesomeIcon icon={faUser} className="text-sm" />
               </div>
               <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Account</span>
             </Link>
           ) : (
-            <Link href="/login" className="flex items-center gap-1.5 sm:gap-2 text-[#222222] hover:text-primary transition-colors flex-shrink-0 p-1">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
-                <FontAwesomeIcon icon={faUser} className="text-xs sm:text-sm" />
+            <Link href="/login" className="flex items-center gap-1.5 text-slate-800 hover:text-primary transition-colors flex-shrink-0 p-1">
+              <div className="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
+                <FontAwesomeIcon icon={faUser} className="text-sm" />
               </div>
               <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Sign In</span>
             </Link>
           )}
 
-          {/* Cart Icon */}
+          {/* Cart Icon (Desktop Only - Mobile has it in Bottom Nav) */}
           <Link 
             href="/cart" 
-            className="relative p-1.5 sm:p-2 transition-colors text-[#222222] hover:text-secondary flex items-center justify-center active:scale-95 flex-shrink-0"
+            className="hidden md:flex relative p-2 transition-colors text-slate-800 hover:text-secondary items-center justify-center active:scale-95 flex-shrink-0"
             aria-label="View Cart"
           >
-            <FontAwesomeIcon icon={faShoppingCart} className="text-base sm:text-xl" />
+            <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
+              <span className="absolute 0 top-0.5 right-0.5 bg-secondary text-secondary-foreground text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
                 {cartCount}
               </span>
             )}
           </Link>
-
-          {/* Mobile Menu Toggle Button */}
-          <button
-            className="p-1.5 text-[#222222] md:hidden hover:text-secondary transition-colors flex items-center justify-center"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-base sm:text-xl" />
-          </button>
         </div>
       </div>
 
