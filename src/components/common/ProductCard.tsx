@@ -248,8 +248,8 @@ export default function ProductCard({
           }`}
         >
           <div>
-            {/* 1. 65% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Square 1:1 Aspect Ratio) */}
-            <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
+            {/* 1. 65% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Compact on Desktop) */}
+            <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square bg-slate-100 overflow-hidden">
               
               {/* Pure Floating Wishlist Heart (No Circular Background) */}
               <div className="absolute top-2.5 right-2.5 z-10">

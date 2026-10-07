@@ -365,7 +365,7 @@ export default function HomeContent() {
       if (matched.length > 0) {
         sections.push({
           config,
-          items: matched.slice(0, 4), // 2 to 4 products per category shelf
+          items: matched.slice(0, 6), // 2 on mobile, up to 6 on desktop
           totalCount: matched.length
         });
       }
@@ -479,9 +479,9 @@ export default function HomeContent() {
                     </div>
                   </div>
 
-                  {/* Product Cards Shelf */}
-                  <div className="p-2 sm:p-3.5 bg-[#fbfcfd]">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+                  {/* Product Cards Shelf (Compact 5-6 cards on desktop) */}
+                  <div className="p-2 sm:p-2.5 md:p-3 bg-[#fbfcfd]">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-2.5 md:gap-3">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
                       ))}
