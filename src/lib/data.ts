@@ -119,6 +119,118 @@ export const trendingMobileSubCategories = [
 export const products = [
   // ==================== 1. BRAND NEW MOBILES ====================
   {
+    id: "samsung-galaxy-z-fold7",
+    category: "Mobiles",
+    category_id: "mobiles",
+    sub_category: "Flagship Phones",
+    name: "Samsung Galaxy Z Fold7 5G Mobile with Galaxy AI (Silver Shadow, 12GB RAM, 256GB Storage), Ultra Sleek Design with 200MP Camera, Ultra-Smooth Gaming with Powerful Snapdragon 8 Elite, Google Gemini",
+    unit: "12GB RAM | 256GB ROM • Snapdragon 8 Elite • 200MP AI Pro Camera",
+    price: 174999,
+    original_price: 204999,
+    stock_quantity: 24,
+    cashback_amount: 5249,
+    warranty_period: "1 Year Official Samsung Brand Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+    images: [
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
+      "/products/samsung-galaxy-s26-ultra.jpg",
+      "/products/samsung-galaxy-s25-ultra.png"
+    ],
+    is_available: true,
+    is_popular: true,
+    is_featured: true,
+    rating: 4.5,
+    reviews_count: 111,
+    description: "Samsung Galaxy Z Fold7 5G with Galaxy AI, Titanium hinge architecture, Ultra Sleek foldable Dynamic AMOLED 2X 120Hz display, 200MP AI Quad camera, Snapdragon 8 Elite high-performance processor, and Google Gemini deep assistant integration.",
+    variants: [
+      {
+        id: "zfold7_12_256_silver",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Silver Shadow",
+        color_code: "#c0c0c0",
+        price: 174999,
+        original_price: 204999,
+        stock_quantity: 14,
+        sku: "ZFOLD7-12-256-SILVER",
+        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+        is_active: true
+      },
+      {
+        id: "zfold7_12_512_black",
+        ram: "12GB",
+        rom: "512GB",
+        storage_label: "12GB RAM + 512GB ROM",
+        color: "Phantom Black",
+        color_code: "#18181b",
+        price: 189999,
+        original_price: 219999,
+        stock_quantity: 10,
+        sku: "ZFOLD7-12-512-BLACK",
+        image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "oneplus-ce6-lite",
+    category: "Mobiles",
+    category_id: "mobiles",
+    sub_category: "5G Phones",
+    name: "OnePlus Nord CE6 Lite 5G (Super Silver, 8GB RAM, 128GB Storage) | 7000mAh Massive Battery | 1.03Mn+ AnTuTu | OxygenOS 15",
+    unit: "8GB RAM | 128GB ROM • 7000mAh Battery • 120Hz AMOLED • 50MP Sony LYT",
+    price: 26999,
+    original_price: 33999,
+    stock_quantity: 45,
+    cashback_amount: 1500,
+    warranty_period: "1 Year Official OnePlus Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+    images: [
+      "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+      "/products/google-pixel-9-pro-xl.png"
+    ],
+    is_available: true,
+    is_popular: true,
+    is_featured: true,
+    rating: 4.4,
+    reviews_count: 3829,
+    description: "OnePlus Nord CE6 Lite 5G delivers unstoppable battery stamina with a 7000mAh battery, ultra-smooth 120Hz AMOLED display, 50MP Sony LYT primary camera with OIS, and blazingly fast OxygenOS 15.",
+    variants: [
+      {
+        id: "ce6_8_128_silver",
+        ram: "8GB",
+        rom: "128GB",
+        storage_label: "8GB RAM + 128GB ROM",
+        color: "Super Silver",
+        color_code: "#cbd5e1",
+        price: 26999,
+        original_price: 33999,
+        stock_quantity: 25,
+        sku: "CE6-8-128-SILVER",
+        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+        is_active: true
+      },
+      {
+        id: "ce6_8_256_blue",
+        ram: "8GB",
+        rom: "256GB",
+        storage_label: "8GB RAM + 256GB ROM",
+        color: "Mega Blue",
+        color_code: "#0284c7",
+        price: 29999,
+        original_price: 36999,
+        stock_quantity: 20,
+        sku: "CE6-8-256-BLUE",
+        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+        is_active: true
+      }
+    ]
+  },
+  {
     id: "samsung-s26-ultra",
     category: "Mobiles",
     category_id: "mobiles-accessories",

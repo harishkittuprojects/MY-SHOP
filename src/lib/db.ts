@@ -266,7 +266,8 @@ export const ProductsDB = {
     } catch (err) {
       console.error('ProductsDB.getById Error:', err);
     }
-    const def = defaultProducts.find((p) => String(p.id) === String(id));
+    const cleanId = decodeURIComponent(String(id)).toLowerCase().trim();
+    const def = defaultProducts.find((p) => String(p.id).toLowerCase().trim() === cleanId);
     if (def) {
       return {
         ...def,

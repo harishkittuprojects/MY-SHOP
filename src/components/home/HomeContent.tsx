@@ -21,6 +21,7 @@ import HomeBanners from "@/components/home/HomeBanners";
 import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
+import AmazonFestiveShowcase from "@/components/home/AmazonFestiveShowcase";
 import { useRouter } from "next/navigation";
 
 // Category configurations with meta details, icons, and highlights
@@ -686,6 +687,9 @@ export default function HomeContent() {
 
   return (
     <div className="flex flex-col gap-3 sm:gap-5 md:gap-6 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+      {/* 0. Amazon Great Indian Festival Festive Hero & Spotlight Podium Showcase */}
+      <AmazonFestiveShowcase />
+
       {/* 1. Flipkart-Style Top Category Icons Bar (Above Hero) */}
       <section className="bg-white border-b border-slate-200/90 py-2.5 sm:py-3.5 shadow-xs sticky top-[58px] md:top-[68px] z-30">
         <div className="container px-2 sm:px-4 md:px-6 relative">
