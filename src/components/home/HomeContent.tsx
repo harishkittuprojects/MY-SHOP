@@ -17,7 +17,6 @@ import {
   faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "@/components/common/ProductCard";
-import HomeBanners from "@/components/home/HomeBanners";
 import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
@@ -891,13 +890,6 @@ export default function HomeContent() {
                   </div>
 
                 </div>
-
-                {/* Intersperse Promotional Banner once */}
-                {sectionIdx === 1 && (
-                  <div className="mt-2.5 sm:mt-4">
-                    <HomeBanners />
-                  </div>
-                )}
               </section>
             );
           })
