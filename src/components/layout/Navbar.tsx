@@ -475,6 +475,37 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Row 2: Mobile Search Bar (Cleanly placed below the header on mobile) */}
+      <div className="block md:hidden px-3 pb-2 pt-0.5 w-full">
+        <form 
+          onSubmit={(e) => handleSearch(e)}
+          className="flex items-center bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-xl px-3 py-1.5 sm:py-2 transition-all focus-within:ring-2 focus-within:ring-emerald-500/30 focus-within:border-emerald-600 focus-within:bg-white w-full shadow-2xs"
+        >
+          <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs mr-2 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search brands, products, electronics..."
+            className="bg-transparent border-none outline-none w-full text-xs text-slate-900 placeholder:text-slate-400 font-medium"
+            value={searchQuery}
+            onFocus={() => setShowSuggestions(true)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="text-slate-400 hover:text-slate-700 p-0.5 flex-shrink-0 cursor-pointer"
+              title="Clear"
+            >
+              <FontAwesomeIcon icon={faTimes} className="text-xs" />
+            </button>
+          )}
+        </form>
+      </div>
+
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
