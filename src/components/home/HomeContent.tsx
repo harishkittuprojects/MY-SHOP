@@ -660,10 +660,13 @@ export default function HomeContent() {
 
 
   return (
-    <div className="flex flex-col gap-2 sm:gap-3 md:gap-3.5 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
-      {/* 1. Flipkart-Style Top Category Icons Bar (Above Hero) */}
-      <section className="bg-white border-b border-slate-200/80 py-1 sm:py-1.5 shadow-xs">
-        <div className="max-w-[1440px] mx-auto px-2 sm:px-4 md:px-6 relative">
+    <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+      {/* 1. Main Hero Banner Carousel */}
+      <Hero />
+
+      {/* 2. Flipkart-Style Category Icons Bar (Under Hero) */}
+      <section className="max-w-[1440px] w-full mx-auto px-2 sm:px-4 md:px-6">
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 py-2 sm:py-2.5 px-2 sm:px-4 md:px-6 shadow-xs relative">
           <div className="flex items-center justify-start lg:justify-between gap-2.5 sm:gap-4 md:gap-6 overflow-x-auto category-scroll-container no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
             {TOP_FLIPKART_CATEGORIES.map((cat) => {
               const isSelected = activeMegaMenu === cat.id;
@@ -837,9 +840,6 @@ export default function HomeContent() {
           })()}
         </div>
       </section>
-
-      {/* 2. Main Hero Banner Carousel */}
-      <Hero />
 
 
 
