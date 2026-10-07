@@ -355,7 +355,15 @@ export default function HomeContent() {
     });
   };
 
-  // Compute populated category sections dynamically
+  // Top 4 core categories to feature on the homepage
+  const HOMEPAGE_FEATURED_CATEGORY_IDS = [
+    "mobiles",
+    "old-refurbished-mobiles",
+    "mobile-accessories",
+    "smart-technology"
+  ];
+
+  // Compute populated category sections dynamically (compact 2-4 items per category for fast mobile browsing)
   const populatedCategorySections = useMemo(() => {
     if (!products || products.length === 0) return [];
     
@@ -365,48 +373,20 @@ export default function HomeContent() {
       totalCount: number;
     }[] = [];
 
-    // 1. Process predefined primary ecommerce categories
-    PREDEFINED_CATEGORIES.forEach(config => {
+    // Show only the top 4 core categories on homepage
+    PREDEFINED_CATEGORIES.filter(c => HOMEPAGE_FEATURED_CATEGORY_IDS.includes(c.id)).forEach(config => {
       const matched = filterProductsForCategory(config.id, products);
       if (matched.length > 0) {
         sections.push({
           config,
-          items: matched.slice(0, 8), // Show up to 8 top products on homepage
+          items: matched.slice(0, 4), // 2 to 4 products per category shelf
           totalCount: matched.length
         });
       }
     });
 
-    // 2. Discover any additional custom categories from API not in predefined list
-    categories.forEach(cat => {
-      const alreadyHandled = sections.some(
-        s => s.config.id.toLowerCase() === cat.id?.toLowerCase() ||
-             s.config.categoryQuery.toLowerCase() === cat.name?.toLowerCase()
-      );
-      if (!alreadyHandled) {
-        const matched = filterProductsForCategory(cat.id || cat.name, products);
-        if (matched.length > 0) {
-          sections.push({
-            config: {
-              id: cat.id || cat.name.toLowerCase().replace(/\s+/g, "-"),
-              name: cat.name,
-              badge: "Curated Store",
-              icon: "📦",
-              accentColor: "from-slate-700 to-slate-900",
-              tagColor: "bg-slate-100 text-slate-800 border-slate-200",
-              description: `Explore the complete collection of ${cat.name} with verified authenticity and fast delivery`,
-              categoryQuery: cat.name,
-              subcategories: cat.sub_categories || []
-            },
-            items: matched.slice(0, 8),
-            totalCount: matched.length
-          });
-        }
-      }
-    });
-
     return sections;
-  }, [products, categories]);
+  }, [products]);
 
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
 
@@ -867,90 +847,54 @@ export default function HomeContent() {
                     </div>
                   )}
 
-                  {/* Category Section Header */}
-                  <div className="p-3 sm:p-4 md:p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                  {/* Category Section Header (Compact & Mobile First) */}
+                  <div className="p-2.5 sm:p-3.5 md:p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+                    <div className="flex items-center justify-between gap-2">
                       
-                      {/* Left Header Title & Highlights */}
-                      <div className="flex items-start gap-2.5 sm:gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
+                      {/* Left Header Title & Badge */}
+                      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-base sm:text-xl flex-shrink-0">
                           {config.icon}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h2 className="text-base sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">
                               {config.name}
                             </h2>
-                            <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${config.tagColor}`}>
+                            <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${config.tagColor} hidden xs:inline-block`}>
                               {config.badge}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-600 font-medium mt-0.5">
-                            {config.description}
-                          </p>
                         </div>
                       </div>
 
                       {/* Right "View All" Button */}
-                      <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
                         <Link 
                           href={categoryUrl} 
-                          className="bg-secondary text-white font-black px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-xs shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5"
+                          className="bg-secondary text-white font-black px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs shadow-2xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1"
                         >
                           <span>View All ({totalCount})</span>
-                          <FontAwesomeIcon icon={faArrowRight} size="xs" />
+                          <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
                         </Link>
                       </div>
                     </div>
-
-                    {/* Subcategory Tag Quick Pills */}
-                    {config.subcategories && config.subcategories.length > 0 && (
-                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 sm:pt-3">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">
-                          Filters:
-                        </span>
-                        {config.subcategories.map((sub) => (
-                          <Link
-                            key={sub}
-                            href={`/products?category=${encodeURIComponent(config.categoryQuery)}&search=${encodeURIComponent(sub)}`}
-                            className="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-white border border-slate-200/90 text-slate-700 hover:border-secondary hover:text-secondary hover:bg-emerald-50/40 transition-all flex-shrink-0 shadow-2xs"
-                          >
-                            {sub}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Product Cards Shelf */}
-                  <div className="p-2 sm:p-3 md:p-4 bg-slate-50/30">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-3.5">
+                  {/* Product Cards Shelf (Clean 2-card row on mobile, 4-card on desktop) */}
+                  <div className="p-2 sm:p-3 bg-slate-50/30">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
                       ))}
-                    </div>
-
-                    {/* End-Shelf "Explore Full Collection" Bar */}
-                    <div className="mt-2.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-100">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                        <span className="text-secondary font-black">●</span>
-                        Showing top {items.length} of {totalCount} products in {config.name}
-                      </div>
-                      <Link
-                        href={categoryUrl}
-                        className="text-xs font-black text-secondary hover:underline flex items-center gap-1.5"
-                      >
-                        Browse all {config.name} catalog
-                        <FontAwesomeIcon icon={faArrowRight} size="xs" />
-                      </Link>
                     </div>
                   </div>
 
                 </div>
 
-                {/* Intersperse Promotional Banner after 2nd and 4th categories */}
+                {/* Intersperse Promotional Banner once */}
                 {sectionIdx === 1 && (
-                  <div className="mt-3 sm:mt-5">
+                  <div className="mt-2.5 sm:mt-4">
                     <HomeBanners />
                   </div>
                 )}
@@ -1009,69 +953,69 @@ export default function HomeContent() {
       </section>
 
       {/* 6. Customer Support & Inquiry Section */}
-      <section className="container px-3 sm:px-4 md:px-6 py-2 md:py-6">
-        <div className="bg-gradient-to-br from-secondary/10 via-emerald-500/5 to-secondary/5 rounded-3xl p-5 sm:p-8 md:p-14 flex flex-col lg:flex-row items-center gap-6 md:gap-12 border border-secondary/20 shadow-xs">
+      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-2 md:py-4">
+        <div className="bg-gradient-to-br from-secondary/10 via-emerald-500/5 to-secondary/5 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 flex flex-col lg:flex-row items-center gap-4 md:gap-8 border border-secondary/20 shadow-xs">
           <div className="flex-1">
-            <span className="text-xs font-black uppercase tracking-widest text-secondary mb-2 block">
-              Dedicated Customer Support &amp; Pre-Orders
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-secondary mb-1 block">
+              Customer Support &amp; Orders
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-3 md:mb-5 leading-tight text-slate-900">
-              Looking for a Specific Model, Size, or Bulk Quote?
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-black mb-2 leading-tight text-slate-900">
+              Looking for a Specific Model or Bulk Order?
             </h2>
-            <p className="text-slate-600 mb-5 md:mb-6 text-sm sm:text-base leading-relaxed">
-              Whether you need corporate bulk procurement, trade-in valuation, or special edition models across any category, our product specialists are here to assist you 24/7.
+            <p className="text-slate-600 mb-3 text-xs sm:text-sm leading-relaxed">
+              Whether you need bulk procurement, exchange valuation, or rare models, our team is ready to assist.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/contact" className="bg-secondary text-white font-black px-6 py-3 rounded-xl shadow-md hover:opacity-90 transition-all flex items-center gap-2 text-xs sm:text-sm">
-                CONTACT SPECIALISTS
-                <FontAwesomeIcon icon={faArrowRight} />
+            <div className="flex flex-wrap gap-2">
+              <Link href="/contact" className="bg-secondary text-white font-black px-4 py-2 rounded-xl shadow-xs hover:opacity-90 transition-all flex items-center gap-1.5 text-xs">
+                <span>Contact Specialists</span>
+                <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
               </Link>
             </div>
           </div>
           
-          <div className="flex-1 w-full max-w-lg">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-100">
-              <h3 className="text-xl font-black mb-4 text-slate-900">Quick Product Inquiry</h3>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Your Name</label>
+          <div className="flex-1 w-full max-w-md">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-slate-100">
+              <h3 className="text-sm sm:text-base font-black mb-2.5 text-slate-900">Quick Product Inquiry</h3>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-0.5">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Your Name</label>
                   <input 
                     type="text" 
                     required
                     placeholder="Enter your name"
-                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 ring-secondary transition-all"
+                    className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:ring-2 ring-secondary transition-all"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Contact Number</label>
+                <div className="flex flex-col gap-0.5">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Contact Number</label>
                   <input 
                     type="tel" 
                     required
                     placeholder="Enter 10-digit mobile number"
-                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 ring-secondary transition-all"
+                    className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:ring-2 ring-secondary transition-all"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Product / Inquiry Details</label>
+                <div className="flex flex-col gap-0.5">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Product Inquiry</label>
                   <textarea 
-                    rows={3}
+                    rows={2}
                     required
-                    placeholder="e.g. Inquiring about iPhone 16 Pro, Levi's Jeans size, or EV Scooter delivery"
-                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 ring-secondary resize-none transition-all"
+                    placeholder="e.g. Inquiring about iPhone 16 Pro 256GB"
+                    className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:ring-2 ring-secondary resize-none transition-all"
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                   ></textarea>
                 </div>
                 <button 
                   type="submit"
-                  className="bg-secondary text-white font-black py-3.5 rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-[0.98] uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+                  className="bg-secondary text-white font-black py-2 rounded-lg shadow-sm hover:opacity-90 transition-all active:scale-[0.98] uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5 mt-1"
                 >
-                  <FontAwesomeIcon icon={faPaperPlane} />
-                  SUBMIT INQUIRY
+                  <FontAwesomeIcon icon={faPaperPlane} className="text-[10px]" />
+                  <span>Submit Inquiry</span>
                 </button>
               </form>
             </div>
@@ -1080,38 +1024,34 @@ export default function HomeContent() {
       </section>
 
       {/* 7. Verified Customer Reviews */}
-      <section className="container px-3 sm:px-4 md:px-6 py-4 md:py-8">
-        <div className="flex items-center justify-between mb-4 sm:mb-8">
+      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-2 md:py-4">
+        <div className="flex items-center justify-between mb-2.5 sm:mb-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2.5 text-slate-900">
-              <span className="w-1.5 h-6 bg-secondary rounded-full"></span>
+            <h2 className="text-base sm:text-xl font-black flex items-center gap-2 text-slate-900">
+              <span className="w-1.5 h-4 bg-secondary rounded-full"></span>
               Verified Buyer Reviews
             </h2>
-            <p className="text-xs text-slate-500 ml-4 mt-0.5">Real feedback from verified shoppers across all categories</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
-          {reviews.map((review) => (
-            <div key={review.id} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-xs relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <FontAwesomeIcon icon={faQuoteLeft} className="text-5xl text-secondary" />
-              </div>
-              <div className="flex gap-1 mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4 mb-2">
+          {reviews.slice(0, 2).map((review) => (
+            <div key={review.id} className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+              <div className="flex gap-1 mb-1.5">
                 {[...Array(5)].map((_, i) => (
-                  <FontAwesomeIcon key={i} icon={faStar} className={i < review.rating ? "text-amber-400 text-xs sm:text-sm" : "text-slate-200 text-xs sm:text-sm"} />
+                  <FontAwesomeIcon key={i} icon={faStar} className={i < review.rating ? "text-amber-400 text-xs" : "text-slate-200 text-xs"} />
                 ))}
               </div>
-              <p className="text-slate-800 text-sm sm:text-base font-bold italic leading-relaxed mb-4">
+              <p className="text-slate-800 text-xs sm:text-sm font-bold italic leading-snug mb-2">
                 "{review.comment}"
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-black text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-black text-xs">
                   {review.customer_name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-black text-slate-900 text-xs sm:text-sm">{review.customer_name}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">✓ Verified Buyer</p>
+                  <p className="font-black text-slate-900 text-xs">{review.customer_name}</p>
+                  <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-wider">✓ Verified Buyer</p>
                 </div>
               </div>
             </div>
