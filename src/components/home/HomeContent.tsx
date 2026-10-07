@@ -676,13 +676,13 @@ export default function HomeContent() {
                 <div key={cat.id} className="relative flex-shrink-0">
                   <Link
                     href={cat.url}
-                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-0 min-w-[56px] sm:min-w-[64px] md:min-w-[72px] cursor-pointer`}
+                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-0.5 min-w-[62px] sm:min-w-[72px] md:min-w-[80px] cursor-pointer`}
                   >
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-13 md:h-13 rounded-2xl border transition-all flex items-center justify-center text-lg sm:text-2xl md:text-2xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/80 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
+                    <div className={`w-12 h-12 sm:w-13 sm:h-13 md:w-15 md:h-15 rounded-xl border transition-all flex items-center justify-center text-xl sm:text-2xl md:text-2xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/90 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
                       <span>{cat.icon}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-1 mt-1">
                       <span className={`text-[11px] sm:text-xs md:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
                         {cat.name}
                       </span>
