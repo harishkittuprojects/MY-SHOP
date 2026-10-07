@@ -660,9 +660,9 @@ export default function HomeContent() {
 
 
   return (
-    <div className="flex flex-col gap-2.5 sm:gap-4 md:gap-5 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+    <div className="flex flex-col gap-2 sm:gap-3 md:gap-3.5 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
       {/* 1. Flipkart-Style Top Category Icons Bar (Above Hero) */}
-      <section className="bg-white border-b border-slate-200/90 py-1 sm:py-1.5 md:py-2 shadow-xs sticky top-[50px] md:top-[56px] z-30">
+      <section className="bg-white border-b border-slate-200/80 py-1 sm:py-1.5 shadow-xs">
         <div className="max-w-[1440px] mx-auto px-2 sm:px-4 md:px-6 relative">
           <div className="flex items-center justify-start lg:justify-between gap-2.5 sm:gap-4 md:gap-6 overflow-x-auto category-scroll-container no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
             {TOP_FLIPKART_CATEGORIES.map((cat) => {
