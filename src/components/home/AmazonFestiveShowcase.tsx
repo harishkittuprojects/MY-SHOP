@@ -1198,41 +1198,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   return (
     <div className="w-full bg-[#f8fafc] text-slate-800 rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs mb-6">
       
-      {/* =========================================================================
-          1. TOP SUB-NAVIGATION BAR (Brand Emerald & White Theme)
-      ========================================================================= */}
-      <div className="bg-white border-b border-slate-200 select-none">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center overflow-x-auto whitespace-nowrap scrollbar-none gap-5 sm:gap-6 text-xs sm:text-[13px] leading-normal min-h-[46px]">
-          <Link
-            href={categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : "/products"}
-            className="font-black text-[#2E6F40] flex items-center gap-1.5 shrink-0 hover:opacity-85 transition-opacity"
-          >
-            <span>{config.storeTitle}</span>
-            <FontAwesomeIcon icon={faChevronRight} className="text-[10px] text-[#2E6F40]/70" />
-          </Link>
-
-          {config.subNavLinks.map((item, idx) => {
-            const itemSearch = new URLSearchParams(item.href.split("?")[1] || "").get("search");
-            const isItemActive = brandSearch
-              ? itemSearch?.toLowerCase() === brandSearch.toLowerCase()
-              : idx === 0;
-
-            return (
-              <Link
-                key={idx}
-                href={item.href}
-                className={`shrink-0 py-1 font-bold border-b-2 transition-all inline-block ${
-                  isItemActive
-                    ? "text-[#2E6F40] border-[#2E6F40]" 
-                    : "text-slate-600 border-transparent hover:text-[#2E6F40] hover:border-slate-300"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
 
       {/* =========================================================================
           2. MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)

@@ -28,6 +28,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
+import AmazonFestiveShowcase from "@/components/home/AmazonFestiveShowcase";
 
 function SafeImg({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [imgSrc, setImgSrc] = useState(src);
@@ -676,7 +677,10 @@ function Content() {
 
   return (
     <div className="w-full md:container px-0 md:px-4 py-2 sm:py-6 md:py-8">
-
+      {/* Amazon Great Indian Festival Showcase (Dynamic for All Categories) */}
+      <div className="mb-6 sm:mb-8 -mt-2 sm:-mt-4">
+        <AmazonFestiveShowcase category={categoryFilter} />
+      </div>
 
       {/* Best Selling Carousel (When on Mobiles or All Products) */}
       {isMobileCategory && !categoryFilter && (
