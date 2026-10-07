@@ -106,17 +106,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Amazon / Flipkart Search Trends & Data
-  const TRENDING_SEARCHES = [
-    { label: "iPhone 16 Pro Max", category: "Mobiles" },
-    { label: "Samsung Galaxy S25 Ultra", category: "Mobiles" },
-    { label: "65W GaN Fast Charger", category: "Mobile Accessories" },
-    { label: "Certified Refurbished iPhone", category: "Old / Refurbished Mobiles" },
-    { label: "22K BIS Hallmarked Gold", category: "Jewellery" },
-    { label: "Smartwatch AMOLED", category: "Smart Technology" },
-    { label: "Electric Scooters", category: "EV Vehicles" },
-  ];
-
   const POPULAR_BRANDS = [
     { name: "Apple", icon: "🍏", category: "Mobiles" },
     { name: "Samsung", icon: "🌌", category: "Mobiles" },
@@ -258,8 +247,8 @@ export default function Navbar() {
               )}
             </form>
 
-            {/* Amazon & Flipkart Style Suggestions Dropdown */}
-            {showSuggestions && (
+            {/* Live Search Suggestions Dropdown */}
+            {showSuggestions && (searchQuery.trim().length > 0 || recentSearches.length > 0) && (
               <div className="absolute top-full right-0 sm:right-auto sm:left-0 mt-2 bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/90 z-50 w-[310px] xs:w-[360px] sm:w-[440px] md:w-[480px] lg:w-[520px] max-h-[480px] overflow-y-auto animate-in fade-in zoom-in-95 duration-150 divide-y divide-slate-100">
                 
                 {/* 1. When typing: Dynamic Department & In-Category Suggestions */}
@@ -393,92 +382,38 @@ export default function Navbar() {
                   </div>
                 )}
 
-                {/* 4. Empty Search State: Recent Searches, Trending & Popular Departments (Amazon / Flipkart Style) */}
-                {searchQuery.trim().length === 0 && (
-                  <div className="p-3 sm:p-4 space-y-4">
-                    {/* User's Recent Searches */}
-                    {recentSearches.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1">
-                          <span className="flex items-center gap-1.5 text-blue-600">
-                            <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
-                            <span>Your Recent Searches</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              clearRecentHistory();
-                              setRecentSearches([]);
-                            }}
-                            className="text-slate-400 hover:text-red-600 text-[10px] font-bold lowercase hover:underline cursor-pointer"
-                          >
-                            clear all
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {recentSearches.map((item, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => handleSearch(undefined, item)}
-                              className="px-3 py-1.5 rounded-full bg-blue-50/70 hover:bg-blue-100 border border-blue-200/90 text-xs font-semibold text-blue-800 flex items-center gap-1.5 transition-colors group"
-                            >
-                              <FontAwesomeIcon icon={faClockRotateLeft} className="text-[9px] text-blue-400 group-hover:text-blue-600" />
-                              <span>{item}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Trending Searches */}
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1 flex items-center gap-1.5">
-                        <span>🔥</span>
-                        <span>Trending Searches on MY SHOP</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {TRENDING_SEARCHES.map((item, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleSearch(undefined, item.label, item.category)}
-                            className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-xs font-semibold text-slate-700 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
-                          >
-                            <FontAwesomeIcon icon={faSearch} className="text-[9px] text-slate-400" />
-                            <span>{item.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                {/* 4. Empty Search State: Only User's Recent Searches */}
+                {searchQuery.trim().length === 0 && recentSearches.length > 0 && (
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1">
+                      <span className="flex items-center gap-1.5 text-blue-600">
+                        <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
+                        <span>Your Recent Searches</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearRecentHistory();
+                          setRecentSearches([]);
+                        }}
+                        className="text-slate-400 hover:text-red-600 text-[10px] font-bold lowercase hover:underline cursor-pointer"
+                      >
+                        clear all
+                      </button>
                     </div>
-
-                    {/* Popular Departments */}
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1 flex items-center gap-1.5">
-                        <span>🛍️</span>
-                        <span>Popular Departments</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {[
-                          { name: "Mobiles", icon: "📱", href: "/products?category=Mobiles" },
-                          { name: "Refurbished", icon: "♻️", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
-                          { name: "Accessories", icon: "🔌", href: "/products?category=Mobile%20Accessories" },
-                          { name: "Fashion", icon: "👗", href: "/products?category=Fashion" },
-                          { name: "Jewellery", icon: "💎", href: "/products?category=Jewellery" },
-                          { name: "Smart Tech", icon: "💡", href: "/products?category=Smart%20Technology" }
-                        ].map((d, idx) => (
-                          <Link
-                            key={idx}
-                            href={d.href}
-                            onClick={() => setShowSuggestions(false)}
-                            className="p-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-300 flex items-center gap-2 transition-colors group"
-                          >
-                            <span className="text-base">{d.icon}</span>
-                            <span className="text-xs font-bold text-slate-800 group-hover:text-blue-700">{d.name}</span>
-                          </Link>
-                        ))}
-                      </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {recentSearches.map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSearch(undefined, item)}
+                          className="px-3 py-1.5 rounded-full bg-blue-50/70 hover:bg-blue-100 border border-blue-200/90 text-xs font-semibold text-blue-800 flex items-center gap-1.5 transition-colors group"
+                        >
+                          <FontAwesomeIcon icon={faClockRotateLeft} className="text-[9px] text-blue-400 group-hover:text-blue-600" />
+                          <span>{item}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
