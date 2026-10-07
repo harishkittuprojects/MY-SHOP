@@ -1651,16 +1651,16 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const activeBrandTitle = activeBrandObj ? `${activeBrandObj.name}` : "";
 
   return (
-    <div className="w-full bg-[#f8fafc] text-slate-800 rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs mb-6">
+    <div className="w-full bg-[#f8fafc] text-slate-800 rounded-none sm:rounded-2xl md:rounded-3xl overflow-hidden border-0 sm:border border-slate-200/90 shadow-none sm:shadow-xs mb-2 sm:mb-4 md:mb-6">
       
       {/* =========================================================================
           MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)
       ========================================================================= */}
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="w-full max-w-[1440px] mx-auto px-2 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 items-start">
           
           {/* ======================= LEFT SIDEBAR: CATEGORY & FILTERS ======================= */}
-          <aside className="hidden lg:block lg:col-span-3 space-y-4 text-xs select-none bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+          <aside className="hidden lg:block lg:col-span-3 space-y-3 sm:space-y-4 text-xs select-none bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
             {/* Category Breadcrumbs Hierarchy */}
             <div>
               <h3 className="font-bold text-slate-900 text-[13px] mb-1.5">Category</h3>
@@ -1812,13 +1812,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           </aside>
 
           {/* ======================= CENTER: FESTIVE BANNER & HORIZONTAL SPOTLIGHT CARDS ======================= */}
-          <div className="col-span-1 lg:col-span-9 space-y-4">
+          <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* ======================= DYNAMIC BANNER SLIDER WITH ADD BANNER OPTION ======================= */}
-            <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-md border border-slate-200/90 bg-slate-950 group">
+            <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
               
-              {/* Banner Carousel Display */}
-              <div className="relative w-full aspect-[16/7] sm:aspect-[21/8] md:aspect-auto md:h-[260px] lg:h-[300px] overflow-hidden">
+              {/* Banner Carousel Display (Compact & Proportionate on Mobile) */}
+              <div className="relative w-full h-[140px] xs:h-[160px] sm:h-[220px] md:h-[270px] lg:h-[300px] overflow-hidden">
                 {banners.length > 0 ? (
                   banners.map((b, idx) => (
                     <div 
@@ -1835,19 +1835,19 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           unoptimized
                         />
                         {/* Gradient Overlay & Captions */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4 sm:p-6 md:p-8">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-end p-2.5 sm:p-4 md:p-6">
                           {b.tag && (
-                            <span className="self-start text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 mb-2 shadow-xs">
+                            <span className="self-start text-[9px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 mb-1 sm:mb-2 shadow-xs">
                               {b.tag}
                             </span>
                           )}
                           {b.title && (
-                            <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight drop-shadow-md">
+                            <h2 className="text-sm sm:text-xl md:text-2xl font-black text-white leading-tight drop-shadow-md">
                               {b.title}
                             </h2>
                           )}
                           {b.subtitle && (
-                            <p className="text-xs sm:text-sm text-slate-200 font-medium mt-1 line-clamp-2 drop-shadow-sm max-w-xl">
+                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-200 font-medium mt-0.5 sm:mt-1 line-clamp-1 sm:line-clamp-2 drop-shadow-sm max-w-xl">
                               {b.subtitle}
                             </p>
                           )}
@@ -1856,27 +1856,27 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     </div>
                   ))
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6">
-                    <p className="text-base font-bold text-slate-300">No Banners Added Yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Click the button below to upload your first banner</p>
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white p-4">
+                    <p className="text-sm font-bold text-slate-300">No Banners Added Yet</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Click Add Banner to upload</p>
                   </div>
                 )}
               </div>
 
               {/* Top Controls Overlay: "Add Banner" Button */}
-              <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
+              <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddBannerModalOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 transition-all active:scale-95 border border-emerald-400/40 backdrop-blur-md cursor-pointer"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 border border-emerald-400/40 backdrop-blur-md cursor-pointer"
                   title="Add New Banner"
                 >
-                  <FontAwesomeIcon icon={faPlus} className="text-xs" />
+                  <FontAwesomeIcon icon={faPlus} className="text-[10px] sm:text-xs" />
                   <span>Add Banner</span>
                 </button>
                 <Link
                   href="/admin/homepage"
-                  className="bg-black/60 hover:bg-black/80 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow-md backdrop-blur-md transition-colors border border-white/20 hidden sm:inline-flex items-center gap-1"
+                  className="bg-black/60 hover:bg-black/80 text-white font-bold text-[10px] sm:text-xs px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-md backdrop-blur-md transition-colors border border-white/20 hidden sm:inline-flex items-center gap-1"
                 >
                   <span>Manage</span>
                 </Link>
@@ -1888,7 +1888,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   <button
                     type="button"
                     onClick={() => setActiveBannerIndex(prev => (prev - 1 + banners.length) % banners.length)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
+                    className="absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
                     aria-label="Previous Banner"
                   >
                     <FontAwesomeIcon icon={faChevronLeft} />
@@ -1896,20 +1896,20 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   <button
                     type="button"
                     onClick={() => setActiveBannerIndex(prev => (prev + 1) % banners.length)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
+                    className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
                     aria-label="Next Banner"
                   >
                     <FontAwesomeIcon icon={faChevronRight} />
                   </button>
 
-                  <div className="absolute bottom-3 right-4 z-20 flex items-center gap-1.5">
+                  <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 z-20 flex items-center gap-1 sm:gap-1.5">
                     {banners.map((_, dotIdx) => (
                       <button
                         key={dotIdx}
                         type="button"
                         onClick={() => setActiveBannerIndex(dotIdx)}
-                        className={`h-2 rounded-full transition-all cursor-pointer ${
-                          dotIdx === activeBannerIndex ? "w-6 bg-emerald-400" : "w-2 bg-white/60 hover:bg-white"
+                        className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
+                          dotIdx === activeBannerIndex ? "w-5 sm:w-6 bg-emerald-400" : "w-1.5 sm:w-2 bg-white/60 hover:bg-white"
                         }`}
                         aria-label={`Go to slide ${dotIdx + 1}`}
                       />
@@ -1922,26 +1922,26 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             {/* =========================================================================
                 3. HORIZONTAL SPOTLIGHT DEAL CARDS (Brand Emerald & Gold Website Theme)
             ========================================================================= */}
-            <div className="bg-white p-4 sm:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <div className="bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border border-slate-200/90 space-y-2.5 sm:space-y-3.5 md:space-y-4">
               
               {/* Section Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+              <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
                 <div>
-                  <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
+                    <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
                     <span>
                       {activeBrandTitle ? `Spotlight ${activeBrandTitle} Deals` : config.spotlightTitle}
                     </span>
-                    <span className="text-xs font-bold text-slate-400 font-mono">
-                      ({displayedDeals.length} offers)
+                    <span className="text-[11px] sm:text-xs font-bold text-slate-400 font-mono">
+                      ({displayedDeals.length})
                     </span>
                   </h2>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    Click on any card to view deals, EMI calculator &amp; fast checkout
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
+                    Click on any card to view deals &amp; fast checkout
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   {selectedBrand && (
                     <button 
                       onClick={() => {
@@ -1950,30 +1950,30 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           : `/products`;
                         router.push(targetUrl);
                       }}
-                      className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full hover:bg-red-100 transition-colors"
+                      className="text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full hover:bg-red-100 transition-colors"
                     >
-                      ✕ Clear Filter ({selectedBrand})
+                      ✕ Clear ({selectedBrand})
                     </button>
                   )}
-                  <span className="text-xs font-bold text-[#2E6F40] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                  <span className="text-[10px] sm:text-xs font-bold text-[#2E6F40] bg-emerald-50 border border-emerald-200 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                     ⚡ Live Price Drops
                   </span>
                 </div>
               </div>
 
-              {/* Horizontal Cards Grid (2 Columns on Medium/Large Screens) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Horizontal Cards Grid (2 Columns on Medium/Large Screens, Compact on Mobile) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 {displayedDeals.map((deal) => (
                   <Link
                     key={deal.id}
                     href={deal.link}
-                    className="group relative flex flex-row items-center bg-gradient-to-r from-slate-50 via-white to-emerald-50/40 rounded-2xl p-3.5 sm:p-4 border-2 border-slate-200 hover:border-[#2E6F40] shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer overflow-hidden gap-3 sm:gap-4"
+                    className="group relative flex flex-row items-center bg-gradient-to-r from-slate-50 via-white to-emerald-50/40 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-3.5 border border-slate-200 hover:border-[#2E6F40] shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer overflow-hidden gap-2.5 sm:gap-3.5"
                   >
                     {/* Left: Device / Product Image on Emerald Lit Podium with EMI Ribbon */}
-                    <div className="relative w-28 sm:w-36 h-32 sm:h-36 shrink-0 bg-gradient-to-b from-emerald-900/10 via-slate-900/5 to-emerald-950/20 rounded-xl p-2 flex items-center justify-center overflow-hidden border border-slate-200/80">
+                    <div className="relative w-20 h-22 sm:w-28 sm:h-30 md:w-32 md:h-32 shrink-0 bg-gradient-to-b from-emerald-900/10 via-slate-900/5 to-emerald-950/20 rounded-lg sm:rounded-xl p-1.5 flex items-center justify-center overflow-hidden border border-slate-200/80">
                       
                       {/* Ribbon EMI Badge */}
-                      <div className="absolute top-2 left-0 z-20 bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-r-md shadow-md">
+                      <div className="absolute top-1.5 left-0 z-20 bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-r-md shadow-xs">
                         {deal.monthlyEmi}
                       </div>
 
@@ -1989,18 +1989,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       </div>
 
                       {/* Lit Stage Circle */}
-                      <div className="absolute bottom-1 w-20 h-2.5 rounded-full bg-emerald-400/40 blur-[2px]" />
+                      <div className="absolute bottom-1 w-16 h-2 rounded-full bg-emerald-400/40 blur-[2px]" />
                     </div>
 
                     {/* Right: Details, Specs, Pricing & CTA */}
-                    <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex-1 min-w-0 space-y-1">
                       
                       {/* Top Accent Badge */}
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-[10px] font-black uppercase text-[#2E6F40] bg-emerald-100/80 px-2 py-0.5 rounded-md truncate max-w-[120px]">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase text-[#2E6F40] bg-emerald-100/80 px-1.5 py-0.2 rounded truncate max-w-[120px]">
                           {deal.accentBadge}
                         </span>
-                        <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded shrink-0">
+                        <span className="text-[9px] sm:text-[10px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded shrink-0">
                           {deal.discount}
                         </span>
                       </div>
@@ -2009,81 +2009,81 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-tight">
                         {deal.name}
                       </h3>
-                      <p className="text-[11px] text-slate-500 font-semibold truncate">
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate">
                         {deal.subName}
                       </p>
 
                       {/* Pricing Tag */}
-                      <div className="flex items-baseline gap-2 pt-0.5">
-                        <span className="text-base sm:text-lg font-black text-slate-950 tracking-tight">
+                      <div className="flex items-baseline gap-1.5 pt-0.5">
+                        <span className="text-sm sm:text-base md:text-lg font-black text-slate-950 tracking-tight">
                           {deal.startingPrice}
                         </span>
-                        <span className="text-xs text-slate-400 line-through font-bold">
+                        <span className="text-[10px] sm:text-xs text-slate-400 line-through font-bold">
                           {deal.mrp}
                         </span>
                       </div>
 
                       {/* Offer Note */}
-                      <p className="text-[10px] text-emerald-800 font-bold truncate">
+                      <p className="text-[9px] sm:text-[10px] text-emerald-800 font-bold truncate">
                         {deal.topTag}
                       </p>
 
                       {/* Action CTA Link */}
-                      <div className="pt-1 flex items-center justify-between text-[11px] font-black text-[#2E6F40] group-hover:text-emerald-800">
+                      <div className="pt-0.5 flex items-center justify-between text-[10px] sm:text-[11px] font-black text-[#2E6F40] group-hover:text-emerald-800">
                         <span>View Deal &amp; Offers</span>
-                        <FontAwesomeIcon icon={faArrowRight} className="text-xs group-hover:translate-x-1 transition-transform" />
+                        <FontAwesomeIcon icon={faArrowRight} className="text-[10px] group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
 
                     {/* Subtle Hover Ring */}
-                    <div className="absolute inset-0 rounded-2xl ring-2 ring-[#2E6F40]/0 group-hover:ring-[#2E6F40]/30 transition-all pointer-events-none" />
+                    <div className="absolute inset-0 rounded-xl sm:rounded-2xl ring-2 ring-[#2E6F40]/0 group-hover:ring-[#2E6F40]/30 transition-all pointer-events-none" />
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* =========================================================================
-                4. MATCHING PRODUCTS CATALOG SHELF (Grid Layout)
+                4. MATCHING PRODUCTS CATALOG SHELF (Grid Layout - Compact Mobile Flow)
             ========================================================================= */}
             {matchedCatalogProducts.length > 0 && (
-              <div className="bg-white p-4 sm:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+              <div className="bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border border-slate-200/90 space-y-2.5 sm:space-y-3.5 md:space-y-4">
+                <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
                   <div>
-                    <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                      <span className="w-2.5 h-6 bg-blue-600 rounded-full" />
+                    <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
+                      <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-blue-600 rounded-full" />
                       <span>
                         {activeKey === "for-you"
-                          ? "✨ Recommended & Products Matching Your Recent Searches"
+                          ? "✨ Recommended For You"
                           : selectedBrand 
-                          ? `All Products Matching "${selectedBrand}"` 
+                          ? `All "${selectedBrand}" Products` 
                           : `${config.categoryHeading} Catalog`}
                       </span>
-                      <span className="text-xs font-bold text-slate-400 font-mono">
-                        ({matchedCatalogProducts.length} items)
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-400 font-mono">
+                        ({matchedCatalogProducts.length})
                       </span>
                     </h2>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
                       {activeKey === "for-you"
-                        ? "Personalized dynamically based on the products and keywords you searched"
-                        : "Verified authentic items with fast delivery and official warranty"}
+                        ? "Personalized dynamically based on your search history"
+                        : "Verified authentic items with fast delivery"}
                     </p>
                   </div>
                 </div>
 
                 {/* Recent Searches Pills when in For You mode */}
                 {activeKey === "for-you" && recentSearches.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap p-3 rounded-2xl bg-blue-50/60 border border-blue-100">
-                    <span className="text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
-                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs text-blue-600" />
-                      <span>Your Recent Searches:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100">
+                    <span className="text-[11px] sm:text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
+                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-[10px] sm:text-xs text-blue-600" />
+                      <span>Recent:</span>
                     </span>
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
                       {recentSearches.map((term, sIdx) => (
                         <button
                           key={sIdx}
                           type="button"
                           onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`)}
-                          className="px-2.5 py-1 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                          className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                         >
                           {term}
                         </button>
@@ -2092,7 +2092,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                   {matchedCatalogProducts.map((product) => (
                     <ProductCard key={product.id} product={product} viewMode="grid" />
                   ))}

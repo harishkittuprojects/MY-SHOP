@@ -9,7 +9,7 @@ function Content() {
   const categoryFilter = searchParams.get("category");
 
   return (
-    <div className="w-full md:container px-0 md:px-4 py-2 sm:py-6 md:py-8">
+    <div className="w-full max-w-[1440px] mx-auto px-1 sm:px-3 md:px-4 py-1 sm:py-3 md:py-6">
       {/* Amazon-style Grand Festive Showcase with Category Tree, Banners & Spotlight Deals */}
       <AmazonFestiveShowcase category={categoryFilter} />
     </div>

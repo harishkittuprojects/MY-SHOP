@@ -271,16 +271,16 @@ export default function ProductCard({
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2.5 sm:p-3.5 ${
+          className={`group h-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2 sm:p-3.5 ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
           <div>
             {/* 1. FIXED-HEIGHT IMAGE CONTAINER */}
-            <div className="relative w-full h-36 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-xl flex items-center justify-center p-2 sm:p-3 overflow-hidden mb-2.5 shrink-0 border border-slate-100/80">
+            <div className="relative w-full h-32 xs:h-36 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-lg sm:rounded-xl flex items-center justify-center p-1.5 sm:p-3 overflow-hidden mb-2 sm:mb-2.5 shrink-0 border border-slate-100/80">
               {/* Discount Badge */}
               {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-2 left-2 z-10">
+                <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10">
                   <span className="bg-[#f97316] text-white font-black px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] uppercase tracking-tight shadow-xs">
                     {discountPercent}% OFF
                   </span>
@@ -288,20 +288,20 @@ export default function ProductCard({
               )}
 
               {/* Wishlist Button */}
-              <div className="absolute top-2 right-2 z-10">
+              <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(product as any);
                   }}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
                     isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
                   }`}
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-[11px] sm:text-xs" />
+                  <FontAwesomeIcon icon={faHeart} className="text-[10px] sm:text-xs" />
                 </button>
               </div>
 
@@ -311,7 +311,7 @@ export default function ProductCard({
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
+                  className="object-contain p-1.5 sm:p-2 group-hover:scale-105 transition-transform duration-300" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />
@@ -332,7 +332,7 @@ export default function ProductCard({
             {/* 2. PRODUCT DETAILS SECTION */}
             {/* Category / Assured Tag */}
             <div className="flex items-center justify-between gap-1 mb-1">
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[110px]">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[100px] sm:max-w-[110px]">
                 {displayCategory}
               </span>
               <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black italic text-[#2874f0]">
@@ -342,12 +342,12 @@ export default function ProductCard({
             </div>
 
             {/* Reserved Fixed-Height Product Title */}
-            <h3 className="h-9 sm:h-10 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
+            <h3 className="h-8 sm:h-10 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
               {product.name}
             </h3>
 
             {/* Ratings & Reviews Row */}
-            <div className="flex items-center gap-1.5 mb-1.5">
+            <div className="flex items-center gap-1.5 mb-1 sm:mb-1.5">
               <div className="bg-[#388e3c] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
                 <span>{ratingScore}</span>
                 <FontAwesomeIcon icon={faStar} className="text-[7px]" />
@@ -376,32 +376,32 @@ export default function ProductCard({
           </div>
 
           {/* 3. CONSISTENT BOTTOM ACTION BUTTONS (MY SHOP Brand Gold & Emerald Green) */}
-          <div className="mt-auto pt-2.5 border-t border-slate-100">
+          <div className="mt-auto pt-2 sm:pt-2.5 border-t border-slate-100">
             {isOutOfStock ? (
               <button
                 disabled
-                className="w-full py-2 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
+                className="w-full py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
               >
                 Out of Stock
               </button>
             ) : (
-              <div className="grid grid-cols-2 gap-1.5 w-full">
+              <div className="grid grid-cols-2 gap-1 sm:gap-1.5 w-full">
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="w-full py-2 px-1 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-2xs border border-[#d4b94a] cursor-pointer"
+                  className="w-full py-1.5 sm:py-2 px-1 rounded-lg sm:rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[10px] sm:text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-2xs border border-[#d4b94a] cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] shrink-0 text-slate-900" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[9px] sm:text-[10px] shrink-0 text-slate-900" />
                   <span className="truncate">Add to Cart</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="w-full py-2 px-1 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer"
+                  className="w-full py-1.5 sm:py-2 px-1 rounded-lg sm:rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[10px] sm:text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer"
                   title="Buy Now"
                 >
-                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] shrink-0 text-white" />
+                  <FontAwesomeIcon icon={faBagShopping} className="text-[9px] sm:text-[10px] shrink-0 text-white" />
                   <span className="truncate">Buy Now</span>
                 </button>
               </div>
