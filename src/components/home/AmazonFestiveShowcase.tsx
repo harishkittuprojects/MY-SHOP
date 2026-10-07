@@ -1201,29 +1201,30 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       {/* =========================================================================
           1. TOP SUB-NAVIGATION BAR (Brand Emerald & White Theme)
       ========================================================================= */}
-      <div className="bg-white border-b border-slate-200 text-xs select-none">
-        <div className="max-w-[1440px] mx-auto px-4 py-2 flex items-center overflow-x-auto whitespace-nowrap scrollbar-none gap-4 sm:gap-6">
+      <div className="bg-white border-b border-slate-200 select-none">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center overflow-x-auto whitespace-nowrap scrollbar-none gap-5 sm:gap-6 text-xs sm:text-[13px] leading-normal min-h-[46px]">
           <Link
             href={categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : "/products"}
-            className="font-black text-[#2E6F40] flex items-center gap-1.5 shrink-0"
+            className="font-black text-[#2E6F40] flex items-center gap-1.5 shrink-0 hover:opacity-85 transition-opacity"
           >
             <span>{config.storeTitle}</span>
-            <FontAwesomeIcon icon={faChevronRight} className="text-[9px] text-[#2E6F40]/60" />
+            <FontAwesomeIcon icon={faChevronRight} className="text-[10px] text-[#2E6F40]/70" />
           </Link>
 
           {config.subNavLinks.map((item, idx) => {
-            const isItemActive = categoryFilter 
-              ? item.href.includes(encodeURIComponent(categoryFilter)) || item.href === `/products?category=${categoryFilter}`
+            const itemSearch = new URLSearchParams(item.href.split("?")[1] || "").get("search");
+            const isItemActive = brandSearch
+              ? itemSearch?.toLowerCase() === brandSearch.toLowerCase()
               : idx === 0;
 
             return (
               <Link
                 key={idx}
                 href={item.href}
-                className={`hover:text-[#2E6F40] transition-colors shrink-0 py-0.5 font-bold ${
+                className={`shrink-0 py-1 font-bold border-b-2 transition-all inline-block ${
                   isItemActive
-                    ? "text-[#2E6F40] border-b-2 border-[#2E6F40] pb-0.5" 
-                    : "text-slate-600 hover:text-[#2E6F40]"
+                    ? "text-[#2E6F40] border-[#2E6F40]" 
+                    : "text-slate-600 border-transparent hover:text-[#2E6F40] hover:border-slate-300"
                 }`}
               >
                 {item.label}
