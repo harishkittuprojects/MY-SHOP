@@ -5,11 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faArrowRight, 
   faPaperPlane, 
-  faStar,
-  faShieldAlt,
-  faTruckFast,
-  faSyncAlt,
-  faCreditCard
+  faStar
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "@/components/common/ProductCard";
 import Link from "next/link";
@@ -94,18 +90,69 @@ const PREDEFINED_CATEGORIES: CategoryConfig[] = [
   }
 ];
 
-// Top App Category Navigation Items (Native Flipkart / Amazon style)
-const TOP_APP_CATEGORIES = [
-  { id: "deals", name: "Top Deals", icon: "🔥", url: "/products?sort=discount_desc", gradient: "from-amber-500 to-rose-500", isHot: true },
-  { id: "mobiles", name: "Mobiles", icon: "📱", url: "/products?category=Mobiles", gradient: "from-blue-600 to-indigo-600" },
-  { id: "refurbished", name: "Refurbished", icon: "♻️", url: "/products?category=Old%20%2F%20Refurbished%20Mobiles", gradient: "from-teal-600 to-emerald-600" },
-  { id: "accessories", name: "Accessories", icon: "🔌", url: "/products?category=Mobile%20Accessories", gradient: "from-cyan-600 to-blue-600" },
-  { id: "smart-tech", name: "Smart Tech", icon: "💡", url: "/products?category=Smart%20Technology", gradient: "from-violet-600 to-purple-600" },
-  { id: "fashion", name: "Fashion", icon: "👗", url: "/products?category=Fashion", gradient: "from-pink-500 to-rose-600" },
-  { id: "jewellery", name: "Jewellery", icon: "💎", url: "/products?category=Jewellery", gradient: "from-amber-400 to-yellow-600" },
-  { id: "ev", name: "EV Scooters", icon: "⚡", url: "/products?category=EV%20Vehicles", gradient: "from-emerald-500 to-teal-700" },
-  { id: "laptops", name: "Laptops", icon: "💻", url: "/products?category=Computers%20%26%20Tablets", gradient: "from-slate-700 to-slate-900" },
-  { id: "appliances", name: "Appliances", icon: "🍳", url: "/products?category=Kitchen%20Appliances", gradient: "from-orange-500 to-amber-600" },
+// Top Flipkart-Style Category Navigation Rail with Real Product Photo Thumbnails
+const FLIPKART_APP_CATEGORIES = [
+  { 
+    id: "deals", 
+    name: "Top Deals", 
+    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?sort=discount_desc",
+    isHot: true 
+  },
+  { 
+    id: "mobiles", 
+    name: "Mobiles", 
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Mobiles" 
+  },
+  { 
+    id: "refurbished", 
+    name: "Refurbished", 
+    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles" 
+  },
+  { 
+    id: "accessories", 
+    name: "Accessories", 
+    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Mobile%20Accessories" 
+  },
+  { 
+    id: "smart-tech", 
+    name: "Smart Tech", 
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200" , 
+    url: "/products?category=Smart%20Technology" 
+  },
+  { 
+    id: "laptops", 
+    name: "Laptops", 
+    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Computers%20%26%20Tablets" 
+  },
+  { 
+    id: "fashion", 
+    name: "Fashion", 
+    image: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Fashion" 
+  },
+  { 
+    id: "jewellery", 
+    name: "Jewellery", 
+    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Jewellery" 
+  },
+  { 
+    id: "ev", 
+    name: "EV Scooters", 
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=EV%20Vehicles" 
+  },
+  { 
+    id: "appliances", 
+    name: "Appliances", 
+    image: "https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Kitchen%20Appliances" 
+  },
 ];
 
 export default function HomeContent() {
@@ -328,22 +375,32 @@ export default function HomeContent() {
   }, [products]);
 
   return (
-    <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 pb-8 md:pb-12 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+    <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 pb-8 md:pb-12 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
       
-      {/* 1. TOP APP HORIZONTAL CATEGORY RAIL (Sleek Flipkart/Amazon App Style) */}
-      <section className="w-full bg-white border-b border-slate-200/80 shadow-2xs py-2 sm:py-2.5 px-2 sm:px-4 select-none">
+      {/* 1. HERO BANNER CAROUSEL (Directly under Header) */}
+      <Hero />
+
+      {/* 2. FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Right under Banner) */}
+      <section className="w-full bg-white border-y border-slate-200/80 py-2 sm:py-2.5 px-2 sm:px-4 select-none">
         <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-3 sm:gap-5 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
-            {TOP_APP_CATEGORIES.map((cat) => (
+          <div className="flex items-center gap-3.5 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
+            {FLIPKART_APP_CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
                 href={cat.url}
-                className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[58px] sm:min-w-[68px] md:min-w-[76px] cursor-pointer"
+                className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[56px] sm:min-w-[66px] md:min-w-[74px] cursor-pointer"
               >
-                {/* Modern Pill Avatar with Gradient Background */}
+                {/* Flipkart Style Circular Photo Avatar */}
                 <div className="relative">
-                  <div className={`w-12 h-12 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center text-xl sm:text-2xl shadow-xs group-hover:scale-105 group-hover:shadow-md transition-all duration-200`}>
-                    <span className="drop-shadow-sm">{cat.icon}</span>
+                  <div className="w-13 h-13 sm:w-15 sm:h-15 md:w-16 md:h-16 rounded-full bg-slate-50 border border-slate-200/90 overflow-hidden shadow-2xs group-hover:scale-105 group-hover:border-emerald-500 group-hover:shadow-sm transition-all duration-200 relative flex items-center justify-center">
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      sizes="64px"
+                      unoptimized
+                    />
                   </div>
                   {cat.isHot && (
                     <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full border border-white shadow-xs animate-pulse">
@@ -352,8 +409,8 @@ export default function HomeContent() {
                   )}
                 </div>
 
-                {/* Micro Label */}
-                <span className="mt-1 text-[11px] sm:text-xs font-bold text-slate-700 text-center tracking-tight group-hover:text-[#2E6F40] transition-colors whitespace-nowrap">
+                {/* Clean Label */}
+                <span className="mt-1.5 text-[11px] sm:text-xs font-bold text-slate-800 text-center tracking-tight group-hover:text-[#2E6F40] transition-colors whitespace-nowrap">
                   {cat.name}
                 </span>
               </Link>
@@ -362,63 +419,13 @@ export default function HomeContent() {
         </div>
       </section>
 
-      {/* 2. Main Hero Banner Carousel */}
-      <Hero />
-
-      {/* 3. APP VALUE & TRUST BADGE STRIP (Clean Single Row) */}
-      <section className="w-full max-w-[1440px] mx-auto px-2 sm:px-3 md:px-4">
-        <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2 sm:py-2.5 px-3 sm:px-6 shadow-2xs">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
-            <div className="flex items-center gap-2 sm:gap-2.5 py-1 sm:py-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 text-[#2E6F40] flex items-center justify-center text-xs sm:text-sm flex-shrink-0">
-                <FontAwesomeIcon icon={faTruckFast} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">Express Delivery</p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Same Day Dispatch</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-2.5 py-1 sm:py-0 sm:pl-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs sm:text-sm flex-shrink-0">
-                <FontAwesomeIcon icon={faShieldAlt} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">100% Genuine</p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Official Warranty</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-2.5 py-1 sm:py-0 sm:pl-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs sm:text-sm flex-shrink-0">
-                <FontAwesomeIcon icon={faSyncAlt} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">Easy Exchange</p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Instant Value Bonus</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-2.5 py-1 sm:py-0 sm:pl-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs sm:text-sm flex-shrink-0">
-                <FontAwesomeIcon icon={faCreditCard} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">No Cost EMI</p>
-                <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">All Major Cards</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. DYNAMIC CATEGORY PRODUCT SHELVES (Clean, High-Contrast App Shelves) */}
-      <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4">
+      {/* 3. DYNAMIC CATEGORY PRODUCT SHELVES (Immediately below category rail) */}
+      <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 mt-0.5">
         {isLoading ? (
           // Loading skeleton placeholder shelves
           [...Array(3)].map((_, i) => (
             <section key={i} className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
-              <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3 sm:p-4 shadow-2xs">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-3 sm:p-4 shadow-2xs">
                 <div className="h-6 w-48 bg-slate-200 rounded-lg animate-pulse mb-3" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                   {[...Array(4)].map((_, j) => (
@@ -440,17 +447,17 @@ export default function HomeContent() {
               >
                 <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
                   
-                  {/* Category Section Header (Clean App Bar) */}
-                  <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                  {/* Category Section Header */}
+                  <div className="px-3.5 py-2.5 sm:px-5 sm:py-3 border-b border-slate-100 flex items-center justify-between gap-2">
                     
                     {/* Left: Title & Badge */}
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-base flex-shrink-0 shadow-2xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-base sm:text-lg flex-shrink-0 shadow-2xs">
                         {config.icon}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">
+                          <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">
                             {config.name}
                           </h2>
                           <span className={`text-[8px] sm:text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${config.tagColor} hidden xs:inline-block`}>
@@ -464,7 +471,7 @@ export default function HomeContent() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Link 
                         href={categoryUrl} 
-                        className="bg-[#2E6F40] hover:bg-[#255a33] text-white font-black px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1"
+                        className="bg-[#2E6F40] hover:bg-[#255a33] text-white font-black px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1.5"
                       >
                         <span>View All ({totalCount})</span>
                         <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
@@ -473,7 +480,7 @@ export default function HomeContent() {
                   </div>
 
                   {/* Product Cards Shelf */}
-                  <div className="p-2 sm:p-3 bg-[#fbfcfd]">
+                  <div className="p-2 sm:p-3.5 bg-[#fbfcfd]">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
@@ -488,9 +495,9 @@ export default function HomeContent() {
         )}
       </div>
 
-      {/* 5. The Journey of MY SHOP (Brand Story & Trust) */}
+      {/* 4. The Journey of MY SHOP (Brand Story & Trust) */}
       <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-1 sm:py-2">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-center bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-2xs">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-center bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-2xs">
           <div className="relative aspect-16/10 sm:aspect-square rounded-xl overflow-hidden shadow-md bg-slate-100">
             <Image 
               src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1200" 
@@ -536,9 +543,9 @@ export default function HomeContent() {
         </div>
       </section>
 
-      {/* 6. Customer Support & Inquiry Section */}
+      {/* 5. Customer Support & Inquiry Section */}
       <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-1 sm:py-2">
-        <div className="bg-gradient-to-br from-[#2E6F40]/10 via-emerald-500/5 to-[#2E6F40]/5 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 flex flex-col lg:flex-row items-center gap-4 md:gap-6 border border-[#2E6F40]/20 shadow-2xs">
+        <div className="bg-gradient-to-br from-[#2E6F40]/10 via-emerald-500/5 to-[#2E6F40]/5 rounded-2xl p-3.5 sm:p-6 flex flex-col lg:flex-row items-center gap-4 md:gap-6 border border-[#2E6F40]/20 shadow-2xs">
           <div className="flex-1">
             <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#2E6F40] mb-1 block">
               Customer Support &amp; Orders
@@ -607,7 +614,7 @@ export default function HomeContent() {
         </div>
       </section>
 
-      {/* 7. Verified Customer Reviews */}
+      {/* 6. Verified Customer Reviews */}
       <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-1 sm:py-2">
         <div className="flex items-center justify-between mb-2 sm:mb-3">
           <h2 className="text-sm sm:text-base md:text-lg font-black flex items-center gap-2 text-slate-900">

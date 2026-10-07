@@ -170,14 +170,7 @@ export default function Navbar() {
         isScrolled ? "py-0 shadow-md" : "py-0 shadow-sm"
       }`}
     >
-      {/* Horizontal Announcement Bar */}
-      <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isScrolled ? "max-h-0 opacity-0 -translate-y-2 pointer-events-none" : "max-h-14 opacity-100 translate-y-0"
-        }`}
-      >
-        <StreamingTagline />
-      </div>
+
 
       <div className={`container transition-all duration-300 flex items-center justify-between gap-2 sm:gap-4 relative ${isScrolled ? "py-1.5" : "py-1.5 md:py-2"}`}>
         {/* Left Section: Logo */}

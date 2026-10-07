@@ -9,12 +9,10 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { addRecentlyViewedProduct } from "@/lib/recentHistory";
 import { 
-  faStar, 
   faCartPlus, 
   faHeart, 
-  faShieldHalved,
-  faBagShopping,
-  faBolt
+  faBolt,
+  faBagShopping
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -69,8 +67,6 @@ export default function ProductCard({
     ? product.original_price 
     : Math.round(product.price * 1.18);
   const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
-  const reviewsCount = product.reviews_count ?? (product.rating ? Math.round((product.rating * 28)) : 125);
-  const ratingScore = product.rating ? Number(product.rating).toFixed(1) : "4.7";
 
   React.useEffect(() => {
     setImgSrc(displayImage);
@@ -139,15 +135,15 @@ export default function ProductCard({
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/80 hover:border-[#2E6F40]/40 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
+          className={`group bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
-          {/* Square Image Container */}
-          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-slate-50/80 rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
+          {/* Flush Edge-to-Edge Image Box */}
+          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-[#f8fafc] rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
             {discountPercent > 0 && !isOutOfStock && (
               <div className="absolute top-2 left-2 z-10">
-                <span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-1">
+                <span className="bg-emerald-600 text-white font-black px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-1">
                   <FontAwesomeIcon icon={faBolt} className="text-[8px]" />
                   <span>{discountPercent}% OFF</span>
                 </span>
@@ -183,7 +179,7 @@ export default function ProductCard({
 
             {isOutOfStock && (
               <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-20">
-                <span className="bg-red-600 text-white font-black px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider">
+                <span className="bg-red-600 text-white font-black px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider">
                   Out of Stock
                 </span>
               </div>
@@ -193,22 +189,7 @@ export default function ProductCard({
           {/* Details Column */}
           <div className="flex-1 flex flex-col justify-between min-w-0">
             <div>
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  {displayCategory}
-                </span>
-                <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-2xs">
-                  <span>{ratingScore}</span>
-                  <FontAwesomeIcon icon={faStar} className="text-[7px]" />
-                </div>
-                <span className="text-xs text-slate-400 font-medium">({reviewsCount})</span>
-                <div className="flex items-center gap-0.5 text-[10px] font-black italic text-[#2874f0]">
-                  <FontAwesomeIcon icon={faShieldHalved} className="text-[9px]" />
-                  <span>Assured</span>
-                </div>
-              </div>
-
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug mb-1">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug mb-2">
                 {product.name}
               </h3>
 
@@ -233,24 +214,25 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* List Action Buttons */}
-            <div className="flex items-center gap-2 max-w-xs">
+            {/* List Action Buttons (Equal Proportion) */}
+            <div className="grid grid-cols-2 gap-2 max-w-xs">
               <button
                 type="button"
                 onClick={handleDirectAddToCart}
                 disabled={isOutOfStock}
-                className={`w-10 h-10 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 flex items-center justify-center shrink-0 active:scale-95 transition-all shadow-2xs cursor-pointer ${
+                className={`py-2 px-3 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 font-black text-xs border border-[#d4b94a] flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs transition-all cursor-pointer ${
                   isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 title="Add to Cart"
               >
-                <FontAwesomeIcon icon={faCartPlus} className="text-sm text-amber-800" />
+                <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
+                <span>Add</span>
               </button>
               <button
                 type="button"
                 onClick={handleDirectBuyNow}
                 disabled={isOutOfStock}
-                className={`flex-1 h-10 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer ${
+                className={`py-2 px-3 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer ${
                   isOutOfStock ? "bg-slate-200 text-slate-400 cursor-not-allowed hover:bg-slate-200" : ""
                 }`}
               >
@@ -261,55 +243,55 @@ export default function ProductCard({
           </div>
         </div>
       ) : (
-        /* ===================== ULTRA-PREMIUM GRID CARD ===================== */
+        /* ===================== ZEPTO-STYLE EDGE-TO-EDGE GRID CARD ===================== */
         <div 
           onClick={() => {
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group h-full bg-white rounded-2xl border border-slate-200/80 hover:border-[#2E6F40]/50 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(46,111,64,0.1)] transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2 sm:p-3 ${
+          className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
           <div>
-            {/* 1. SQUARE CLEAN IMAGE WRAPPER */}
-            <div className="relative w-full aspect-square bg-slate-50/70 rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2 shrink-0 border border-slate-100/90 group-hover:bg-slate-50/40 transition-colors">
+            {/* 1. FLUSH TOP EDGE-TO-EDGE IMAGE CANVAS (Zepto Style - No Nested Congested Box) */}
+            <div className="relative w-full aspect-square bg-[#f8fafc] overflow-hidden flex items-center justify-center p-2.5 border-b border-slate-100">
               
-              {/* Sleek Floating Discount Badge */}
+              {/* Discount Badge */}
               {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-1.5 left-1.5 z-10">
-                  <span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] uppercase tracking-wider shadow-xs flex items-center gap-0.5">
+                <div className="absolute top-2 left-2 z-10">
+                  <span className="bg-emerald-600 text-white font-black px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-0.5">
                     <FontAwesomeIcon icon={faBolt} className="text-[7px]" />
                     <span>{discountPercent}% OFF</span>
                   </span>
                 </div>
               )}
 
-              {/* Glassmorphic Wishlist Button */}
-              <div className="absolute top-1.5 right-1.5 z-10">
+              {/* Wishlist Heart Button */}
+              <div className="absolute top-2 right-2 z-10">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(product as any);
                   }}
-                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
                     isWishlisted ? "bg-rose-50 text-rose-500 border-rose-200" : ""
                   }`}
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-[10px]" />
+                  <FontAwesomeIcon icon={faHeart} className="text-[11px]" />
                 </button>
               </div>
 
-              {/* Centered Product Image */}
+              {/* Centered Large Non-Congested Product Image */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain p-1.5 sm:p-2 group-hover:scale-105 transition-transform duration-300" 
+                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />
@@ -320,61 +302,41 @@ export default function ProductCard({
               {/* Out of Stock Overlay */}
               {isOutOfStock && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-20">
-                  <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] uppercase tracking-wider shadow-sm">
+                  <span className="bg-red-600 text-white font-black px-2.5 py-1 rounded-md text-[9px] uppercase tracking-wider shadow-sm">
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
 
-            {/* 2. PRODUCT DETAILS */}
-            {/* Category / Assured Tag */}
-            <div className="flex items-center justify-between gap-1 mb-1">
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate max-w-[100px]">
-                {displayCategory}
-              </span>
-              <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black italic text-[#2874f0]">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-[8px]" />
-                <span>Assured</span>
-              </div>
-            </div>
+            {/* 2. PRODUCT DETAILS (Clean & Focused) */}
+            <div className="p-2.5 sm:p-3">
+              {/* Product Title */}
+              <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug tracking-tight mb-1">
+                {product.name}
+              </h3>
 
-            {/* Product Title */}
-            <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-tight tracking-tight mb-1">
-              {product.name}
-            </h3>
-
-            {/* Ratings & Reviews */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="bg-[#388e3c] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded flex items-center gap-0.5 shadow-2xs">
-                <span>{ratingScore}</span>
-                <FontAwesomeIcon icon={faStar} className="text-[7px]" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-                ({reviewsCount})
-              </span>
-            </div>
-
-            {/* Price, MRP & Discount */}
-            <div className="flex items-baseline gap-1.5 flex-wrap mb-1">
-              <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
-                ₹{Math.floor(product.price).toLocaleString("en-IN")}
-              </span>
-              {originalPrice > product.price && (
-                <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
-                  ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
+              {/* Price, MRP & Discount Row */}
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
+                  ₹{Math.floor(product.price).toLocaleString("en-IN")}
                 </span>
-              )}
-              {discountPercent > 0 && (
-                <span className="text-[10px] sm:text-xs font-bold text-emerald-600">
-                  {discountPercent}% off
-                </span>
-              )}
+                {originalPrice > product.price && (
+                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
+                    ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
+                  </span>
+                )}
+                {discountPercent > 0 && (
+                  <span className="text-[10px] sm:text-xs font-bold text-emerald-600">
+                    {discountPercent}% off
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* 3. PREMIUM ACTION BUTTONS (Icon Cart + Full-Width Buy Now) */}
-          <div className="mt-auto pt-2 border-t border-slate-100/90">
+          {/* 3. EQUAL PROPORTION ACTION BUTTONS (50% Add / 50% Buy Now) */}
+          <div className="px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-0">
             {isOutOfStock ? (
               <button
                 disabled
@@ -383,19 +345,20 @@ export default function ProductCard({
                 Out of Stock
               </button>
             ) : (
-              <div className="flex items-center gap-1.5 w-full">
+              <div className="grid grid-cols-2 gap-1.5 w-full">
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-2xs cursor-pointer"
+                  className="py-1.5 sm:py-2 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 font-black text-[11px] sm:text-xs border border-[#d4b94a] flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-xs text-amber-800" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] text-slate-900" />
+                  <span>Add</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="flex-1 h-8 sm:h-9 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 active:scale-95 shadow-xs cursor-pointer"
+                  className="py-1.5 sm:py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 active:scale-95 shadow-xs transition-all cursor-pointer"
                   title="Buy Now"
                 >
                   <FontAwesomeIcon icon={faBagShopping} className="text-[10px]" />
