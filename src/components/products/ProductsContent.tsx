@@ -182,8 +182,8 @@ function Content() {
 
   const activeCategoryObj = categories.find(
     (c) =>
-      c.name.toLowerCase() === categoryFilter?.toLowerCase() ||
-      c.id.toLowerCase() === categoryFilter?.toLowerCase()
+      c?.name?.toLowerCase() === categoryFilter?.toLowerCase() ||
+      (c?.id && String(c.id).toLowerCase() === categoryFilter?.toLowerCase())
   );
 
   const activeSubcategories = useMemo(() => {
