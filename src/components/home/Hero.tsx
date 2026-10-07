@@ -138,16 +138,16 @@ export default function Hero() {
                   <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl sm:rounded-2xl md:rounded-3xl pointer-events-none" />
                 </Link>
 
-                {/* Mobile Floating "Shop Now" Action Badge (madur.in style) */}
+                {/* Mobile Floating "Shop Now" Action Badge */}
                 <div className="absolute bottom-3 left-3 z-10 block md:hidden pointer-events-auto">
                   <Link 
                     href={slide.link || "/products"} 
-                    className="bg-secondary text-white font-black px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 active:scale-95 border border-white/20"
+                    className="bg-white hover:bg-slate-50 text-slate-900 font-black px-3.5 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 active:scale-95 border border-white/80"
                   >
-                    <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center text-white">
+                    <div className="w-4 h-4 bg-slate-900 rounded-full flex items-center justify-center text-white">
                       <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">
                       Shop Now
                     </span>
                   </Link>

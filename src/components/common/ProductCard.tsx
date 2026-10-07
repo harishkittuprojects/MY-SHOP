@@ -139,19 +139,23 @@ export default function ProductCard({
           }`}
         >
           {/* Flush Edge-to-Edge Image Box */}
-          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-slate-100 shrink-0 overflow-hidden">
+          <div className="relative w-full sm:w-48 md:w-56 h-48 sm:h-52 bg-slate-100 shrink-0 overflow-hidden">
+            {/* Pure Heart Icon without Circular Background */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleWishlist(product as any);
               }}
-              className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
-                isWishlisted ? "bg-rose-50 text-rose-500" : ""
-              }`}
+              className="absolute top-2.5 right-2.5 z-10 p-1 active:scale-75 transition-transform cursor-pointer"
               title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
             >
-              <FontAwesomeIcon icon={faHeart} className="text-xs" />
+              <FontAwesomeIcon 
+                icon={faHeart} 
+                className={`text-lg sm:text-xl transition-colors ${
+                  isWishlisted ? "text-rose-500 drop-shadow-sm" : "text-white/80 hover:text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                }`} 
+              />
             </button>
 
             {imgSrc ? (
@@ -204,7 +208,7 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* List Action Buttons (Equal Proportion) */}
+            {/* List Action Buttons (Equal Proportion, White Buy Now Button) */}
             <div className="grid grid-cols-2 gap-2 max-w-xs">
               <button
                 type="button"
@@ -222,8 +226,8 @@ export default function ProductCard({
                 type="button"
                 onClick={handleDirectBuyNow}
                 disabled={isOutOfStock}
-                className={`py-2 px-3 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer ${
-                  isOutOfStock ? "bg-slate-200 text-slate-400 cursor-not-allowed hover:bg-slate-200" : ""
+                className={`py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-black text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs cursor-pointer ${
+                  isOutOfStock ? "bg-slate-100 text-slate-400 cursor-not-allowed" : ""
                 }`}
               >
                 <FontAwesomeIcon icon={faBagShopping} className="text-xs" />
@@ -233,7 +237,7 @@ export default function ProductCard({
           </div>
         </div>
       ) : (
-        /* ===================== ZEPTO-STYLE EDGE-TO-EDGE FULL-BLEED GRID CARD ===================== */
+        /* ===================== ZEPTO-STYLE 70% IMAGE / 30% CONTENT GRID CARD ===================== */
         <div 
           onClick={() => {
             addRecentlyViewedProduct(product.id);
@@ -244,28 +248,33 @@ export default function ProductCard({
           }`}
         >
           <div>
-            {/* 1. FLUSH TOP EDGE-TO-EDGE IMAGE (Zepto Style - Zero Inner Padding, Touches Card Borders) */}
-            <div className="relative w-full aspect-[4/3] xs:aspect-square bg-slate-100 overflow-hidden">
+            {/* 1. 70% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Tall 4/5 Aspect Ratio) */}
+            <div className="relative w-full aspect-[4/5] bg-slate-100 overflow-hidden">
               
-              {/* Floating Glassmorphic Wishlist Heart Button */}
-              <div className="absolute top-2 right-2 z-10">
+              {/* Pure Floating Wishlist Heart (No Circular Background) */}
+              <div className="absolute top-2.5 right-2.5 z-10">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(product as any);
                   }}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-md bg-white/95 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
-                    isWishlisted ? "bg-rose-50 text-rose-500 border-rose-200" : ""
-                  }`}
+                  className="p-1 active:scale-75 transition-transform cursor-pointer"
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-[11px]" />
+                  <FontAwesomeIcon 
+                    icon={faHeart} 
+                    className={`text-lg transition-colors ${
+                      isWishlisted 
+                        ? "text-rose-500 drop-shadow-sm" 
+                        : "text-white/80 hover:text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                    }`} 
+                  />
                 </button>
               </div>
 
-              {/* Full-Bleed Product Image (Touches Top, Left, and Right Card Edges) */}
+              {/* Full-Bleed Product Image (Occupies 70% of the Card) */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
@@ -289,10 +298,10 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* 2. PRODUCT DETAILS (Clean & Focused) */}
-            <div className="p-2.5 sm:p-3">
+            {/* 2. 30% COMPACT PRODUCT DETAILS */}
+            <div className="p-2 sm:p-2.5">
               {/* Product Title */}
-              <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug tracking-tight mb-1">
+              <h3 className="h-7 sm:h-8 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-tight tracking-tight mb-1">
                 {product.name}
               </h3>
 
@@ -315,8 +324,8 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* 3. EQUAL PROPORTION ACTION BUTTONS (50% Add / 50% Buy Now) */}
-          <div className="px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-0">
+          {/* 3. EQUAL PROPORTION ACTION BUTTONS (White Buy Now Button) */}
+          <div className="px-2 sm:px-2.5 pb-2 sm:pb-2.5 pt-0">
             {isOutOfStock ? (
               <button
                 disabled
@@ -338,7 +347,7 @@ export default function ProductCard({
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="py-1.5 sm:py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 active:scale-95 shadow-xs transition-all cursor-pointer"
+                  className="py-1.5 sm:py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
                   title="Buy Now"
                 >
                   <FontAwesomeIcon icon={faBagShopping} className="text-[10px]" />
