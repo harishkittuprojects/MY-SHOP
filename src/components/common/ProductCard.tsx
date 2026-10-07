@@ -10,15 +10,13 @@ import { useWishlist } from "@/context/WishlistContext";
 import { addRecentlyViewedProduct } from "@/lib/recentHistory";
 import { 
   faStar, 
-  faBolt, 
-  faEye, 
   faCartPlus, 
   faHeart, 
   faShieldHalved,
-  faBagShopping
+  faBagShopping,
+  faBolt
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 interface Product {
   id: string;
@@ -64,7 +62,7 @@ export default function ProductCard({
 
   const displayImage = normalizeImageUrl(product.image_url || product.image);
   const [imgSrc, setImgSrc] = useState(displayImage);
-  const displayCategory = product.categories?.name || product.category || "Smartphones";
+  const displayCategory = product.categories?.name || product.category || "Mobiles";
   const isOutOfStock = product.is_out_of_stock;
 
   const originalPrice = product.original_price && product.original_price > product.price 
@@ -77,12 +75,6 @@ export default function ProductCard({
   React.useEffect(() => {
     setImgSrc(displayImage);
   }, [displayImage]);
-
-  const handleOpenModal = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isOutOfStock) return;
-    setIsModalOpen(true);
-  };
 
   const handleDirectAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -143,17 +135,21 @@ export default function ProductCard({
       {viewMode === "list" ? (
         /* ===================== LIST VIEW CARD ===================== */
         <div 
-          onClick={() => router.push(`/products/${product.id}`)}
-          className={`group bg-white rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
+          onClick={() => {
+            addRecentlyViewedProduct(product.id);
+            router.push(`/products/${product.id}`);
+          }}
+          className={`group bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/80 hover:border-[#2E6F40]/40 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
-          {/* Fixed-Height / Square Image Container */}
-          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
+          {/* Square Image Container */}
+          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-slate-50/80 rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
             {discountPercent > 0 && !isOutOfStock && (
               <div className="absolute top-2 left-2 z-10">
-                <span className="bg-[#f97316] text-white font-black px-2 py-0.5 rounded-md text-[10px] uppercase tracking-tight shadow-xs">
-                  {discountPercent}% OFF
+                <span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-1">
+                  <FontAwesomeIcon icon={faBolt} className="text-[8px]" />
+                  <span>{discountPercent}% OFF</span>
                 </span>
               </div>
             )}
@@ -164,8 +160,8 @@ export default function ProductCard({
                 e.stopPropagation();
                 toggleWishlist(product as any);
               }}
-              className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
-                isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
+              className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
+                isWishlisted ? "bg-rose-50 text-rose-500" : ""
               }`}
               title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
             >
@@ -186,8 +182,8 @@ export default function ProductCard({
             )}
 
             {isOutOfStock && (
-              <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20">
-                <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded text-[9px] uppercase tracking-wide">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-20">
+                <span className="bg-red-600 text-white font-black px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider">
                   Out of Stock
                 </span>
               </div>
@@ -198,10 +194,10 @@ export default function ProductCard({
           <div className="flex-1 flex flex-col justify-between min-w-0">
             <div>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   {displayCategory}
                 </span>
-                <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+                <div className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-2xs">
                   <span>{ratingScore}</span>
                   <FontAwesomeIcon icon={faStar} className="text-[7px]" />
                 </div>
@@ -212,7 +208,7 @@ export default function ProductCard({
                 </div>
               </div>
 
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug mb-1">
                 {product.name}
               </h3>
 
@@ -226,35 +222,35 @@ export default function ProductCard({
                 ₹{Math.floor(product.price).toLocaleString("en-IN")}
               </span>
               {originalPrice > product.price && (
-                <span className="text-xs text-slate-400 line-through font-medium">
+                <span className="text-xs text-slate-400 line-through font-normal">
                   ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="text-xs font-bold text-[#388e3c]">
+                <span className="text-xs font-bold text-emerald-600">
                   {discountPercent}% off
                 </span>
               )}
             </div>
 
-            {/* List Action Buttons (MY SHOP Brand Gold & Emerald Green) */}
+            {/* List Action Buttons */}
             <div className="flex items-center gap-2 max-w-xs">
               <button
                 type="button"
                 onClick={handleDirectAddToCart}
                 disabled={isOutOfStock}
-                className={`flex-1 font-black py-2 px-3 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 border border-[#d4b94a] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs cursor-pointer ${
-                  isOutOfStock ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed" : ""
+                className={`w-10 h-10 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 flex items-center justify-center shrink-0 active:scale-95 transition-all shadow-2xs cursor-pointer ${
+                  isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
                 }`}
+                title="Add to Cart"
               >
-                <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
-                <span>Add to Cart</span>
+                <FontAwesomeIcon icon={faCartPlus} className="text-sm text-amber-800" />
               </button>
               <button
                 type="button"
                 onClick={handleDirectBuyNow}
                 disabled={isOutOfStock}
-                className={`flex-1 font-black py-2 px-3 rounded-xl bg-[#2E6F40] text-white hover:bg-[#245e35] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer ${
+                className={`flex-1 h-10 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer ${
                   isOutOfStock ? "bg-slate-200 text-slate-400 cursor-not-allowed hover:bg-slate-200" : ""
                 }`}
               >
@@ -265,47 +261,49 @@ export default function ProductCard({
           </div>
         </div>
       ) : (
-        /* ===================== AMAZON / FLIPKART STYLE RECTANGULAR BOX GRID CARD ===================== */
+        /* ===================== ULTRA-PREMIUM GRID CARD ===================== */
         <div 
           onClick={() => {
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group h-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2 sm:p-3.5 ${
+          className={`group h-full bg-white rounded-2xl border border-slate-200/80 hover:border-[#2E6F40]/50 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(46,111,64,0.1)] transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2 sm:p-3 ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
           <div>
-            {/* 1. FIXED-HEIGHT IMAGE CONTAINER */}
-            <div className="relative w-full h-32 xs:h-36 sm:h-44 md:h-48 bg-[#f8fafc] sm:bg-[#fafafa] rounded-lg sm:rounded-xl flex items-center justify-center p-1.5 sm:p-3 overflow-hidden mb-2 sm:mb-2.5 shrink-0 border border-slate-100/80">
-              {/* Discount Badge */}
+            {/* 1. SQUARE CLEAN IMAGE WRAPPER */}
+            <div className="relative w-full aspect-square bg-slate-50/70 rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2 shrink-0 border border-slate-100/90 group-hover:bg-slate-50/40 transition-colors">
+              
+              {/* Sleek Floating Discount Badge */}
               {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10">
-                  <span className="bg-[#f97316] text-white font-black px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] uppercase tracking-tight shadow-xs">
-                    {discountPercent}% OFF
+                <div className="absolute top-1.5 left-1.5 z-10">
+                  <span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] uppercase tracking-wider shadow-xs flex items-center gap-0.5">
+                    <FontAwesomeIcon icon={faBolt} className="text-[7px]" />
+                    <span>{discountPercent}% OFF</span>
                   </span>
                 </div>
               )}
 
-              {/* Wishlist Button */}
-              <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10">
+              {/* Glassmorphic Wishlist Button */}
+              <div className="absolute top-1.5 right-1.5 z-10">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(product as any);
                   }}
-                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs backdrop-blur-xs transition-all active:scale-90 ${
-                    isWishlisted ? "bg-red-50 text-red-500" : "bg-white/90 text-slate-400 hover:text-red-500"
+                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
+                    isWishlisted ? "bg-rose-50 text-rose-500 border-rose-200" : ""
                   }`}
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   title={isWishlisted ? "In your Wishlist" : "Add to Wishlist"}
                 >
-                  <FontAwesomeIcon icon={faHeart} className="text-[10px] sm:text-xs" />
+                  <FontAwesomeIcon icon={faHeart} className="text-[10px]" />
                 </button>
               </div>
 
-              {/* Centered, Non-Stretched Product Image */}
+              {/* Centered Product Image */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
@@ -319,20 +317,20 @@ export default function ProductCard({
                 <div className="text-xs text-gray-300">No Image</div>
               )}
 
-              {/* Out of Stock Ribbon */}
+              {/* Out of Stock Overlay */}
               {isOutOfStock && (
-                <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-20">
-                  <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded text-[8px] sm:text-[9px] uppercase tracking-wide">
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-20">
+                  <span className="bg-red-600 text-white font-black px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] uppercase tracking-wider shadow-sm">
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
 
-            {/* 2. PRODUCT DETAILS SECTION */}
+            {/* 2. PRODUCT DETAILS */}
             {/* Category / Assured Tag */}
             <div className="flex items-center justify-between gap-1 mb-1">
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[100px] sm:max-w-[110px]">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate max-w-[100px]">
                 {displayCategory}
               </span>
               <div className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-black italic text-[#2874f0]">
@@ -341,14 +339,14 @@ export default function ProductCard({
               </div>
             </div>
 
-            {/* Reserved Fixed-Height Product Title */}
-            <h3 className="h-8 sm:h-10 text-xs sm:text-sm font-bold text-slate-900 group-hover:text-secondary transition-colors line-clamp-2 leading-snug mb-1">
+            {/* Product Title */}
+            <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-tight tracking-tight mb-1">
               {product.name}
             </h3>
 
-            {/* Ratings & Reviews Row */}
-            <div className="flex items-center gap-1.5 mb-1 sm:mb-1.5">
-              <div className="bg-[#388e3c] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
+            {/* Ratings & Reviews */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="bg-[#388e3c] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded flex items-center gap-0.5 shadow-2xs">
                 <span>{ratingScore}</span>
                 <FontAwesomeIcon icon={faStar} className="text-[7px]" />
               </div>
@@ -357,7 +355,7 @@ export default function ProductCard({
               </span>
             </div>
 
-            {/* Price, MRP & Discount Row */}
+            {/* Price, MRP & Discount */}
             <div className="flex items-baseline gap-1.5 flex-wrap mb-1">
               <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
                 ₹{Math.floor(product.price).toLocaleString("en-IN")}
@@ -368,41 +366,40 @@ export default function ProductCard({
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="text-[10px] sm:text-xs font-bold text-[#388e3c]">
+                <span className="text-[10px] sm:text-xs font-bold text-emerald-600">
                   {discountPercent}% off
                 </span>
               )}
             </div>
           </div>
 
-          {/* 3. CONSISTENT BOTTOM ACTION BUTTONS (MY SHOP Brand Gold & Emerald Green) */}
-          <div className="mt-auto pt-2 sm:pt-2.5 border-t border-slate-100">
+          {/* 3. PREMIUM ACTION BUTTONS (Icon Cart + Full-Width Buy Now) */}
+          <div className="mt-auto pt-2 border-t border-slate-100/90">
             {isOutOfStock ? (
               <button
                 disabled
-                className="w-full py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
+                className="w-full py-1.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
               >
                 Out of Stock
               </button>
             ) : (
-              <div className="grid grid-cols-2 gap-1 sm:gap-1.5 w-full">
+              <div className="flex items-center gap-1.5 w-full">
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="w-full py-1.5 sm:py-2 px-1 rounded-lg sm:rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[10px] sm:text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-2xs border border-[#d4b94a] cursor-pointer"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-2xs cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-[9px] sm:text-[10px] shrink-0 text-slate-900" />
-                  <span className="truncate">Add to Cart</span>
+                  <FontAwesomeIcon icon={faCartPlus} className="text-xs text-amber-800" />
                 </button>
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="w-full py-1.5 sm:py-2 px-1 rounded-lg sm:rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[10px] sm:text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer"
+                  className="flex-1 h-8 sm:h-9 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 active:scale-95 shadow-xs cursor-pointer"
                   title="Buy Now"
                 >
-                  <FontAwesomeIcon icon={faBagShopping} className="text-[9px] sm:text-[10px] shrink-0 text-white" />
-                  <span className="truncate">Buy Now</span>
+                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px]" />
+                  <span>Buy Now</span>
                 </button>
               </div>
             )}
@@ -410,7 +407,7 @@ export default function ProductCard({
         </div>
       )}
 
-      {/* Modals for spec selection and quick detail if needed */}
+      {/* Modals for spec selection and quick detail */}
       {!isOutOfStock && (
         <>
           <QuantityModal 
@@ -440,4 +437,3 @@ export default function ProductCard({
     </>
   );
 }
-

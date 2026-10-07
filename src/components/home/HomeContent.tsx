@@ -438,14 +438,14 @@ export default function HomeContent() {
                 className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 scroll-mt-20"
                 id={`category-${config.id}`}
               >
-                <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
                   
                   {/* Category Section Header (Clean App Bar) */}
                   <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-b border-slate-100 flex items-center justify-between gap-2">
                     
                     {/* Left: Title & Badge */}
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-base flex-shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-base flex-shrink-0 shadow-2xs">
                         {config.icon}
                       </div>
                       <div className="min-w-0">
@@ -453,7 +453,7 @@ export default function HomeContent() {
                           <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">
                             {config.name}
                           </h2>
-                          <span className={`text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md border ${config.tagColor} hidden xs:inline-block`}>
+                          <span className={`text-[8px] sm:text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${config.tagColor} hidden xs:inline-block`}>
                             {config.badge}
                           </span>
                         </div>
@@ -464,7 +464,7 @@ export default function HomeContent() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Link 
                         href={categoryUrl} 
-                        className="bg-[#2E6F40] hover:bg-[#255a33] text-white font-black px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1"
+                        className="bg-[#2E6F40] hover:bg-[#255a33] text-white font-black px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1"
                       >
                         <span>View All ({totalCount})</span>
                         <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
@@ -472,8 +472,8 @@ export default function HomeContent() {
                     </div>
                   </div>
 
-                  {/* Product Cards Shelf (Clean 2-card row on mobile, 4-card on desktop) */}
-                  <div className="p-2 sm:p-3 bg-slate-50/40">
+                  {/* Product Cards Shelf */}
+                  <div className="p-2 sm:p-3 bg-[#fbfcfd]">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
