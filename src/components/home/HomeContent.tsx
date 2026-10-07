@@ -657,31 +657,7 @@ export default function HomeContent() {
     }
   };
 
-  // Visual Category & Subcategory Cards (Large Flipkart 2-Row Style)
-  const VISUAL_CATEGORY_CARDS = [
-    { name: "Monsoon Deals", label: "Special Offers", img: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=500", url: "/products?category=Mobiles" },
-    { name: "T-Shirts & Tops", label: "Polo & Casual", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=T-Shirt" },
-    { name: "Dresses, Co-ords", label: "Western & Party", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Dress" },
-    { name: "Casual Shoes", label: "Sneakers & Boots", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Shoes" },
-    { name: "Kids' Clothing", label: "Ages 2-14", img: "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Kids" },
-    { name: "Luggage & Bags", label: "Trolleys & Travel", img: "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Bag" },
-    { name: "Jeans & Trousers", label: "Slim & Baggy Fit", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Jeans" },
-    { name: "Kurtis & Ethnic", label: "Festive & Daily", img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Kurti" },
-    { name: "Sports Wear", label: "Active & Gym", img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Sport" },
-    { name: "Sandals & Sliders", label: "Comfort Walk", img: "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Sandals" },
-    { name: "Smartwatches", label: "AMOLED & Fitness", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=500", url: "/products?category=Smart%20Technology" },
-    { name: "Flagship Mobiles", label: "iPhone & Galaxy", img: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=500", url: "/products?category=Mobiles" },
-    { name: "Kurta Sets", label: "Royal Festive", img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Kurta" },
-    { name: "Backpacks", label: "Laptop & Daily", img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Backpack" },
-    { name: "Jewellery & Gold", label: "BIS Hallmarked", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=500", url: "/products?category=Jewellery" },
-    { name: "Sarees & Silk", label: "Traditional Banarasi", img: "https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&q=80&w=500", url: "/products?category=Fashion&search=Saree" },
-    { name: "Refurbished Phones", label: "Inspected & Warranty", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=500", url: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
-    { name: "Fast Chargers", label: "GaN 65W & MagSafe", img: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=500", url: "/products?category=Mobile%20Accessories" },
-    { name: "EV Scooters & Bikes", label: "Zero Emission", img: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=500", url: "/products?category=EV%20Vehicles" },
-    { name: "Laptops & iPads", label: "Apple & Windows", img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=500", url: "/products?category=Computers%20%26%20Tablets" },
-    { name: "4K OLED TVs", label: "Dolby Vision", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=500", url: "/products?category=TV%20%26%20Audio" },
-    { name: "Air Fryers & Home", label: "Kitchen Essentials", img: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=500", url: "/products?category=Kitchen%20Appliances" },
-  ];
+
 
   return (
     <div className="flex flex-col gap-2.5 sm:gap-4 md:gap-5 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
@@ -865,64 +841,7 @@ export default function HomeContent() {
       {/* 2. Main Hero Banner Carousel */}
       <Hero />
 
-      {/* 3. Flipkart-Style 2-Row Visual Curated Category & Subcategory Cards Grid (Larger Size) */}
-      <section className="container px-2 sm:px-4 md:px-6">
-        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 p-4 sm:p-6 md:p-7 shadow-sm">
-          <div className="flex items-center justify-between mb-4 sm:mb-5 px-1">
-            <div>
-              <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                <span className="w-2 h-5 sm:h-6 bg-blue-600 rounded-full" />
-                <span>Shop by Category &amp; Trending Styles</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-                Explore curated fashion, top smartphones, jewellery &amp; gadgets
-              </p>
-            </div>
-            <Link 
-              href="/categories" 
-              className="text-xs sm:text-sm md:text-base font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 shrink-0"
-            >
-              <span>View All</span>
-              <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-            </Link>
-          </div>
 
-          {/* 2-Row Horizontal Scrollable Grid of Visual Rounded Cards (Large Format) */}
-          <div className="overflow-x-auto no-scrollbar pb-3 pt-1 scroll-smooth">
-            <div className="grid grid-rows-2 grid-flow-col gap-4 sm:gap-5 md:gap-6 min-w-max">
-              {VISUAL_CATEGORY_CARDS.map((card, idx) => (
-                <Link
-                  key={idx}
-                  href={card.url}
-                  className="flex flex-col items-center group cursor-pointer active:scale-95 transition-all w-[130px] sm:w-[155px] md:w-[175px]"
-                >
-                  {/* Large Rounded Cream Card Container */}
-                  <div className="w-[124px] h-[124px] sm:w-[148px] sm:h-[148px] md:w-[168px] md:h-[168px] rounded-3xl bg-[#fffbf2] border border-amber-100/90 group-hover:border-blue-500 group-hover:shadow-lg transition-all p-2 flex items-center justify-center overflow-hidden relative shadow-xs group-hover:scale-105">
-                    <div className="relative w-full h-full rounded-2xl overflow-hidden bg-white shadow-2xs">
-                      <Image
-                        src={card.img}
-                        alt={card.name}
-                        fill
-                        className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                        sizes="(max-width: 768px) 150px, 180px"
-                        unoptimized
-                      />
-                    </div>
-                  </div>
-
-                  {/* Title & Subtitle Below Card */}
-                  <span className="text-xs sm:text-sm font-black text-slate-900 text-center leading-snug line-clamp-1 group-hover:text-blue-600 transition-colors mt-2 w-full px-1">
-                    {card.name}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold text-center truncate w-full px-1">
-                    {card.label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
 
 
