@@ -963,30 +963,32 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Action Buttons: Add to Cart & Buy Now (Amazon exact colors) */}
-            <div className="space-y-2 pt-1">
+            {/* Action Buttons: Add to Cart & Buy Now (MY SHOP Brand Colors: Gold & Emerald Green) */}
+            <div className="space-y-2.5 pt-1">
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`w-full py-2.5 px-4 rounded-full font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-98 ${
+                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2 ${
                   isOutOfStock
                     ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-[#FFD814] hover:bg-[#F7CA00] text-slate-950 border border-[#FCD200]"
+                    : "bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 border border-[#d4b94a] shadow-xs"
                 }`}
               >
-                Add to Cart
+                <FontAwesomeIcon icon={faCartPlus} />
+                <span>Add to Cart</span>
               </button>
 
               <button
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
-                className={`w-full py-2.5 px-4 rounded-full font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-98 ${
+                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all shadow-md cursor-pointer active:scale-98 flex items-center justify-center gap-2 ${
                   isOutOfStock
                     ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-[#FFA41C] hover:bg-[#FA8900] text-slate-950 border border-[#FF8F00]"
+                    : "bg-[#2E6F40] hover:bg-[#245e35] text-white shadow-emerald-800/20 border border-[#245e35]"
                 }`}
               >
-                Buy Now
+                <FontAwesomeIcon icon={faBolt} />
+                <span>Buy Now</span>
               </button>
             </div>
 
@@ -1233,7 +1235,7 @@ export default function ProductDetailPage({
           className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
             isOutOfStock
               ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-              : "bg-amber-400 active:bg-amber-500 text-slate-900"
+              : "bg-[#E9CF6A] active:bg-[#dec253] text-slate-950 shadow-xs border border-[#d4b94a]"
           }`}
         >
           <FontAwesomeIcon icon={faCartPlus} />
@@ -1246,7 +1248,7 @@ export default function ProductDetailPage({
           className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
             isOutOfStock
               ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-              : "bg-emerald-600 active:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
+              : "bg-[#2E6F40] active:bg-[#245e35] text-white shadow-md shadow-emerald-800/20 border border-[#245e35]"
           }`}
         >
           <FontAwesomeIcon icon={faBolt} />
