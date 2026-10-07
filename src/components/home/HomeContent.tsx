@@ -657,196 +657,13 @@ export default function HomeContent() {
     }
   };
 
-
-
   return (
-    <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+    <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
       {/* 1. Main Hero Banner Carousel */}
       <Hero />
 
-      {/* 2. Flipkart-Style Category Icons Bar (Under Hero) */}
-      <section className="max-w-[1440px] w-full mx-auto px-2 sm:px-4 md:px-6">
-        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 py-2 sm:py-2.5 px-2 sm:px-4 md:px-6 shadow-xs relative">
-          <div className="flex items-center justify-start lg:justify-between gap-2.5 sm:gap-4 md:gap-6 overflow-x-auto category-scroll-container no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
-            {TOP_FLIPKART_CATEGORIES.map((cat) => {
-              const isSelected = activeMegaMenu === cat.id;
-              const hasFlyout = Boolean(MEGA_MENU_DATA[cat.id]);
-
-              return (
-                <div key={cat.id} className="relative flex-shrink-0">
-                  <Link
-                    href={cat.url}
-                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-0.5 min-w-[62px] sm:min-w-[72px] md:min-w-[80px] cursor-pointer`}
-                  >
-                    <div className={`w-12 h-12 sm:w-13 sm:h-13 md:w-15 md:h-15 rounded-xl border transition-all flex items-center justify-center text-xl sm:text-2xl md:text-2xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/90 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
-                      <span>{cat.icon}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className={`text-[11px] sm:text-xs md:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
-                        {cat.name}
-                      </span>
-                    </div>
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Interactive Category Mega Menu Flyout Panel */}
-          {activeMegaMenu && MEGA_MENU_DATA[activeMegaMenu] && (() => {
-            const menu = MEGA_MENU_DATA[activeMegaMenu];
-
-            return (
-              <div 
-                className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-3xl shadow-2xl border border-slate-200/90 p-5 sm:p-7 animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto"
-                onMouseLeave={() => setActiveMegaMenu(null)}
-              >
-                {/* Mega Menu Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl p-2 rounded-2xl bg-blue-50 border border-blue-100">{menu.icon}</span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base sm:text-lg font-black text-slate-900">{menu.title}</h3>
-                        <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                          {menu.badge}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium">Select a sub-category or popular brand to browse products:</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href={`/products?category=${encodeURIComponent(menu.categoryQuery)}`}
-                      onClick={() => setActiveMegaMenu(null)}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
-                    >
-                      <span>Browse All {menu.title.split(' ')[0]}</span>
-                      <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setActiveMegaMenu(null)}
-                      className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors"
-                      title="Close"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mega Menu 2-Column Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Left Column: Sub-Categories */}
-                  <div className="lg:col-span-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                        <span>📑</span>
-                        <span>Popular Sub-Categories</span>
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-bold">{menu.subcategories.length} Types</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      {menu.subcategories.map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          href={`/products?category=${sub.query}`}
-                          onClick={() => setActiveMegaMenu(null)}
-                          className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 text-slate-700 hover:text-blue-600 transition-all group"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-base">{sub.icon}</span>
-                            <span className="text-xs sm:text-sm font-bold group-hover:translate-x-0.5 transition-transform">{sub.name}</span>
-                          </div>
-                          {sub.badge ? (
-                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-                              {sub.badge}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Right Column: All Available Brands Grid */}
-                  <div className="lg:col-span-8 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                        <span>👑</span>
-                        <span>All Available {menu.title.split(' ')[0]} Brands</span>
-                      </span>
-                      <span className="text-xs text-blue-600 font-bold">100% Original Products</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
-                      {menu.brands.map((brand, bIdx) => (
-                        <Link
-                          key={bIdx}
-                          href={`/products?category=${encodeURIComponent(menu.categoryQuery)}&brand=${encodeURIComponent(brand.brandQuery)}`}
-                          onClick={() => setActiveMegaMenu(null)}
-                          className={`p-3 rounded-2xl border transition-all flex flex-col justify-between group cursor-pointer ${
-                            brand.highlight 
-                              ? "bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 hover:border-blue-500 hover:shadow-md" 
-                              : "bg-white hover:bg-slate-50/80 border-slate-200/90 hover:border-blue-400 hover:shadow-xs"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
-                              {brand.icon && <span className="text-sm">{brand.icon}</span>}
-                              <span>{brand.name}</span>
-                            </span>
-                            {brand.highlight && (
-                              <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
-                                Top
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-slate-500 font-medium truncate leading-tight mt-1">{brand.count}</p>
-                          <div className="mt-2.5 flex items-center justify-between text-[11px] font-bold text-blue-600 pt-1.5 border-t border-slate-100 group-hover:border-blue-100">
-                            <span>View Phones</span>
-                            <span className="group-hover:translate-x-1 transition-transform">→</span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-
-                    {/* Price Range Segment Rail */}
-                    {menu.priceSegments && menu.priceSegments.length > 0 && (
-                      <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">
-                          💵 Filter By Price:
-                        </span>
-                        {menu.priceSegments.map((price, pIdx) => (
-                          <Link
-                            key={pIdx}
-                            href={price.url}
-                            onClick={() => setActiveMegaMenu(null)}
-                            className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
-                          >
-                            {price.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </section>
-
-
-
-
-
-      {/* 4. DYNAMIC CATEGORY-BY-CATEGORY PRODUCT SHELVES (Flipkart & Amazon Style) */}
-      <div className="flex flex-col gap-6 sm:gap-8 md:gap-12 mt-2">
+      {/* 2. DYNAMIC CATEGORY-BY-CATEGORY PRODUCT SHELVES (Flipkart & Amazon Style) */}
+      <div className="flex flex-col gap-6 sm:gap-8 md:gap-12 mt-1">
         {isLoading ? (
           // Loading skeleton placeholder shelves
           [...Array(3)].map((_, i) => (
@@ -873,6 +690,183 @@ export default function HomeContent() {
               >
                 <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden">
                   
+                  {/* Attached Top Category Quick-Switch Bar (Seamlessly part of the top box) */}
+                  {sectionIdx === 0 && (
+                    <div className="border-b border-slate-200/90 bg-slate-50/70 py-2.5 sm:py-3.5 px-3 sm:px-6 relative">
+                      <div className="flex items-center justify-start lg:justify-between gap-2.5 sm:gap-4 md:gap-6 overflow-x-auto category-scroll-container no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
+                        {TOP_FLIPKART_CATEGORIES.map((cat) => {
+                          const isSelected = activeMegaMenu === cat.id;
+                          const hasFlyout = Boolean(MEGA_MENU_DATA[cat.id]);
+
+                          return (
+                            <div key={cat.id} className="relative flex-shrink-0">
+                              <Link
+                                href={cat.url}
+                                className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-0.5 min-w-[62px] sm:min-w-[72px] md:min-w-[80px] cursor-pointer`}
+                              >
+                                <div className={`w-12 h-12 sm:w-13 sm:h-13 md:w-15 md:h-15 rounded-xl border transition-all flex items-center justify-center text-xl sm:text-2xl md:text-2xl shadow-xs bg-white group-hover:bg-emerald-50 border-slate-200/90 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
+                                  <span>{cat.icon}</span>
+                                </div>
+
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className={`text-[11px] sm:text-xs md:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
+                                    {cat.name}
+                                  </span>
+                                </div>
+                              </Link>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Interactive Category Mega Menu Flyout Panel */}
+                      {activeMegaMenu && MEGA_MENU_DATA[activeMegaMenu] && (() => {
+                        const menu = MEGA_MENU_DATA[activeMegaMenu];
+
+                        return (
+                          <div 
+                            className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-3xl shadow-2xl border border-slate-200/90 p-5 sm:p-7 animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto"
+                            onMouseLeave={() => setActiveMegaMenu(null)}
+                          >
+                            {/* Mega Menu Header */}
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                              <div className="flex items-center gap-3">
+                                <span className="text-3xl p-2 rounded-2xl bg-blue-50 border border-blue-100">{menu.icon}</span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-base sm:text-lg font-black text-slate-900">{menu.title}</h3>
+                                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                                      {menu.badge}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-500 font-medium">Select a sub-category or popular brand to browse products:</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <Link
+                                  href={`/products?category=${encodeURIComponent(menu.categoryQuery)}`}
+                                  onClick={() => setActiveMegaMenu(null)}
+                                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
+                                >
+                                  <span>Browse All {menu.title.split(' ')[0]}</span>
+                                  <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveMegaMenu(null)}
+                                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors"
+                                  title="Close"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Mega Menu 2-Column Content */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                              {/* Left Column: Sub-Categories */}
+                              <div className="lg:col-span-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                    <span>📑</span>
+                                    <span>Popular Sub-Categories</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-bold">{menu.subcategories.length} Types</span>
+                                </div>
+
+                                <div className="space-y-1">
+                                  {menu.subcategories.map((sub, sIdx) => (
+                                    <Link
+                                      key={sIdx}
+                                      href={`/products?category=${sub.query}`}
+                                      onClick={() => setActiveMegaMenu(null)}
+                                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 text-slate-700 hover:text-blue-600 transition-all group"
+                                    >
+                                      <div className="flex items-center gap-2.5">
+                                        <span className="text-base">{sub.icon}</span>
+                                        <span className="text-xs sm:text-sm font-bold group-hover:translate-x-0.5 transition-transform">{sub.name}</span>
+                                      </div>
+                                      {sub.badge ? (
+                                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                                          {sub.badge}
+                                        </span>
+                                      ) : (
+                                        <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                                      )}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Right Column: All Available Brands Grid */}
+                              <div className="lg:col-span-8 space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                    <span>👑</span>
+                                    <span>All Available {menu.title.split(' ')[0]} Brands</span>
+                                  </span>
+                                  <span className="text-xs text-blue-600 font-bold">100% Original Products</span>
+                                </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+                                  {menu.brands.map((brand, bIdx) => (
+                                    <Link
+                                      key={bIdx}
+                                      href={`/products?category=${encodeURIComponent(menu.categoryQuery)}&brand=${encodeURIComponent(brand.brandQuery)}`}
+                                      onClick={() => setActiveMegaMenu(null)}
+                                      className={`p-3 rounded-2xl border transition-all flex flex-col justify-between group cursor-pointer ${
+                                        brand.highlight 
+                                          ? "bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 hover:border-blue-500 hover:shadow-md" 
+                                          : "bg-white hover:bg-slate-50/80 border-slate-200/90 hover:border-blue-400 hover:shadow-xs"
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                                          {brand.icon && <span className="text-sm">{brand.icon}</span>}
+                                          <span>{brand.name}</span>
+                                        </span>
+                                        {brand.highlight && (
+                                          <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
+                                            Top
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 font-medium truncate leading-tight mt-1">{brand.count}</p>
+                                      <div className="mt-2.5 flex items-center justify-between text-[11px] font-bold text-blue-600 pt-1.5 border-t border-slate-100 group-hover:border-blue-100">
+                                        <span>View Phones</span>
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
+
+                                {/* Price Range Segment Rail */}
+                                {menu.priceSegments && menu.priceSegments.length > 0 && (
+                                  <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">
+                                      💵 Filter By Price:
+                                    </span>
+                                    {menu.priceSegments.map((price, pIdx) => (
+                                      <Link
+                                        key={pIdx}
+                                        href={price.url}
+                                        onClick={() => setActiveMegaMenu(null)}
+                                        className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
+                                      >
+                                        {price.label}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
                   {/* Category Section Header */}
                   <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
