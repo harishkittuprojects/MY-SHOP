@@ -1042,38 +1042,6 @@ function Content() {
         {/* ======================= RIGHT MAIN CATALOG AREA ======================= */}
         <div className="lg:col-span-3">
           
-          {/* Subcategory Pills Bar */}
-          {activeSubcategories.length > 0 && (
-            <div className="mb-4 overflow-x-auto no-scrollbar px-3 md:px-0 pb-1">
-              <div className="flex items-center gap-2 min-w-max">
-                <button
-                  type="button"
-                  onClick={() => setSelectedSubCategory("all")}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    selectedSubCategory === "all"
-                      ? "bg-secondary text-white shadow-xs"
-                      : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  All {categoryFilter || "Items"}
-                </button>
-                {activeSubcategories.map((sub: string) => (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => setSelectedSubCategory(sub)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${
-                      selectedSubCategory.toLowerCase() === sub.toLowerCase()
-                        ? "bg-secondary text-white shadow-xs"
-                        : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Controls & Sorting Toolbar */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mx-3 md:mx-0">
