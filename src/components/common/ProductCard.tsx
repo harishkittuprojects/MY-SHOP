@@ -236,14 +236,14 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* List Action Buttons */}
+            {/* List Action Buttons (MY SHOP Brand Gold & Emerald Green) */}
             <div className="flex items-center gap-2 max-w-xs">
               <button
                 type="button"
                 onClick={handleDirectAddToCart}
                 disabled={isOutOfStock}
-                className={`flex-1 font-bold py-2 px-3 rounded-xl border border-secondary text-secondary hover:bg-secondary hover:text-white text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
-                  isOutOfStock ? "border-slate-200 text-slate-300 cursor-not-allowed hover:bg-transparent hover:text-slate-300" : ""
+                className={`flex-1 font-black py-2 px-3 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 border border-[#d4b94a] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs cursor-pointer ${
+                  isOutOfStock ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed" : ""
                 }`}
               >
                 <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
@@ -253,7 +253,7 @@ export default function ProductCard({
                 type="button"
                 onClick={handleDirectBuyNow}
                 disabled={isOutOfStock}
-                className={`flex-1 font-bold py-2 px-3 rounded-xl bg-secondary text-white hover:bg-[#255732] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs ${
+                className={`flex-1 font-black py-2 px-3 rounded-xl bg-[#2E6F40] text-white hover:bg-[#245e35] text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer ${
                   isOutOfStock ? "bg-slate-200 text-slate-400 cursor-not-allowed hover:bg-slate-200" : ""
                 }`}
               >
@@ -371,7 +371,7 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* 3. CONSISTENT BOTTOM ACTION BUTTONS */}
+          {/* 3. CONSISTENT BOTTOM ACTION BUTTONS (MY SHOP Brand Gold & Emerald Green) */}
           <div className="mt-2.5 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2">
             {isOutOfStock ? (
               <button
@@ -385,19 +385,19 @@ export default function ProductCard({
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-xl border border-secondary text-secondary hover:bg-secondary hover:text-white text-[10px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap"
+                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[10px] sm:text-xs font-black transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs border border-[#d4b94a] whitespace-nowrap cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] sm:text-xs" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] sm:text-xs text-slate-900" />
                   <span className="truncate">Add to Cart</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-xl bg-secondary hover:bg-[#255732] text-white text-[10px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs whitespace-nowrap"
+                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[10px] sm:text-xs font-black transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-xs border border-[#245e35] whitespace-nowrap cursor-pointer"
                   title="Buy Now"
                 >
-                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] sm:text-xs" />
+                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] sm:text-xs text-white" />
                   <span className="truncate">Buy Now</span>
                 </button>
               </>
