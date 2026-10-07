@@ -11,7 +11,6 @@ import { addRecentlyViewedProduct } from "@/lib/recentHistory";
 import { 
   faCartPlus, 
   faHeart, 
-  faBolt,
   faBagShopping
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
@@ -135,21 +134,12 @@ export default function ProductCard({
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 relative cursor-pointer h-full ${
+          className={`group bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative cursor-pointer h-full overflow-hidden ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
           {/* Flush Edge-to-Edge Image Box */}
-          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-[#f8fafc] rounded-xl flex items-center justify-center p-3 shrink-0 overflow-hidden border border-slate-100">
-            {discountPercent > 0 && !isOutOfStock && (
-              <div className="absolute top-2 left-2 z-10">
-                <span className="bg-emerald-600 text-white font-black px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-1">
-                  <FontAwesomeIcon icon={faBolt} className="text-[8px]" />
-                  <span>{discountPercent}% OFF</span>
-                </span>
-              </div>
-            )}
-            
+          <div className="relative w-full sm:w-44 md:w-48 h-44 sm:h-44 md:h-48 bg-slate-100 shrink-0 overflow-hidden">
             <button
               type="button"
               onClick={(e) => {
@@ -169,12 +159,12 @@ export default function ProductCard({
                 src={imgSrc} 
                 alt={product.name} 
                 fill 
-                className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" 
                 onError={() => setImgSrc("/placeholder.png")}
                 unoptimized
               />
             ) : (
-              <div className="text-xs text-gray-300">No Image</div>
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-300">No Image</div>
             )}
 
             {isOutOfStock && (
@@ -187,7 +177,7 @@ export default function ProductCard({
           </div>
 
           {/* Details Column */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
+          <div className="flex-1 flex flex-col justify-between min-w-0 p-3 sm:p-4">
             <div>
               <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug mb-2">
                 {product.name}
@@ -243,7 +233,7 @@ export default function ProductCard({
           </div>
         </div>
       ) : (
-        /* ===================== ZEPTO-STYLE EDGE-TO-EDGE GRID CARD ===================== */
+        /* ===================== ZEPTO-STYLE EDGE-TO-EDGE FULL-BLEED GRID CARD ===================== */
         <div 
           onClick={() => {
             addRecentlyViewedProduct(product.id);
@@ -254,20 +244,10 @@ export default function ProductCard({
           }`}
         >
           <div>
-            {/* 1. FLUSH TOP EDGE-TO-EDGE IMAGE CANVAS (Zepto Style - No Nested Congested Box) */}
-            <div className="relative w-full aspect-square bg-[#f8fafc] overflow-hidden flex items-center justify-center p-2.5 border-b border-slate-100">
+            {/* 1. FLUSH TOP EDGE-TO-EDGE IMAGE (Zepto Style - Zero Inner Padding, Touches Card Borders) */}
+            <div className="relative w-full aspect-[4/3] xs:aspect-square bg-slate-100 overflow-hidden">
               
-              {/* Discount Badge */}
-              {discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-2 left-2 z-10">
-                  <span className="bg-emerald-600 text-white font-black px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] uppercase tracking-wider shadow-xs flex items-center gap-0.5">
-                    <FontAwesomeIcon icon={faBolt} className="text-[7px]" />
-                    <span>{discountPercent}% OFF</span>
-                  </span>
-                </div>
-              )}
-
-              {/* Wishlist Heart Button */}
+              {/* Floating Glassmorphic Wishlist Heart Button */}
               <div className="absolute top-2 right-2 z-10">
                 <button
                   type="button"
@@ -275,7 +255,7 @@ export default function ProductCard({
                     e.stopPropagation();
                     toggleWishlist(product as any);
                   }}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs bg-white/90 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-md bg-white/95 backdrop-blur-md border border-white hover:bg-white text-slate-400 hover:text-rose-500 transition-all active:scale-90 ${
                     isWishlisted ? "bg-rose-50 text-rose-500 border-rose-200" : ""
                   }`}
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -285,18 +265,18 @@ export default function ProductCard({
                 </button>
               </div>
 
-              {/* Centered Large Non-Congested Product Image */}
+              {/* Full-Bleed Product Image (Touches Top, Left, and Right Card Edges) */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" 
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />
               ) : (
-                <div className="text-xs text-gray-300">No Image</div>
+                <div className="w-full h-full flex items-center justify-center text-xs text-gray-300">No Image</div>
               )}
 
               {/* Out of Stock Overlay */}
