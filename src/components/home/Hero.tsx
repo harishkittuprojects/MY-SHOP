@@ -72,13 +72,13 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full px-0 sm:px-0 md:px-4 lg:px-6 max-w-[1440px] mx-auto pt-0 md:pt-1 select-none">
+    <section className="relative w-full px-2 sm:px-3 md:px-4 lg:px-6 max-w-[1440px] mx-auto pt-0.5 md:pt-1 select-none">
       {/* 
         Hero Container:
-        - Mobile: Full-bleed 16:9 edge-to-edge
+        - Mobile: Sleek rounded 16:9 banner
         - Desktop: Expansive 360px - 400px full cover fit
       */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-auto md:h-[360px] lg:h-[400px] rounded-none sm:rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-md border-0 md:border border-slate-200/80 bg-slate-950 group">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-auto md:h-[360px] lg:h-[400px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs md:shadow-md border border-slate-200/80 bg-slate-950 group">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
@@ -134,8 +134,8 @@ export default function Hero() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                   </div>
 
-                  {/* Subtle vignette border on desktop */}
-                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-none md:rounded-3xl pointer-events-none" />
+                  {/* Subtle vignette border */}
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl sm:rounded-2xl md:rounded-3xl pointer-events-none" />
                 </Link>
 
                 {/* Mobile Floating "Shop Now" Action Badge (madur.in style) */}
