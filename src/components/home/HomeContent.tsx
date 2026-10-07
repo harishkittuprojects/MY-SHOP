@@ -383,7 +383,7 @@ export default function HomeContent() {
       {/* 2. FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Right under Banner) */}
       <section className="w-full bg-white border-y border-slate-200/80 py-2 sm:py-2.5 px-2 sm:px-4 select-none">
         <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-3.5 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
+          <div className="flex items-center justify-start lg:justify-center gap-3.5 sm:gap-6 md:gap-8 lg:gap-10 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
             {FLIPKART_APP_CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
@@ -427,8 +427,8 @@ export default function HomeContent() {
             <section key={i} className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
               <div className="bg-white rounded-2xl border border-slate-200/80 p-3 sm:p-4 shadow-2xs">
                 <div className="h-6 w-48 bg-slate-200 rounded-lg animate-pulse mb-3" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-                  {[...Array(4)].map((_, j) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-2.5 md:gap-3">
+                  {[...Array(6)].map((_, j) => (
                     <div key={j} className="h-48 bg-slate-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
