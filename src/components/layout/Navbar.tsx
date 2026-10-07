@@ -212,7 +212,7 @@ export default function Navbar() {
           <div ref={searchContainerRef} className="relative hidden md:block">
             <form 
               onSubmit={(e) => handleSearch(e)}
-              className="flex items-center bg-slate-100 hover:bg-slate-200/60 border border-slate-300/80 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-600 focus-within:bg-white w-32 xs:w-44 sm:w-60 md:w-72 lg:w-80 xl:w-96 shadow-xs"
+              className="flex items-center bg-white border border-slate-200/90 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#2E6F40]/30 focus-within:border-[#2E6F40] w-32 xs:w-44 sm:w-60 md:w-72 lg:w-80 xl:w-96 shadow-2xs"
             >
               <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-2 flex-shrink-0" />
               <input
@@ -479,7 +479,7 @@ export default function Navbar() {
       <div className="block md:hidden px-3 pb-2 pt-0.5 w-full">
         <form 
           onSubmit={(e) => handleSearch(e)}
-          className="flex items-center bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-xl px-3 py-1.5 sm:py-2 transition-all focus-within:ring-2 focus-within:ring-emerald-500/30 focus-within:border-emerald-600 focus-within:bg-white w-full shadow-2xs"
+          className="flex items-center bg-white border border-slate-200/90 rounded-xl px-3 py-2 transition-all focus-within:ring-2 focus-within:ring-[#2E6F40]/30 focus-within:border-[#2E6F40] w-full shadow-2xs"
         >
           <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs mr-2 flex-shrink-0" />
           <input
