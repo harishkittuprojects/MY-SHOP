@@ -854,19 +854,6 @@ export default function ProductDetailPage({
 
           {/* ======================= COLUMN 3 (3 cols): Amazon Right Buy Box ======================= */}
           <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 sticky top-20 text-xs select-none">
-            
-            {/* Prime Badge & Free Same-Day Promotion */}
-            <div className="space-y-1">
-              <span className="text-base font-black text-blue-600 italic tracking-wider">
-                ✓prime
-              </span>
-              <p className="text-xs text-slate-700 leading-snug">
-                Enjoy <strong>Unlimited FREE Same day/1-day delivery</strong>, Prime offers everyday and more
-              </p>
-              <Link href="/account" className="text-blue-600 hover:underline font-bold text-xs block">
-                Join Prime &gt;&gt;
-              </Link>
-            </div>
 
             {/* Radio 1: With Exchange */}
             <div 
