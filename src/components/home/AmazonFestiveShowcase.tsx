@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import ProductCard from "@/components/common/ProductCard";
+import { getRecentSearches, getRecentlyViewedProductIds, clearRecentHistory } from "@/lib/recentHistory";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar,
@@ -14,7 +16,8 @@ import {
   faArrowRight,
   faTag,
   faTruckFast,
-  faRotateLeft
+  faRotateLeft,
+  faClockRotateLeft
 } from "@fortawesome/free-solid-svg-icons";
 
 interface DealItem {
@@ -50,6 +53,104 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
+  "for-you": {
+    storeTitle: "🛍️ For You: Your Personalized Hub",
+    parentCategory: { name: "< All Departments", href: "/products" },
+    categoryHeading: "Personalized Picks & Recently Searched Items",
+    subNavLinks: [
+      { label: "Recently Searched", href: "/products?category=for-you" },
+      { label: "Top Mobiles", href: "/products?category=Mobiles" },
+      { label: "Fast Accessories", href: "/products?category=Mobile%20Accessories" },
+      { label: "Certified Refurbished", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+      { label: "Fashion Trends", href: "/products?category=Fashion" },
+      { label: "BIS Gold", href: "/products?category=Jewellery" }
+    ],
+    categoryTree: [
+      { name: "Based On Your Recent Activity", href: "/products?category=for-you", bold: true },
+      { name: "Top Smartphone Flagships", href: "/products?category=Mobiles" },
+      { name: "Fast Chargers & MagSafe", href: "/products?category=Mobile%20Accessories" },
+      { name: "Certified Refurbished (Grade A+)", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+      { name: "Smartwatches & Wearables", href: "/products?category=Smart%20Technology" },
+    ],
+    brands: [
+      { name: "Apple", query: "Apple" },
+      { name: "Samsung", query: "Samsung" },
+      { name: "OnePlus", query: "OnePlus" },
+      { name: "Google Pixel", query: "Pixel" },
+      { name: "Anker", query: "Anker" },
+      { name: "Nike", query: "Nike" },
+      { name: "Tanishq", query: "Tanishq" }
+    ],
+    bannerBadge: "🛍️ CURATED JUST FOR YOU",
+    bannerHeadline: "Your Personalized Recommendations.",
+    bannerHighlight: "Based on Your Search & Browsing Activity",
+    bannerTagline: "Handpicked deals matching your taste • 100% Brand Sealed • Fast Doorstep Delivery",
+    bannerHeroImg: "/products/samsung-galaxy-s26-ultra.jpg",
+    bannerPills: [
+      { label: "🔥 Top Recommendations", href: "/products?category=for-you" },
+      { label: "⚡ Live Price Drops", href: "/products" }
+    ],
+    spotlightTitle: "Recommended Picks For You",
+    deals: [
+      {
+        id: "samsung-galaxy-s26-ultra",
+        name: "Samsung Galaxy S26 Ultra 5G (Titanium Silver)",
+        subName: "16GB RAM • 512GB Storage • Galaxy AI",
+        monthlyEmi: "At ₹11,666/mo",
+        topTag: "★ Top Pick Based on Your Interests",
+        startingPrice: "₹1,39,999",
+        mrp: "₹1,49,999",
+        discount: "7% OFF",
+        features: ["Snapdragon 8 Elite", "200MP Quad AI Pro", "Titanium Hinge"],
+        image: "/products/samsung-galaxy-s26-ultra.jpg",
+        link: "/products/samsung-s26-ultra",
+        accentBadge: "Personalized Top Pick"
+      },
+      {
+        id: "iphone-16-pro-max",
+        name: "Apple iPhone 16 Pro Max (Natural Titanium)",
+        subName: "256GB • A18 Pro Chip • 48MP Fusion",
+        monthlyEmi: "At ₹11,241/mo",
+        topTag: "★ Trending Recommendation",
+        startingPrice: "₹1,34,900",
+        mrp: "₹1,44,900",
+        discount: "7% OFF",
+        features: ["A18 Pro Hexa-Core", "Camera Control Button", "Super Retina XDR"],
+        image: "/products/iphone-16-pro-max.png",
+        link: "/products/iphone-16-pro-max",
+        accentBadge: "Top Pick"
+      },
+      {
+        id: "anker-65w-gan",
+        name: "Anker 65W GaN Fast Wall Charger",
+        subName: "3-Port Type-C PD 3.0 Fast Charge",
+        monthlyEmi: "At ₹483/mo",
+        topTag: "★ Popular Accessories Pick",
+        startingPrice: "₹2,899",
+        mrp: "₹4,999",
+        discount: "42% OFF",
+        features: ["GaNPrime Tech", "65W Max Output", "Multi-Device"],
+        image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=600",
+        link: "/products?category=Mobile%20Accessories&search=Anker",
+        accentBadge: "Essential Accessory"
+      },
+      {
+        id: "noise-colorfit-ultra",
+        name: "Noise ColorFit Pro 5 Max AMOLED Smartwatch",
+        subName: "1.96-inch AMOLED • BT Calling • Stainless Steel",
+        monthlyEmi: "At ₹499/mo",
+        topTag: "★ Smart Wearable Match",
+        startingPrice: "₹2,999",
+        mrp: "₹6,999",
+        discount: "57% OFF",
+        features: ["1.96\" AMOLED", "Single-Chip BT 5.3", "Rapid SOS"],
+        image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=600",
+        link: "/products?category=Smart%20Technology",
+        accentBadge: "Lifestyle Wearable"
+      }
+    ]
+  },
+
   mobiles: {
     storeTitle: "📱 Mobiles Store",
     parentCategory: { name: "< Electronics & Devices", href: "/products" },
@@ -103,35 +204,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         features: ["Galaxy AI Engine", "200MP Quad Pro", "Snapdragon 8 Elite"],
         image: "/products/samsung-galaxy-s26-ultra.jpg",
         link: "/products/samsung-galaxy-z-fold7",
-        accentBadge: "Flagship Foldable"
-      },
-      {
-        id: "oneplus-ce6-lite",
-        name: "OnePlus Nord CE6 Lite 5G",
-        subName: "8GB RAM • 128GB Storage",
-        monthlyEmi: "At ₹4,583/mo",
-        topTag: "★ Instant ₹3,000 Bank Cashback • 6 Months No Cost EMI",
-        startingPrice: "₹26,999",
-        mrp: "₹33,999",
-        discount: "21% OFF",
-        features: ["7000mAh Battery", "OxygenOS 15", "50MP Sony LYT OIS"],
-        image: "/products/google-pixel-9-pro-xl.png",
-        link: "/products/oneplus-ce6-lite",
-        accentBadge: "Battery Champion"
-      },
-      {
-        id: "samsung-s26-ultra",
-        name: "Samsung Galaxy S26 Ultra 5G",
-        subName: "16GB RAM • 512GB Storage",
-        monthlyEmi: "At ₹11,666/mo",
-        topTag: "★ Flat ₹10,000 Instant Exchange Bonus + Free Buds",
-        startingPrice: "₹1,29,999",
-        mrp: "₹1,49,999",
-        discount: "13% OFF",
-        features: ["200MP AI Pro Zoom", "S-Pen Built-in", "Grade 5 Titanium"],
-        image: "/products/samsung-galaxy-s25-ultra.png",
-        link: "/products/samsung-s26-ultra",
-        accentBadge: "Top Bestseller"
+        accentBadge: "Samsung Foldable"
       },
       {
         id: "iphone-16-pro-max",
@@ -146,6 +219,104 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         image: "/products/iphone-16-pro-max.png",
         link: "/products/iphone-16-pro-max",
         accentBadge: "Official Apple"
+      },
+      {
+        id: "samsung-s26-ultra",
+        name: "Samsung Galaxy S26 Ultra 5G",
+        subName: "16GB RAM • 512GB Storage",
+        monthlyEmi: "At ₹11,666/mo",
+        topTag: "★ Flat ₹10,000 Instant Exchange Bonus + Free Buds",
+        startingPrice: "₹1,29,999",
+        mrp: "₹1,49,999",
+        discount: "13% OFF",
+        features: ["200MP AI Pro Zoom", "S-Pen Built-in", "Grade 5 Titanium"],
+        image: "/products/samsung-galaxy-s25-ultra.png",
+        link: "/products/samsung-s26-ultra",
+        accentBadge: "Samsung Flagship"
+      },
+      {
+        id: "oneplus-ce6-lite",
+        name: "OnePlus Nord CE6 Lite 5G",
+        subName: "8GB RAM • 128GB Storage",
+        monthlyEmi: "At ₹4,583/mo",
+        topTag: "★ Instant ₹3,000 Bank Cashback • 6 Months No Cost EMI",
+        startingPrice: "₹26,999",
+        mrp: "₹33,999",
+        discount: "21% OFF",
+        features: ["7000mAh Battery", "OxygenOS 15", "50MP Sony LYT OIS"],
+        image: "/products/google-pixel-9-pro-xl.png",
+        link: "/products/oneplus-ce6-lite",
+        accentBadge: "OnePlus 5G"
+      },
+      {
+        id: "google-pixel-9-pro-xl",
+        name: "Google Pixel 9 Pro XL 5G",
+        subName: "16GB RAM • 256GB Storage",
+        monthlyEmi: "At ₹10,416/mo",
+        topTag: "★ Google Tensor G4 • 7 Years OS Updates",
+        startingPrice: "₹1,24,999",
+        mrp: "₹1,39,999",
+        discount: "11% OFF",
+        features: ["Gemini AI Built-in", "50MP Triple Pro Camera", "Super Actua OLED"],
+        image: "/products/google-pixel-9-pro-xl.png",
+        link: "/products/google-pixel-9-pro-xl",
+        accentBadge: "Google Pixel AI"
+      },
+      {
+        id: "vivo-x200-pro",
+        name: "Vivo X200 Pro 5G (ZEISS Optics)",
+        subName: "16GB RAM • 512GB Storage",
+        monthlyEmi: "At ₹7,916/mo",
+        topTag: "★ 200MP ZEISS APO Telephoto • Dimensity 9400",
+        startingPrice: "₹94,999",
+        mrp: "₹1,09,999",
+        discount: "14% OFF",
+        features: ["200MP ZEISS Camera", "6000mAh BlueVolt", "1.5K 120Hz LTPO"],
+        image: "/products/samsung-galaxy-s26-ultra.jpg",
+        link: "/products?category=Mobiles&search=Vivo",
+        accentBadge: "Vivo ZEISS Flagship"
+      },
+      {
+        id: "motorola-edge-50-ultra",
+        name: "Motorola Edge 50 Ultra 5G",
+        subName: "16GB RAM • 512GB (Nordic Wood)",
+        monthlyEmi: "At ₹4,999/mo",
+        topTag: "★ Pantone Validated Camera & Display • 125W TurboPower",
+        startingPrice: "₹59,999",
+        mrp: "₹69,999",
+        discount: "14% OFF",
+        features: ["Real Wood Back", "125W Fast Charge", "144Hz 1.5K pOLED"],
+        image: "/products/google-pixel-9-pro-xl.png",
+        link: "/products?category=Mobiles&search=Motorola",
+        accentBadge: "Motorola Flagship"
+      },
+      {
+        id: "realme-gt-7-pro",
+        name: "Realme GT 7 Pro 5G",
+        subName: "16GB RAM • 512GB Mars Orange",
+        monthlyEmi: "At ₹4,999/mo",
+        topTag: "★ Snapdragon 8 Elite • 6500mAh Huge Battery",
+        startingPrice: "₹59,999",
+        mrp: "₹69,999",
+        discount: "14% OFF",
+        features: ["Snapdragon 8 Elite", "120W SuperVOOC", "Eco2 OLED Plus"],
+        image: "/products/samsung-galaxy-s25-ultra.png",
+        link: "/products?category=Mobiles&search=realme",
+        accentBadge: "Realme Performance"
+      },
+      {
+        id: "xiaomi-15-pro",
+        name: "Xiaomi 15 Pro 5G (Leica Summilux)",
+        subName: "16GB RAM • 512GB Storage",
+        monthlyEmi: "At ₹6,666/mo",
+        topTag: "★ Leica Triple 50MP Cameras • Snapdragon 8 Elite",
+        startingPrice: "₹79,999",
+        mrp: "₹92,999",
+        discount: "14% OFF",
+        features: ["Leica Quad 50MP", "6100mAh Battery", "2K Micro-Curved OLED"],
+        image: "/products/iphone-16-pro-max.png",
+        link: "/products?category=Mobiles&search=Redmi",
+        accentBadge: "Xiaomi Leica"
       }
     ]
   },
@@ -383,7 +554,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Trendsetting Styles & Wardrobe Upgrades.",
     bannerHighlight: "Flat 50% - 80% OFF on Top Designer Brands",
     bannerTagline: "100% Original Brand Assured • Easy 7-Day Free Returns • Fast Doorstep Delivery",
-    bannerHeroImg: "/brand-image.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "👟 Trending Sneakers", href: "/products?category=Fashion&search=Sneakers" },
       { label: "⌚ Luxury Watches", href: "/products?category=Fashion&search=Watch" }
@@ -400,7 +571,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹4,599",
         discount: "52% OFF",
         features: ["Slim Fit", "Durable Stitching", "Classic 5-Pocket"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Fashion&search=Levis",
         accentBadge: "Bestseller Denim"
       },
@@ -414,7 +585,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹8,995",
         discount: "44% OFF",
         features: ["Max Air Unit", "Ultra Lightweight", "Grippy Rubber Outsole"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Fashion&search=Nike",
         accentBadge: "Trending Footwear"
       },
@@ -428,7 +599,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹18,495",
         discount: "54% OFF",
         features: ["Chronograph Dial", "Stainless Steel Bezel", "Mineral Glass"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Fashion&search=Fossil",
         accentBadge: "Luxury Collection"
       },
@@ -442,7 +613,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹9,890",
         discount: "47% OFF",
         features: ["Crystal Lenses", "Iconic Teardrop Shape", "Glare Reduction"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Fashion&search=Ray-Ban",
         accentBadge: "Timeless Icon"
       }
@@ -483,7 +654,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Pure Elegance & Eternal Sparkle.",
     bannerHighlight: "100% BIS Hallmarked Gold & Certified Diamonds",
     bannerTagline: "Zero Making Charges on Select Items • Insured Shipping • Lifetime Exchange Guarantee",
-    bannerHeroImg: "/brand-image.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "✨ 22K Gold Collection", href: "/products?category=Jewellery&search=Gold" },
       { label: "💍 Solitaire Rings", href: "/products?category=Jewellery&search=Diamond" }
@@ -500,7 +671,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹82,000",
         discount: "16% OFF",
         features: ["22K 916 Hallmarked", "Handcrafted Heritage", "Tamper-Proof Seal"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Jewellery&search=Necklace",
         accentBadge: "BIS Hallmarked"
       },
@@ -514,7 +685,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹3,499",
         discount: "46% OFF",
         features: ["Pure 925 Silver", "Adjustable Fit", "Gift Box Packaging"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Jewellery&search=GIVA",
         accentBadge: "Pure 925 Silver"
       },
@@ -528,7 +699,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹32,000",
         discount: "23% OFF",
         features: ["IGI Certified", "Screw-Back Safety", "Daily Wear Elegant"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Jewellery&search=Diamond%20Earrings",
         accentBadge: "IGI Certified"
       },
@@ -542,7 +713,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹40,000",
         discount: "6% OFF",
         features: ["24 Karat 999 Purity", "Tamper-Proof Blister", "Assay Certified"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Jewellery&search=Gold%20Coin",
         accentBadge: "Investment Grade"
       }
@@ -582,7 +753,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Zero Fuel. Pure Performance. Next-Gen EVs.",
     bannerHighlight: "Up to ₹22,000 State Subsidy + ₹0 Down Payment EMI",
     bannerTagline: "Free Home Installation • 5-Year Battery Warranty • 24/7 Roadside Assistance",
-    bannerHeroImg: "/placeholder.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "🛵 150km+ Range Scooters", href: "/products?category=EV%20Vehicles" },
       { label: "⚡ 7.4kW Fast Chargers", href: "/products?category=EV%20Vehicles&search=Charger" }
@@ -599,7 +770,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,58,000",
         discount: "13% OFF",
         features: ["Google Maps Onboard", "Warp Mode Acceleration", "IP67 Water Resistance"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=EV%20Vehicles&search=Ather",
         accentBadge: "Hyperdrive 90km/h"
       },
@@ -613,7 +784,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,47,999",
         discount: "15% OFF",
         features: ["195km Certified Range", "34L Boot Space", "Twin Speakers"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=EV%20Vehicles&search=Ola",
         accentBadge: "Long Range 195km"
       },
@@ -627,7 +798,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,35,000",
         discount: "12% OFF",
         features: ["Flipkey Smart Entry", "Regenerative Braking", "USB Fast Charge"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=EV%20Vehicles&search=TVS",
         accentBadge: "Family Comfort"
       },
@@ -641,7 +812,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹28,000",
         discount: "32% OFF",
         features: ["7.4kW High Speed", "RFID & Mobile App", "Surge Protection"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=EV%20Vehicles&search=Charger",
         accentBadge: "Fast Home Charger"
       }
@@ -681,7 +852,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Unleash Extreme Computing Power.",
     bannerHighlight: "Intel Core Ultra & Apple M3 • Up to ₹15,000 Exchange Bonus",
     bannerTagline: "Genuine Windows 11 & Office Included • 1-Year Onsite Warranty • No Cost EMI",
-    bannerHeroImg: "/placeholder.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "💻 Apple MacBook M3", href: "/products?category=Computers%20%26%20Tablets&search=MacBook" },
       { label: "🎮 RTX 4060 Gaming", href: "/products?category=Computers%20%26%20Tablets&search=Gaming" }
@@ -698,7 +869,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,34,900",
         discount: "15% OFF",
         features: ["Apple M3 Chip", "MagSafe Charging", "Fanless Silent Design"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Computers%20%26%20Tablets&search=MacBook",
         accentBadge: "Apple M3 Power"
       },
@@ -712,7 +883,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,36,990",
         discount: "28% OFF",
         features: ["RTX 4060 8GB GDDR6", "240Hz / 3ms QHD+", "RGB Per-Key Aura Sync"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Computers%20%26%20Tablets&search=ROG",
         accentBadge: "Pro Gaming Rig"
       },
@@ -726,7 +897,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹96,000",
         discount: "22% OFF",
         features: ["2.8K OLED 100% DCI-P3", "Intel AI Boost", "Backlit Keyboard"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Computers%20%26%20Tablets&search=Dell",
         accentBadge: "2.8K OLED Screen"
       },
@@ -740,7 +911,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹59,900",
         discount: "10% OFF",
         features: ["Apple M2 Superchip", "All-Day Battery", "Touch ID Power Button"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Computers%20%26%20Tablets&search=iPad",
         accentBadge: "Apple M2 Tablet"
       }
@@ -779,7 +950,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Connected Living & Wearable Tech.",
     bannerHighlight: "AMOLED Displays, ANC Audio & Smart Home Hubs",
     bannerTagline: "Official Brand Warranty • 100% Genuine • Free Express 1-Day Delivery",
-    bannerHeroImg: "/placeholder.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "⌚ AMOLED Calling Watches", href: "/products?category=Smart%20Technology&search=Watch" },
       { label: "🎧 ANC Earbuds", href: "/products?category=Smart%20Technology&search=Earbuds" }
@@ -796,7 +967,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹49,900",
         discount: "10% OFF",
         features: ["Wide-Angle OLED", "Fast Charging 80% in 30min", "ECG & Blood Oxygen"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Smart%20Technology&search=Apple%20Watch",
         accentBadge: "Official Apple"
       },
@@ -810,7 +981,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹69,999",
         discount: "21% OFF",
         features: ["Grade 4 Titanium", "Dual GPS Frequency", "Emergency Siren 86dB"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Smart%20Technology&search=Galaxy%20Watch",
         accentBadge: "Rugged Ultra"
       },
@@ -824,7 +995,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹34,990",
         discount: "29% OFF",
         features: ["Integrated Processor V1", "8 Microphones ANC", "Speak-to-Chat"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Smart%20Technology&search=Sony",
         accentBadge: "Industry #1 ANC"
       },
@@ -838,7 +1009,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹24,999",
         discount: "24% OFF",
         features: ["14-Day Battery", "AI Sleep Coach", "150+ Sports Modes"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Smart%20Technology&search=Amazfit",
         accentBadge: "AMOLED Bestseller"
       }
@@ -876,7 +1047,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Cinematic 4K Visuals & Immersive Sound.",
     bannerHighlight: "Dolby Atmos, 120Hz VRR & Quantum Dot Displays",
     bannerTagline: "Free Professional Wall-Mount Installation • Extended 2-Year Panel Warranty",
-    bannerHeroImg: "/placeholder.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "📺 55-inch 4K Smart TVs", href: "/products?category=TV%20%26%20Audio&search=55" },
       { label: "🔊 Dolby Atmos Soundbars", href: "/products?category=TV%20%26%20Audio&search=Soundbar" }
@@ -893,7 +1064,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹99,900",
         discount: "42% OFF",
         features: ["X1 4K HDR Processor", "Google TV Voice Control", "Motionflow XR"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=TV%20%26%20Audio&search=Sony",
         accentBadge: "4K Sony Bravia"
       },
@@ -907,7 +1078,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,79,990",
         discount: "39% OFF",
         features: ["Infinite Contrast OLED", "NVIDIA G-Sync", "webOS 24 5-Year Updates"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=TV%20%26%20Audio&search=LG",
         accentBadge: "Perfect OLED"
       },
@@ -921,7 +1092,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹59,999",
         discount: "33% OFF",
         features: ["590W Powerful Output", "10-inch Deep Bass Sub", "PureVoice Tech"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=TV%20%26%20Audio&search=JBL",
         accentBadge: "Dolby Atmos 590W"
       },
@@ -935,7 +1106,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹98,900",
         discount: "36% OFF",
         features: ["PurColor Dynamic Tone", "Q-Symphony Audio", "SmartThings IoT Hub"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1461151304267-38535e780c79?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=TV%20%26%20Audio&search=Samsung",
         accentBadge: "65-inch Giant 4K"
       }
@@ -974,7 +1145,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     bannerHeadline: "Smart Kitchen & Master Culinary Gear.",
     bannerHighlight: "Up to 55% Off on 5-Star Energy Star Appliances",
     bannerTagline: "100% Food Grade Materials • 2-Year Motor Warranty • Free Home Delivery",
-    bannerHeroImg: "/placeholder.png",
+    bannerHeroImg: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600",
     bannerPills: [
       { label: "🍟 XXL Air Fryers", href: "/products?category=Kitchen%20Appliances&search=Air%20Fryer" },
       { label: "☕ Espresso Makers", href: "/products?category=Kitchen%20Appliances&search=Coffee" }
@@ -991,7 +1162,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹14,995",
         discount: "40% OFF",
         features: ["Rapid Air Technology", "Touchscreen Control", "Keep Warm Function"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Kitchen%20Appliances&search=Philips",
         accentBadge: "XXL Air Fryer"
       },
@@ -1005,7 +1176,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹11,995",
         discount: "46% OFF",
         features: ["15-Bar Powerful Pump", "High Pressure Frothing", "Overheat Protection"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Kitchen%20Appliances&search=Coffee",
         accentBadge: "Italian Espresso"
       },
@@ -1019,7 +1190,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹10,990",
         discount: "36% OFF",
         features: ["1000W HiFlux Motor", "Active Cooling Tech", "Ergonomic Handles"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Kitchen%20Appliances&search=Bosch",
         accentBadge: "1000W Heavy Duty"
       },
@@ -1033,7 +1204,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹12,999",
         discount: "42% OFF",
         features: ["Pressure Cook & Slow Cook", "Sous Vide & Sauté", "10+ Safety Features"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Kitchen%20Appliances&search=Instant%20Pot",
         accentBadge: "7-in-1 Smart Cook"
       }
@@ -1120,7 +1291,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹3,499",
         discount: "46% OFF",
         features: ["Pure 925 Silver", "Adjustable Fit", "Gift Box"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=Jewellery&search=GIVA",
         accentBadge: "BIS Hallmarked"
       },
@@ -1134,7 +1305,7 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         mrp: "₹1,58,000",
         discount: "13% OFF",
         features: ["Google Maps", "Warp Mode", "IP67 Water Resistance"],
-        image: "/placeholder.png",
+        image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600",
         link: "/products?category=EV%20Vehicles&search=Ather",
         accentBadge: "Hyperdrive 90km/h"
       }
@@ -1149,6 +1320,9 @@ function getCategoryConfig(categoryParam?: string | null): { key: string; config
 
   const clean = categoryParam.toLowerCase().trim();
 
+  if (clean.includes("for-you") || clean === "for you" || clean === "foryou" || clean === "for_you") {
+    return { key: "for-you", config: CATEGORY_CONFIGS["for-you"] };
+  }
   if (clean.includes("mobile access") || clean.includes("accessories") || clean === "accessories") {
     return { key: "accessories", config: CATEGORY_CONFIGS.accessories };
   }
@@ -1189,18 +1363,160 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const categoryFilter = category || searchParams.get("category");
   const brandSearch = searchParams.get("search") || "";
 
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(brandSearch || null);
   const [primeFilter, setPrimeFilter] = useState(false);
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
 
-  const { config } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+    setRecentViewedIds(getRecentlyViewedProductIds());
+
+    const handleUpdate = () => {
+      setRecentSearches(getRecentSearches());
+      setRecentViewedIds(getRecentlyViewedProductIds());
+    };
+    window.addEventListener("recent_history_updated", handleUpdate);
+    return () => window.removeEventListener("recent_history_updated", handleUpdate);
+  }, []);
+
+  const { config, key: activeKey } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
+
+  // Sync selectedBrand with URL query param
+  const selectedBrand = brandSearch || null;
+
+  const handleBrandClick = (bQuery: string) => {
+    const isCurrentlySelected = selectedBrand?.toLowerCase() === bQuery.toLowerCase();
+    if (isCurrentlySelected) {
+      // Unselect brand -> return to main category
+      const targetUrl = categoryFilter 
+        ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+        : `/products`;
+      router.push(targetUrl);
+    } else {
+      // Select brand
+      const targetUrl = categoryFilter 
+        ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(bQuery)}`
+        : `/products?search=${encodeURIComponent(bQuery)}`;
+      router.push(targetUrl);
+    }
+  };
+
+  // Filter deals based on selectedBrand, primeFilter, deliveryFilter
+  const displayedDeals = useMemo(() => {
+    let list = config.deals;
+    
+    if (selectedBrand) {
+      const q = selectedBrand.toLowerCase();
+      const matched = list.filter(d => 
+        d.name.toLowerCase().includes(q) || 
+        d.subName.toLowerCase().includes(q) || 
+        d.accentBadge.toLowerCase().includes(q) ||
+        (d.features && d.features.some(f => f.toLowerCase().includes(q)))
+      );
+      if (matched.length > 0) {
+        list = matched;
+      }
+    }
+
+    if (primeFilter) {
+      list = list.filter(d => d.topTag.includes("★") || d.accentBadge.includes("Official") || d.accentBadge.includes("Flagship"));
+    }
+
+    return list;
+  }, [config.deals, selectedBrand, primeFilter]);
+
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/productList");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCatalogProducts(data);
+        }
+      } catch (err) {
+        console.error("Failed to load catalog products:", err);
+      }
+    }
+    fetchProducts();
+  }, []);
+
+  const matchedCatalogProducts = useMemo(() => {
+    if (!catalogProducts || catalogProducts.length === 0) return [];
+    
+    let list = catalogProducts;
+    
+    // For You Mode: Match by recent searches and viewed products
+    if (activeKey === "for-you") {
+      if (selectedBrand) {
+        const q = selectedBrand.toLowerCase();
+        return list.filter(p => {
+          const name = (p.name || "").toLowerCase();
+          const cat = (p.category || p.category_name || "").toLowerCase();
+          const sub = (p.sub_category || "").toLowerCase();
+          return name.includes(q) || cat.includes(q) || sub.includes(q);
+        });
+      }
+
+      if (recentSearches.length > 0 || recentViewedIds.length > 0) {
+        const matched = list.filter((p) => {
+          const name = (p.name || "").toLowerCase();
+          const cat = (p.category || p.category_name || "").toLowerCase();
+          const sub = (p.sub_category || "").toLowerCase();
+          const isViewed = recentViewedIds.includes(p.id);
+          const matchesSearch = recentSearches.some((s) => {
+            const sq = s.toLowerCase();
+            return name.includes(sq) || cat.includes(sq) || sub.includes(sq);
+          });
+          return isViewed || matchesSearch;
+        });
+
+        if (matched.length > 0) {
+          return matched;
+        }
+      }
+
+      // Default recommendations if no history
+      return list.slice(0, 16);
+    }
+
+    // Standard category filter
+    if (categoryFilter) {
+      const catKey = categoryFilter.toLowerCase();
+      list = list.filter(p => {
+        const c = (p.category || p.category_name || "").toLowerCase();
+        const cid = (p.category_id || "").toLowerCase();
+        const sub = (p.sub_category || "").toLowerCase();
+        return c.includes(catKey) || cid.includes(catKey) || sub.includes(catKey) || catKey.includes(c);
+      });
+    }
+
+    // Filter by search query or brand
+    if (selectedBrand) {
+      const q = selectedBrand.toLowerCase();
+      list = list.filter(p => {
+        const name = (p.name || "").toLowerCase();
+        const cat = (p.category || p.category_name || "").toLowerCase();
+        const sub = (p.sub_category || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        return name.includes(q) || cat.includes(q) || sub.includes(q) || desc.includes(q);
+      });
+    }
+
+    return list;
+  }, [catalogProducts, categoryFilter, selectedBrand, activeKey, recentSearches, recentViewedIds]);
+
+  // Current active brand name
+  const activeBrandObj = config.brands.find(b => selectedBrand && b.query.toLowerCase() === selectedBrand.toLowerCase());
+  const activeBrandTitle = activeBrandObj ? `${activeBrandObj.name}` : "";
 
   return (
     <div className="w-full bg-[#f8fafc] text-slate-800 rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs mb-6">
       
-
       {/* =========================================================================
-          2. MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)
+          MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)
       ========================================================================= */}
       <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -1212,24 +1528,34 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               <h3 className="font-bold text-slate-900 text-[13px] mb-1.5">Category</h3>
               <Link 
                 href={config.parentCategory.href} 
-                className="text-slate-600 hover:text-[#2E6F40] flex items-center gap-1 font-semibold mb-1"
+                className="text-slate-600 hover:text-[#2E6F40] flex items-center gap-1 font-semibold mb-1 hover:underline transition-colors"
               >
                 <span>{config.parentCategory.name}</span>
               </Link>
               
               <div className="pl-2 border-l-2 border-[#2E6F40]/30 mt-1.5 space-y-1.5">
-                <span className="font-bold text-[#2E6F40] block">{config.categoryHeading}</span>
-                <ul className="pl-2 space-y-1.5 text-slate-600">
-                  {config.categoryTree.map((c, i) => (
-                    <li key={i}>
-                      <Link 
-                        href={c.href}
-                        className={`hover:text-[#2E6F40] transition-colors ${c.bold ? "font-bold text-slate-900" : ""}`}
-                      >
-                        {c.name}
-                      </Link>
-                    </li>
-                  ))}
+                <span className="font-bold text-[#2E6F40] block text-xs">{config.categoryHeading}</span>
+                <ul className="pl-1 space-y-1 text-slate-600">
+                  {config.categoryTree.map((c, i) => {
+                    const isTreeActive = 
+                      (categoryFilter && c.href.toLowerCase().includes(encodeURIComponent(categoryFilter).toLowerCase())) ||
+                      (!categoryFilter && c.href === "/products");
+
+                    return (
+                      <li key={i}>
+                        <Link 
+                          href={c.href}
+                          className={`flex items-center gap-1.5 py-1 px-2 rounded-lg transition-all ${
+                            isTreeActive 
+                              ? "font-black text-[#2E6F40] bg-emerald-50 border border-emerald-200/80 shadow-2xs" 
+                              : "text-slate-600 hover:text-[#2E6F40] hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className={isTreeActive ? "font-bold" : ""}>{c.name}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -1238,14 +1564,16 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             <div className="pt-3 border-t border-slate-200">
               <h3 className="font-bold text-slate-900 text-[13px] mb-2">Assurance &amp; Delivery</h3>
               <label 
-                className="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-[#2E6F40] font-medium"
+                className={`flex items-center gap-2 cursor-pointer p-1.5 rounded-lg transition-colors ${
+                  primeFilter ? "bg-emerald-50" : "hover:bg-slate-50"
+                }`}
                 onClick={() => setPrimeFilter(!primeFilter)}
               >
                 <input 
                   type="checkbox" 
                   checked={primeFilter} 
                   onChange={() => {}} 
-                  className="rounded text-[#2E6F40] focus:ring-[#2E6F40]"
+                  className="rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
                 />
                 <span className="font-black text-[#2E6F40] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-xs">
                   ✓ MY SHOP Assured
@@ -1256,56 +1584,72 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             {/* Delivery Day */}
             <div className="pt-3 border-t border-slate-200">
               <h3 className="font-bold text-slate-900 text-[13px] mb-2">Delivery Speed</h3>
-              <div className="space-y-1.5 text-slate-700">
-                {["Get It Today (Express)", "Get It by Tomorrow"].map((day, i) => (
-                  <label 
-                    key={i} 
-                    className="flex items-center gap-2 cursor-pointer hover:text-[#2E6F40]"
-                    onClick={() => setDeliveryFilter(deliveryFilter === day ? null : day)}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={deliveryFilter === day} 
-                      onChange={() => {}} 
-                      className="rounded text-[#2E6F40] focus:ring-[#2E6F40]"
-                    />
-                    <span>{day}</span>
-                  </label>
-                ))}
+              <div className="space-y-1 text-slate-700">
+                {["Get It Today (Express)", "Get It by Tomorrow"].map((day, i) => {
+                  const isDayActive = deliveryFilter === day;
+                  return (
+                    <label 
+                      key={i} 
+                      className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                        isDayActive ? "bg-emerald-50 text-[#2E6F40] font-bold" : "hover:bg-slate-50 text-slate-700"
+                      }`}
+                      onClick={() => setDeliveryFilter(isDayActive ? null : day)}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isDayActive} 
+                        onChange={() => {}} 
+                        className="rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
+                      />
+                      <span>{day}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
             {/* Brands Filter */}
             <div className="pt-3 border-t border-slate-200">
-              <h3 className="font-bold text-slate-900 text-[13px] mb-2">Popular Brands</h3>
-              <div className="space-y-1.5 text-slate-700 max-h-48 overflow-y-auto pr-1">
-                {config.brands.map((b, i) => (
-                  <label 
-                    key={i} 
-                    className="flex items-center gap-2 cursor-pointer hover:text-[#2E6F40]"
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-slate-900 text-[13px]">Popular Brands</h3>
+                {selectedBrand && (
+                  <button
                     onClick={() => {
-                      const newBrand = selectedBrand === b.query ? null : b.query;
-                      setSelectedBrand(newBrand);
-                      if (newBrand) {
-                        const targetUrl = categoryFilter 
-                          ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(newBrand)}`
-                          : `/products?search=${encodeURIComponent(newBrand)}`;
-                        router.push(targetUrl);
-                      } else {
-                        const targetUrl = categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : `/products`;
-                        router.push(targetUrl);
-                      }
+                      const targetUrl = categoryFilter 
+                        ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                        : `/products`;
+                      router.push(targetUrl);
                     }}
+                    className="text-[10px] font-bold text-slate-400 hover:text-slate-800 underline cursor-pointer"
                   >
-                    <input 
-                      type="checkbox" 
-                      checked={selectedBrand === b.query} 
-                      onChange={() => {}} 
-                      className="rounded text-[#2E6F40] focus:ring-[#2E6F40]"
-                    />
-                    <span>{b.name}</span>
-                  </label>
-                ))}
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1 text-slate-700 max-h-56 overflow-y-auto pr-1">
+                {config.brands.map((b, i) => {
+                  const isChecked = selectedBrand?.toLowerCase() === b.query.toLowerCase();
+                  return (
+                    <label 
+                      key={i} 
+                      className={`flex items-center gap-2.5 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                        isChecked ? "bg-emerald-50 text-[#2E6F40] font-bold border border-emerald-200" : "hover:bg-slate-50 text-slate-700"
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleBrandClick(b.query);
+                      }}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked} 
+                        onChange={() => {}} 
+                        className="w-4 h-4 rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
+                      />
+                      <span className="text-xs">{b.name}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -1315,7 +1659,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               <div className="space-y-1">
                 <Link 
                   href={categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : "/products"} 
-                  className="flex items-center gap-1.5 text-amber-500 hover:opacity-80"
+                  className="flex items-center gap-1.5 text-amber-500 hover:opacity-80 p-1 rounded-lg hover:bg-slate-50"
                 >
                   <div className="flex">
                     {[...Array(4)].map((_, i) => (
@@ -1362,7 +1706,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <span className="text-amber-400 font-bold text-xs">{config.bannerBadge}</span>
                   </div>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight">
-                    {config.bannerHeadline} <br />
+                    {activeBrandTitle ? `${activeBrandTitle} Offers & Deals` : config.bannerHeadline} <br />
                     <span className="text-amber-300">{config.bannerHighlight}</span>
                   </h1>
                   <p className="text-xs sm:text-sm text-emerald-100 font-medium">
@@ -1394,21 +1738,41 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 <div>
                   <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                     <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
-                    <span>{config.spotlightTitle}</span>
+                    <span>
+                      {activeBrandTitle ? `Spotlight ${activeBrandTitle} Deals` : config.spotlightTitle}
+                    </span>
+                    <span className="text-xs font-bold text-slate-400 font-mono">
+                      ({displayedDeals.length} offers)
+                    </span>
                   </h2>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
                     Click on any card to view deals, EMI calculator &amp; fast checkout
                   </p>
                 </div>
 
-                <span className="text-xs font-bold text-[#2E6F40] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                  ⚡ Live Price Drops
-                </span>
+                <div className="flex items-center gap-2">
+                  {selectedBrand && (
+                    <button 
+                      onClick={() => {
+                        const targetUrl = categoryFilter 
+                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                          : `/products`;
+                        router.push(targetUrl);
+                      }}
+                      className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full hover:bg-red-100 transition-colors"
+                    >
+                      ✕ Clear Filter ({selectedBrand})
+                    </button>
+                  )}
+                  <span className="text-xs font-bold text-[#2E6F40] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    ⚡ Live Price Drops
+                  </span>
+                </div>
               </div>
 
               {/* Horizontal Cards Grid (2 Columns on Medium/Large Screens) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {config.deals.map((deal) => (
+                {displayedDeals.map((deal) => (
                   <Link
                     key={deal.id}
                     href={deal.link}
@@ -1487,8 +1851,65 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               </div>
             </div>
 
-          </div>
+            {/* =========================================================================
+                4. MATCHING PRODUCTS CATALOG SHELF (Grid Layout)
+            ========================================================================= */}
+            {matchedCatalogProducts.length > 0 && (
+              <div className="bg-white p-4 sm:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      <span className="w-2.5 h-6 bg-blue-600 rounded-full" />
+                      <span>
+                        {activeKey === "for-you"
+                          ? "✨ Recommended & Products Matching Your Recent Searches"
+                          : selectedBrand 
+                          ? `All Products Matching "${selectedBrand}"` 
+                          : `${config.categoryHeading} Catalog`}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400 font-mono">
+                        ({matchedCatalogProducts.length} items)
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      {activeKey === "for-you"
+                        ? "Personalized dynamically based on the products and keywords you searched"
+                        : "Verified authentic items with fast delivery and official warranty"}
+                    </p>
+                  </div>
+                </div>
 
+                {/* Recent Searches Pills when in For You mode */}
+                {activeKey === "for-you" && recentSearches.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap p-3 rounded-2xl bg-blue-50/60 border border-blue-100">
+                    <span className="text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
+                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs text-blue-600" />
+                      <span>Your Recent Searches:</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {recentSearches.map((term, sIdx) => (
+                        <button
+                          key={sIdx}
+                          type="button"
+                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`)}
+                          className="px-2.5 py-1 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                        >
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                  {matchedCatalogProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} viewMode="grid" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
       </div>
     </div>

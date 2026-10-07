@@ -7,6 +7,7 @@ import QuantityModal from "./QuantityModal";
 import ProductDetailModal from "./ProductDetailModal";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { addRecentlyViewedProduct } from "@/lib/recentHistory";
 import { 
   faStar, 
   faBolt, 
@@ -266,7 +267,10 @@ export default function ProductCard({
       ) : (
         /* ===================== AMAZON / FLIPKART STYLE RECTANGULAR BOX GRID CARD ===================== */
         <div 
-          onClick={() => router.push(`/products/${product.id}`)}
+          onClick={() => {
+            addRecentlyViewedProduct(product.id);
+            router.push(`/products/${product.id}`);
+          }}
           className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer p-2.5 sm:p-3.5 ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
@@ -372,35 +376,35 @@ export default function ProductCard({
           </div>
 
           {/* 3. CONSISTENT BOTTOM ACTION BUTTONS (MY SHOP Brand Gold & Emerald Green) */}
-          <div className="mt-2.5 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2">
+          <div className="mt-auto pt-2.5 border-t border-slate-100">
             {isOutOfStock ? (
               <button
                 disabled
-                className="w-full py-2 rounded-xl bg-slate-100 text-slate-400 text-[11px] sm:text-xs font-bold cursor-not-allowed text-center"
+                className="w-full py-2 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
               >
                 Out of Stock
               </button>
             ) : (
-              <>
+              <div className="grid grid-cols-2 gap-1.5 w-full">
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[10px] sm:text-xs font-black transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs border border-[#d4b94a] whitespace-nowrap cursor-pointer"
+                  className="w-full py-2 px-1 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-2xs border border-[#d4b94a] cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] sm:text-xs text-slate-900" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] shrink-0 text-slate-900" />
                   <span className="truncate">Add to Cart</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="flex-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[10px] sm:text-xs font-black transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-xs border border-[#245e35] whitespace-nowrap cursor-pointer"
+                  className="w-full py-2 px-1 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white text-[11px] font-black transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-xs border border-[#245e35] cursor-pointer"
                   title="Buy Now"
                 >
-                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] sm:text-xs text-white" />
+                  <FontAwesomeIcon icon={faBagShopping} className="text-[10px] shrink-0 text-white" />
                   <span className="truncate">Buy Now</span>
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>

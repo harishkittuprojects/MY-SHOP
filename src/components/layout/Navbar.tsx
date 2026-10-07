@@ -21,9 +21,11 @@ import {
   faWrench,
   faBolt,
   faGem,
-  faMobileAlt
+  faMobileAlt,
+  faClockRotateLeft
 } from "@fortawesome/free-solid-svg-icons";
 import StreamingTagline from "./StreamingTagline";
+import { addRecentSearch, getRecentSearches, clearRecentHistory } from "@/lib/recentHistory";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,12 +34,24 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
+
+  useEffect(() => {
+    // Load recent searches
+    setRecentSearches(getRecentSearches());
+
+    const handleRecentUpdate = () => {
+      setRecentSearches(getRecentSearches());
+    };
+    window.addEventListener("recent_history_updated", handleRecentUpdate);
+    return () => window.removeEventListener("recent_history_updated", handleRecentUpdate);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -92,25 +106,63 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const searchSuggestions = searchQuery.trim().length > 1
+  // Amazon / Flipkart Search Trends & Data
+  const TRENDING_SEARCHES = [
+    { label: "iPhone 16 Pro Max", category: "Mobiles" },
+    { label: "Samsung Galaxy S25 Ultra", category: "Mobiles" },
+    { label: "65W GaN Fast Charger", category: "Mobile Accessories" },
+    { label: "Certified Refurbished iPhone", category: "Old / Refurbished Mobiles" },
+    { label: "22K BIS Hallmarked Gold", category: "Jewellery" },
+    { label: "Smartwatch AMOLED", category: "Smart Technology" },
+    { label: "Electric Scooters", category: "EV Vehicles" },
+  ];
+
+  const POPULAR_BRANDS = [
+    { name: "Apple", icon: "🍏", category: "Mobiles" },
+    { name: "Samsung", icon: "🌌", category: "Mobiles" },
+    { name: "OnePlus", icon: "🔴", category: "Mobiles" },
+    { name: "Google Pixel", icon: "🔘", category: "Mobiles" },
+    { name: "Anker", icon: "⚡", category: "Mobile Accessories" },
+    { name: "Spigen", icon: "🛡️", category: "Mobile Accessories" },
+    { name: "Nike", icon: "✔️", category: "Fashion" },
+    { name: "Tanishq", icon: "👑", category: "Jewellery" }
+  ];
+
+  // Matched Brands for query
+  const matchedBrands = searchQuery.trim().length > 0
+    ? POPULAR_BRANDS.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : [];
+
+  // Matched Products
+  const searchSuggestions = searchQuery.trim().length > 0
     ? products
         .filter((p) => {
           const q = searchQuery.toLowerCase();
-          return (
-            (p.name && p.name.toLowerCase().includes(q)) ||
-            (p.category && p.category.toLowerCase().includes(q)) ||
-            (p.category_name && p.category_name.toLowerCase().includes(q)) ||
-            (p.sub_category && p.sub_category.toLowerCase().includes(q))
-          );
+          const nameMatch = (p.name || "").toLowerCase().includes(q);
+          const catMatch = (p.category || p.category_name || "").toLowerCase().includes(q);
+          const subMatch = (p.sub_category || "").toLowerCase().includes(q);
+          const descMatch = (p.description || "").toLowerCase().includes(q);
+          return nameMatch || catMatch || subMatch || descMatch;
         })
         .slice(0, 6)
     : [];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
+  // Matching Categories
+  const matchedCategories = searchQuery.trim().length > 0
+    ? categories.filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 3)
+    : [];
+
+  const handleSearch = (e?: React.FormEvent, customQuery?: string, categoryFilter?: string) => {
+    if (e) e.preventDefault();
+    const queryToUse = customQuery !== undefined ? customQuery : searchQuery;
+    if (queryToUse.trim()) {
+      addRecentSearch(queryToUse.trim());
       setShowSuggestions(false);
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      let url = `/products?search=${encodeURIComponent(queryToUse.trim())}`;
+      if (categoryFilter) {
+        url = `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(queryToUse.trim())}`;
+      }
+      router.push(url);
       setIsMobileMenuOpen(false);
     }
   };
@@ -161,7 +213,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center gap-6 lg:gap-8 text-[#222222]">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[#222222]">
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
           <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
           <Link href="/services/display-replacement" className={`hover:text-gray-600 font-medium flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}>
@@ -173,18 +225,18 @@ export default function Navbar() {
         </div>
 
         {/* Actions Area */}
-        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 z-50 flex-shrink-0">
-          {/* Live Search Bar with Suggestions */}
+        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 z-50 flex-shrink-0">
+          {/* Live Search Bar with Amazon / Flipkart Style Suggestions */}
           <div ref={searchContainerRef} className="relative">
             <form 
-              onSubmit={handleSearch}
-              className="flex items-center bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 transition-all focus-within:ring-2 focus-within:ring-secondary/30 focus-within:border-secondary focus-within:bg-white w-28 xs:w-36 sm:w-48 md:w-56 lg:w-64 shadow-xs"
+              onSubmit={(e) => handleSearch(e)}
+              className="flex items-center bg-slate-100 hover:bg-slate-200/60 border border-slate-300/80 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-600 focus-within:bg-white w-32 xs:w-44 sm:w-60 md:w-72 lg:w-80 xl:w-96 shadow-xs"
             >
-              <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-1.5 sm:mr-2 flex-shrink-0" />
+              <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-2 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search brands, products..."
-                className="bg-transparent border-none outline-none w-full text-[11px] sm:text-xs md:text-sm text-slate-800 placeholder:text-slate-400 font-medium"
+                placeholder="Search brands, products, electronics..."
+                className="bg-transparent border-none outline-none w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 font-medium"
                 value={searchQuery}
                 onFocus={() => setShowSuggestions(true)}
                 onChange={(e) => {
@@ -197,58 +249,252 @@ export default function Navbar() {
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
-                    setShowSuggestions(false);
                   }}
-                  className="text-slate-400 hover:text-slate-600 p-0.5"
+                  className="text-slate-400 hover:text-slate-700 p-1 flex-shrink-0 cursor-pointer"
+                  title="Clear"
                 >
-                  <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                  <FontAwesomeIcon icon={faTimes} className="text-xs" />
                 </button>
               )}
             </form>
 
-            {/* Suggestions Dropdown (Amazon style) */}
-            {showSuggestions && searchSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2 z-50 min-w-[280px] max-h-[380px] overflow-y-auto">
-                <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                  Products &amp; Suggestions
-                </div>
-                {searchSuggestions.map((prod) => (
+            {/* Amazon & Flipkart Style Suggestions Dropdown */}
+            {showSuggestions && (
+              <div className="absolute top-full right-0 sm:right-auto sm:left-0 mt-2 bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/90 z-50 w-[310px] xs:w-[360px] sm:w-[440px] md:w-[480px] lg:w-[520px] max-h-[480px] overflow-y-auto animate-in fade-in zoom-in-95 duration-150 divide-y divide-slate-100">
+                
+                {/* 1. When typing: Dynamic Department & In-Category Suggestions */}
+                {searchQuery.trim().length > 0 && (
+                  <div className="p-2 sm:p-3 bg-slate-50/70">
+                    <button
+                      type="button"
+                      onClick={() => handleSearch(undefined, searchQuery)}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 flex items-center justify-between group transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs group-hover:text-blue-600" />
+                        <span className="truncate">Search for <span className="font-black text-blue-600">"{searchQuery}"</span> in All Departments</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 group-hover:text-blue-600 shrink-0">↵ Enter</span>
+                    </button>
+
+                    {/* Quick department specific jumps */}
+                    {["Mobiles", "Mobile Accessories", "Fashion", "Jewellery"].map((dept) => (
+                      <button
+                        key={dept}
+                        type="button"
+                        onClick={() => handleSearch(undefined, searchQuery, dept)}
+                        className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-white text-xs font-medium text-slate-600 hover:text-blue-600 flex items-center justify-between group transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <span className="text-slate-300 group-hover:text-blue-400">↳</span>
+                          <span className="truncate">in <span className="font-bold text-slate-800">{dept}</span></span>
+                        </div>
+                        <span className="text-[10px] text-blue-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Jump →</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* 2. Matched Brands */}
+                {matchedBrands.length > 0 && (
+                  <div className="p-3">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1 flex items-center gap-1.5">
+                      <span>👑</span>
+                      <span>Matching Brands</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {matchedBrands.map((b, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSearch(undefined, b.name, b.category)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-xs font-bold text-slate-800 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
+                        >
+                          <span>{b.icon}</span>
+                          <span>{b.name}</span>
+                          <span className="text-[9px] text-slate-400 font-normal">({b.category})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Matched Products List with Photos & Pricing */}
+                {searchSuggestions.length > 0 && (
+                  <div className="p-2 sm:p-3">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-2 flex items-center justify-between">
+                      <span>Matching Products</span>
+                      <span className="text-[9px] text-blue-600 font-bold">{searchSuggestions.length} found</span>
+                    </div>
+
+                    <div className="space-y-1">
+                      {searchSuggestions.map((prod) => {
+                        const originalPrice = prod.original_price && prod.original_price > prod.price 
+                          ? prod.original_price 
+                          : Math.round(prod.price * 1.18);
+                        const discount = Math.round(((originalPrice - prod.price) / originalPrice) * 100);
+
+                        return (
+                          <button
+                            key={prod.id}
+                            type="button"
+                            onClick={() => {
+                              setShowSuggestions(false);
+                              setSearchQuery("");
+                              router.push(`/products/${prod.id}`);
+                            }}
+                            className="w-full text-left p-2 rounded-xl hover:bg-slate-50 flex items-center gap-3 transition-all group border border-transparent hover:border-slate-200/80 cursor-pointer"
+                          >
+                            <div className="relative w-11 h-11 rounded-xl bg-white border border-slate-200/80 flex-shrink-0 overflow-hidden p-1 shadow-2xs group-hover:border-blue-300">
+                              <Image
+                                src={prod.image_url || prod.image || "/products/iphone-16-pro-max.png"}
+                                alt={prod.name}
+                                fill
+                                className="object-contain p-0.5 group-hover:scale-105 transition-transform"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                                  {prod.categories?.name || prod.category || "Store"}
+                                </span>
+                                {prod.rating && (
+                                  <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200 flex items-center gap-0.5">
+                                    <span>★</span>
+                                    <span>{Number(prod.rating).toFixed(1)}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 truncate leading-snug">
+                                {prod.name}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs sm:text-sm text-slate-900 font-black">
+                                  ₹{Math.floor(prod.price).toLocaleString("en-IN")}
+                                </span>
+                                {originalPrice > prod.price && (
+                                  <span className="text-[10px] text-slate-400 line-through">
+                                    ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
+                                  </span>
+                                )}
+                                {discount > 0 && (
+                                  <span className="text-[10px] font-black text-emerald-600">
+                                    {discount}% OFF
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <FontAwesomeIcon icon={faArrowRight} className="text-xs text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all shrink-0 pr-1" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Empty Search State: Recent Searches, Trending & Popular Departments (Amazon / Flipkart Style) */}
+                {searchQuery.trim().length === 0 && (
+                  <div className="p-3 sm:p-4 space-y-4">
+                    {/* User's Recent Searches */}
+                    {recentSearches.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1">
+                          <span className="flex items-center gap-1.5 text-blue-600">
+                            <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
+                            <span>Your Recent Searches</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearRecentHistory();
+                              setRecentSearches([]);
+                            }}
+                            className="text-slate-400 hover:text-red-600 text-[10px] font-bold lowercase hover:underline cursor-pointer"
+                          >
+                            clear all
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {recentSearches.map((item, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleSearch(undefined, item)}
+                              className="px-3 py-1.5 rounded-full bg-blue-50/70 hover:bg-blue-100 border border-blue-200/90 text-xs font-semibold text-blue-800 flex items-center gap-1.5 transition-colors group"
+                            >
+                              <FontAwesomeIcon icon={faClockRotateLeft} className="text-[9px] text-blue-400 group-hover:text-blue-600" />
+                              <span>{item}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Trending Searches */}
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1 flex items-center gap-1.5">
+                        <span>🔥</span>
+                        <span>Trending Searches on MY SHOP</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {TRENDING_SEARCHES.map((item, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSearch(undefined, item.label, item.category)}
+                            className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-xs font-semibold text-slate-700 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
+                          >
+                            <FontAwesomeIcon icon={faSearch} className="text-[9px] text-slate-400" />
+                            <span>{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Popular Departments */}
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1 flex items-center gap-1.5">
+                        <span>🛍️</span>
+                        <span>Popular Departments</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { name: "Mobiles", icon: "📱", href: "/products?category=Mobiles" },
+                          { name: "Refurbished", icon: "♻️", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
+                          { name: "Accessories", icon: "🔌", href: "/products?category=Mobile%20Accessories" },
+                          { name: "Fashion", icon: "👗", href: "/products?category=Fashion" },
+                          { name: "Jewellery", icon: "💎", href: "/products?category=Jewellery" },
+                          { name: "Smart Tech", icon: "💡", href: "/products?category=Smart%20Technology" }
+                        ].map((d, idx) => (
+                          <Link
+                            key={idx}
+                            href={d.href}
+                            onClick={() => setShowSuggestions(false)}
+                            className="p-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-300 flex items-center gap-2 transition-colors group"
+                          >
+                            <span className="text-base">{d.icon}</span>
+                            <span className="text-xs font-bold text-slate-800 group-hover:text-blue-700">{d.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Bottom "See all results" Footer */}
+                {searchQuery.trim().length > 0 && (
                   <button
-                    key={prod.id}
                     type="button"
-                    onClick={() => {
-                      setShowSuggestions(false);
-                      setSearchQuery("");
-                      router.push(`/products/${prod.id}`);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-3 transition-colors group border-b border-slate-50 last:border-0"
+                    onClick={(e) => handleSearch(e)}
+                    className="w-full text-center py-2.5 px-4 text-xs font-black text-blue-600 hover:text-blue-800 bg-blue-50/70 hover:bg-blue-100/70 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <div className="relative w-8 h-8 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden">
-                      <Image
-                        src={prod.image_url || prod.image || "/mobile-logo.png"}
-                        alt={prod.name}
-                        fill
-                        className="object-contain p-0.5"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-800 group-hover:text-secondary truncate">
-                        {prod.name}
-                      </p>
-                      <p className="text-[10px] text-emerald-700 font-black">
-                        ₹{Math.floor(prod.price).toLocaleString("en-IN")}
-                      </p>
-                    </div>
+                    <span>See all results for "{searchQuery}"</span>
+                    <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
                   </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleSearch}
-                  className="w-full text-center py-2 text-xs font-bold text-secondary bg-emerald-50/60 hover:bg-emerald-50 transition-colors block"
-                >
-                  See all results for "{searchQuery}" →
-                </button>
+                )}
+
               </div>
             )}
           </div>

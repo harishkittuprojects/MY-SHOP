@@ -21,7 +21,6 @@ import HomeBanners from "@/components/home/HomeBanners";
 import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
-import AmazonFestiveShowcase from "@/components/home/AmazonFestiveShowcase";
 import { useRouter } from "next/navigation";
 
 // Category configurations with meta details, icons, and highlights
@@ -413,7 +412,7 @@ export default function HomeContent() {
 
   // Flipkart-style top icon categories
   const TOP_FLIPKART_CATEGORIES = [
-    { id: "for-you", name: "For You", icon: "🛍️", url: "/products", isActive: true, hasMenu: false },
+    { id: "for-you", name: "For You", icon: "🛍️", url: "/products?category=for-you", isActive: true, hasMenu: false },
     { id: "fashion", name: "Fashion", icon: "👗", url: "/products?category=Fashion", hasMenu: true },
     { id: "mobiles", name: "Mobiles", icon: "📱", url: "/products?category=Mobiles", hasMenu: true },
     { id: "electronics", name: "Electronics", icon: "💻", url: "/products?category=Smart%20Technology", hasMenu: true },
