@@ -237,7 +237,7 @@ export default function ProductCard({
           </div>
         </div>
       ) : (
-        /* ===================== ZEPTO-STYLE 70% IMAGE / 30% CONTENT GRID CARD ===================== */
+        /* ===================== ZEPTO-STYLE 65% IMAGE / 35% CONTENT GRID CARD ===================== */
         <div 
           onClick={() => {
             addRecentlyViewedProduct(product.id);
@@ -248,8 +248,8 @@ export default function ProductCard({
           }`}
         >
           <div>
-            {/* 1. 70% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Tall 4/5 Aspect Ratio) */}
-            <div className="relative w-full aspect-[4/5] bg-slate-100 overflow-hidden">
+            {/* 1. 65% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Square 1:1 Aspect Ratio) */}
+            <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
               
               {/* Pure Floating Wishlist Heart (No Circular Background) */}
               <div className="absolute top-2.5 right-2.5 z-10">
@@ -274,7 +274,7 @@ export default function ProductCard({
                 </button>
               </div>
 
-              {/* Full-Bleed Product Image (Occupies 70% of the Card) */}
+              {/* Full-Bleed Product Image (Occupies 65% of the Card) */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
@@ -298,10 +298,10 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* 2. 30% COMPACT PRODUCT DETAILS */}
-            <div className="p-2 sm:p-2.5">
+            {/* 2. 35% BALANCED PRODUCT DETAILS */}
+            <div className="p-2.5 sm:p-3">
               {/* Product Title */}
-              <h3 className="h-7 sm:h-8 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-tight tracking-tight mb-1">
+              <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug tracking-tight mb-1">
                 {product.name}
               </h3>
 
@@ -325,7 +325,7 @@ export default function ProductCard({
           </div>
 
           {/* 3. EQUAL PROPORTION ACTION BUTTONS (White Buy Now Button) */}
-          <div className="px-2 sm:px-2.5 pb-2 sm:pb-2.5 pt-0">
+          <div className="px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-0">
             {isOutOfStock ? (
               <button
                 disabled
