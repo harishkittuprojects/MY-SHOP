@@ -1388,21 +1388,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const [banners, setBanners] = useState<any[]>([]);
   const [loadingBanners, setLoadingBanners] = useState(true);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
-  const [isAddBannerModalOpen, setIsAddBannerModalOpen] = useState(false);
-  const [bannerSubmitting, setBannerSubmitting] = useState(false);
-  const [uploadingBannerImage, setUploadingBannerImage] = useState(false);
-
-  const [bannerFormData, setBannerFormData] = useState({
-    title: "",
-    subtitle: "",
-    tag: "Special Offer",
-    image_url: "",
-    link_url: categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : "/products",
-    button_text: "Shop Now",
-    banner_type: "products",
-    display_order: 1,
-    is_active: true
-  });
 
   const fetchBanners = async () => {
     try {
@@ -1451,72 +1436,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     }, 5000);
     return () => clearInterval(interval);
   }, [banners.length]);
-
-  const handleBannerFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingBannerImage(true);
-    try {
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(file);
-      const base64 = await base64Promise;
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, folder: "myshop/banners" })
-      });
-      const data = await res.json();
-      if (data.url) {
-        setBannerFormData(prev => ({ ...prev, image_url: data.url }));
-      } else {
-        setBannerFormData(prev => ({ ...prev, image_url: base64 }));
-      }
-    } catch {
-      alert("Failed to upload image. You can also paste an Image URL directly.");
-    } finally {
-      setUploadingBannerImage(false);
-    }
-  };
-
-  const handleSaveBanner = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!bannerFormData.image_url) {
-      alert("Please upload an image or provide an Image URL");
-      return;
-    }
-    setBannerSubmitting(true);
-    try {
-      const res = await fetch("/api/heroSlides", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bannerFormData)
-      });
-      if (!res.ok) throw new Error("Failed to create banner");
-      alert("Banner created & published successfully!");
-      setIsAddBannerModalOpen(false);
-      fetchBanners();
-      setBannerFormData({
-        title: "",
-        subtitle: "",
-        tag: "Special Offer",
-        image_url: "",
-        link_url: categoryFilter ? `/products?category=${encodeURIComponent(categoryFilter)}` : "/products",
-        button_text: "Shop Now",
-        banner_type: "products",
-        display_order: 1,
-        is_active: true
-      });
-    } catch (err: any) {
-      alert(err.message || "Failed to save banner");
-    } finally {
-      setBannerSubmitting(false);
-    }
-  };
 
   const { config, key: activeKey } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
 
@@ -1857,29 +1776,9 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   ))
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white p-4">
-                    <p className="text-sm font-bold text-slate-300">No Banners Added Yet</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Click Add Banner to upload</p>
+                    <p className="text-sm font-bold text-slate-300">Festive Season Deals Live Now</p>
                   </div>
                 )}
-              </div>
-
-              {/* Top Controls Overlay: "Add Banner" Button */}
-              <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1.5 sm:gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddBannerModalOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] sm:text-xs px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 border border-emerald-400/40 backdrop-blur-md cursor-pointer"
-                  title="Add New Banner"
-                >
-                  <FontAwesomeIcon icon={faPlus} className="text-[10px] sm:text-xs" />
-                  <span>Add Banner</span>
-                </button>
-                <Link
-                  href="/admin/homepage"
-                  className="bg-black/60 hover:bg-black/80 text-white font-bold text-[10px] sm:text-xs px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-md backdrop-blur-md transition-colors border border-white/20 hidden sm:inline-flex items-center gap-1"
-                >
-                  <span>Manage</span>
-                </Link>
               </div>
 
               {/* Slider Dots & Navigation */}
@@ -2103,178 +2002,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           </div>
         </div>
       </div>
-
-      {/* ======================= ADD BANNER MODAL ======================= */}
-      {isAddBannerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-800 to-emerald-950 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="p-2 rounded-xl bg-white/10 text-emerald-300">
-                  <FontAwesomeIcon icon={faPlus} />
-                </span>
-                <div>
-                  <h3 className="text-base sm:text-lg font-black leading-tight">Add New Banner</h3>
-                  <p className="text-xs text-emerald-200 font-medium">Publish promotional banners to this product showcase</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddBannerModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm cursor-pointer transition-colors"
-                title="Close"
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleSaveBanner} className="p-5 sm:p-6 space-y-4">
-              
-              {/* Image Upload or URL */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Banner Image <span className="text-rose-500">*</span>
-                </label>
-                
-                <div className="flex gap-2 mb-2">
-                  <label className="flex-1 cursor-pointer">
-                    <div className="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-3 text-center transition-colors bg-slate-50 hover:bg-emerald-50/50 flex items-center justify-center gap-2">
-                      <FontAwesomeIcon icon={faCloudUploadAlt} className="text-slate-400 text-sm" />
-                      <span className="text-xs font-bold text-slate-700">
-                        {uploadingBannerImage ? "Uploading..." : "Upload Image File"}
-                      </span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleBannerFileUpload}
-                      className="hidden"
-                      disabled={uploadingBannerImage}
-                    />
-                  </label>
-                </div>
-
-                <div className="relative">
-                  <input
-                    type="url"
-                    placeholder="Or paste image URL (https://...)"
-                    value={bannerFormData.image_url}
-                    onChange={(e) => setBannerFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                    required
-                  />
-                </div>
-
-                {/* Live Preview */}
-                {bannerFormData.image_url && (
-                  <div className="mt-2 relative w-full h-28 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-                    <Image
-                      src={bannerFormData.image_url}
-                      alt="Banner Preview"
-                      fill
-                      className="object-cover object-center"
-                      unoptimized
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Title & Tag */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Banner Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Festival Mega Sale"
-                    value={bannerFormData.title}
-                    onChange={(e) => setBannerFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Tag / Badge
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Special Offer"
-                    value={bannerFormData.tag}
-                    onChange={(e) => setBannerFormData(prev => ({ ...prev, tag: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Subtitle */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Subtitle / Promo Text
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Flat ₹5,000 off on All Flagships"
-                  value={bannerFormData.subtitle}
-                  onChange={(e) => setBannerFormData(prev => ({ ...prev, subtitle: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-
-              {/* Link URL & Button Text */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Target Link URL
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="/products?category=Mobiles"
-                    value={bannerFormData.link_url}
-                    onChange={(e) => setBannerFormData(prev => ({ ...prev, link_url: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Button Label
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Shop Now"
-                    value={bannerFormData.button_text}
-                    onChange={(e) => setBannerFormData(prev => ({ ...prev, button_text: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsAddBannerModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={bannerSubmitting || uploadingBannerImage}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-black text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>{bannerSubmitting ? "Saving..." : "Publish Banner"}</span>
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

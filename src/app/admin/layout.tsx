@@ -44,7 +44,7 @@ const NAV_ITEMS = [
   { href: "/admin/customers", label: "Customers", icon: faUsers, permission: "customers" },
   { href: "/admin/payments", label: "Payments", icon: faCreditCard, permission: "orders" },
   { href: "/admin/coupons", label: "Offers & Coupons", icon: faTicketAlt, permission: "coupons" },
-  { href: "/admin/homepage", label: "Homepage Banners", icon: faImage, permission: "banners" },
+  { href: "/admin/homepage", label: "Banners & Promos", icon: faImage, permission: "banners" },
   { href: "/admin/gallery", label: "Media Gallery", icon: faPhotoVideo, permission: "gallery" },
   { href: "/admin/reports", label: "Reports & Sales", icon: faChartLine, permission: "reports" },
   { href: "/admin/users", label: "Admin Users", icon: faUserShield, permission: "users" },
