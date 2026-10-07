@@ -684,11 +684,11 @@ export default function HomeContent() {
   ];
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-5 md:gap-6 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+    <div className="flex flex-col gap-2.5 sm:gap-4 md:gap-5 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
       {/* 1. Flipkart-Style Top Category Icons Bar (Above Hero) */}
-      <section className="bg-white border-b border-slate-200/90 py-2.5 sm:py-3.5 shadow-xs sticky top-[58px] md:top-[68px] z-30">
-        <div className="container px-2 sm:px-4 md:px-6 relative">
-          <div className="flex items-center justify-start lg:justify-between gap-5 sm:gap-7 md:gap-9 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
+      <section className="bg-white border-b border-slate-200/90 py-1.5 sm:py-2.5 shadow-xs sticky top-[50px] md:top-[56px] z-30">
+        <div className="max-w-[1440px] mx-auto px-2 sm:px-4 md:px-6 relative">
+          <div className="flex items-center justify-between gap-3 sm:gap-5 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-1 scroll-smooth">
             {TOP_FLIPKART_CATEGORIES.map((cat) => {
               const isSelected = activeMegaMenu === cat.id;
               const hasFlyout = Boolean(MEGA_MENU_DATA[cat.id]);
@@ -697,14 +697,14 @@ export default function HomeContent() {
                 <div key={cat.id} className="relative flex-shrink-0">
                   <Link
                     href={cat.url}
-                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-1 min-w-[64px] sm:min-w-[76px] cursor-pointer`}
+                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-0.5 min-w-[58px] sm:min-w-[68px] md:min-w-[76px] cursor-pointer`}
                   >
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border transition-all flex items-center justify-center text-2xl sm:text-3xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/80 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
+                    <div className={`w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl border transition-all flex items-center justify-center text-xl sm:text-2xl md:text-3xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/80 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
                       <span>{cat.icon}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <span className={`text-xs sm:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className={`text-[11px] sm:text-xs md:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
                         {cat.name}
                       </span>
                     </div>

@@ -72,13 +72,13 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full px-0 sm:px-0 md:px-6 max-w-7xl mx-auto pt-0 md:pt-4 select-none">
+    <section className="relative w-full px-0 sm:px-0 md:px-4 lg:px-6 max-w-[1440px] mx-auto pt-0 md:pt-1 select-none">
       {/* 
         Hero Container:
-        - Mobile: Full-bleed 16:9 edge-to-edge with madur.in Shop Now floating button
-        - Desktop: Compact ~340px - 375px with ambient-contain fit
+        - Mobile: Full-bleed 16:9 edge-to-edge
+        - Desktop: Expansive 360px - 400px full cover fit
       */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[16/9] md:aspect-auto md:h-[340px] lg:h-[375px] max-h-[390px] rounded-none sm:rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-md border-0 md:border border-slate-200/80 bg-slate-950 group">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-auto md:h-[360px] lg:h-[400px] rounded-none sm:rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-md border-0 md:border border-slate-200/80 bg-slate-950 group">
         <Swiper
           modules={[Autoplay, EffectFade, Pagination, Navigation]}
           effect="fade"
@@ -106,7 +106,7 @@ export default function Hero() {
                   href={slide.link || "/products"} 
                   className="block relative w-full h-full cursor-pointer overflow-hidden"
                 >
-                  {/* ================= MOBILE VIEW (Exact madur.in 16:9 Full-Bleed Cover Fit) ================= */}
+                  {/* ================= MOBILE VIEW (Full-Bleed Cover Fit) ================= */}
                   <div className="relative w-full h-full block md:hidden">
                     <Image 
                       src={slide.image_url} 
@@ -120,33 +120,18 @@ export default function Hero() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
                   </div>
 
-                  {/* ================= DESKTOP VIEW (Dual-Layer Ambient Contain Layout) ================= */}
+                  {/* ================= DESKTOP VIEW (Full-Bleed Sharp Cover Fit) ================= */}
                   <div className="relative w-full h-full hidden md:block">
-                    {/* Ambient Backdrop */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                      <Image 
-                        src={slide.image_url} 
-                        alt="" 
-                        fill 
-                        className="object-cover object-center w-full h-full blur-2xl opacity-35 scale-110 saturate-150"
-                        aria-hidden="true"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-slate-950/40" />
-                    </div>
-
-                    {/* Foreground Sharp Banner Graphic */}
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <Image 
-                        src={slide.image_url} 
-                        alt={slide.title || `Hero Banner ${index + 1}`} 
-                        fill 
-                        className="object-contain object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01] drop-shadow-xl"
-                        priority={index === 0}
-                        sizes="1280px"
-                        unoptimized
-                      />
-                    </div>
+                    <Image 
+                      src={slide.image_url} 
+                      alt={slide.title || `Hero Banner ${index + 1}`} 
+                      fill 
+                      className="object-cover object-center w-full h-full transition-transform duration-700 group-hover:scale-[1.01]"
+                      priority={index === 0}
+                      sizes="1440px"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                   </div>
 
                   {/* Subtle vignette border on desktop */}
