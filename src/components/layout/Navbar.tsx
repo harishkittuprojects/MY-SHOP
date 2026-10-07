@@ -310,28 +310,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Category Text Sub-Navigation Bar */}
-      <div className="bg-white border-t border-b border-slate-100 hidden md:block py-2.5">
-        <div className="container flex items-center justify-between gap-4 lg:gap-8 overflow-x-auto no-scrollbar px-2 sm:px-4">
-          {[
-            { label: "Mobiles", href: "/products?category=Mobiles" },
-            { label: "Mobile Accessories", href: "/products?category=Mobile%20Accessories" },
-            { label: "Old / Refurbished Mobiles", href: "/products?category=Old%20%2F%20Refurbished%20Mobiles" },
-            { label: "Fashion", href: "/products?category=Fashion" },
-            { label: "Jewellery", href: "/products?category=Jewellery" },
-            { label: "EV Vehicles", href: "/products?category=EV%20Vehicles" },
-            { label: "Display Replacement", href: "/services/display-replacement" },
-          ].map((catItem) => (
-            <Link
-              key={catItem.label}
-              href={catItem.href}
-              className="text-xs lg:text-sm font-bold text-slate-900 hover:text-secondary whitespace-nowrap transition-colors tracking-tight py-0.5 border-b-2 border-transparent hover:border-secondary"
-            >
-              {catItem.label}
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
