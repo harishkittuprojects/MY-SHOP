@@ -8,9 +8,9 @@ import { faEnvelope, faMapMarkerAlt, faPhoneAlt, faMobileAlt } from "@fortawesom
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-gray-200 pt-10 md:pt-16 pb-8 border-t border-slate-800 mt-6 md:mt-12">
+    <footer className="bg-slate-900 text-gray-200 pt-6 md:pt-10 pb-6 border-t border-slate-800 mt-4 md:mt-8">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
           {/* Brand */}
           <div className="flex flex-col items-start">
             <Link href="/" className="inline-flex items-center gap-3 mb-4">

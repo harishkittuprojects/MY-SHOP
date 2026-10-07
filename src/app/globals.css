@@ -49,21 +49,21 @@ body {
   max-width: 1440px;
   width: 100%;
   margin: 0 auto;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
 }
 
 @media (min-width: 640px) {
   .container {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 }
 
 @media (min-width: 1024px) {
   .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 

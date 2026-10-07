@@ -658,21 +658,21 @@ export default function HomeContent() {
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 pb-16 md:pb-24 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
+    <div className="flex flex-col gap-2.5 sm:gap-4 md:gap-5 pb-8 md:pb-12 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
       {/* 1. Main Hero Banner Carousel */}
       <Hero />
 
       {/* 2. DYNAMIC CATEGORY-BY-CATEGORY PRODUCT SHELVES (Flipkart & Amazon Style) */}
-      <div className="flex flex-col gap-6 sm:gap-8 md:gap-12 mt-1">
+      <div className="flex flex-col gap-2.5 sm:gap-4 md:gap-5 mt-0.5">
         {isLoading ? (
           // Loading skeleton placeholder shelves
           [...Array(3)].map((_, i) => (
-            <section key={i} className="container px-3 sm:px-4 md:px-6">
-              <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs">
-                <div className="h-8 w-64 bg-slate-200 rounded-lg animate-pulse mb-6" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <section key={i} className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
+              <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/80 p-3 sm:p-4 shadow-xs">
+                <div className="h-6 w-48 bg-slate-200 rounded-lg animate-pulse mb-3" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
                   {[...Array(4)].map((_, j) => (
-                    <div key={j} className="h-64 bg-slate-100 rounded-2xl animate-pulse" />
+                    <div key={j} className="h-48 bg-slate-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -685,10 +685,10 @@ export default function HomeContent() {
             return (
               <section 
                 key={config.id} 
-                className="container px-3 sm:px-4 md:px-6 scroll-mt-24"
+                className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 scroll-mt-20"
                 id={`category-${config.id}`}
               >
-                <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden">
+                <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden">
                   
                   {/* Attached Top Category Quick-Switch Bar (Seamlessly part of the top box) */}
                   {sectionIdx === 0 && (
@@ -868,34 +868,34 @@ export default function HomeContent() {
                   )}
 
                   {/* Category Section Header */}
-                  <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="p-3 sm:p-4 md:p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-slate-50/50">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
                       
                       {/* Left Header Title & Highlights */}
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0">
+                      <div className="flex items-start gap-2.5 sm:gap-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
                           {config.icon}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                            <h2 className="text-base sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                               {config.name}
                             </h2>
-                            <span className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${config.tagColor}`}>
+                            <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${config.tagColor}`}>
                               {config.badge}
                             </span>
                           </div>
-                          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                          <p className="text-xs text-slate-600 font-medium mt-0.5">
                             {config.description}
                           </p>
                         </div>
                       </div>
 
                       {/* Right "View All" Button */}
-                      <div className="flex items-center gap-3 self-end md:self-center flex-shrink-0">
+                      <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
                         <Link 
                           href={categoryUrl} 
-                          className="bg-secondary text-white font-black px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
+                          className="bg-secondary text-white font-black px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-xs shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5"
                         >
                           <span>View All ({totalCount})</span>
                           <FontAwesomeIcon icon={faArrowRight} size="xs" />
@@ -905,15 +905,15 @@ export default function HomeContent() {
 
                     {/* Subcategory Tag Quick Pills */}
                     {config.subcategories && config.subcategories.length > 0 && (
-                      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pt-3 sm:pt-4">
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">
+                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 sm:pt-3">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">
                           Filters:
                         </span>
                         {config.subcategories.map((sub) => (
                           <Link
                             key={sub}
                             href={`/products?category=${encodeURIComponent(config.categoryQuery)}&search=${encodeURIComponent(sub)}`}
-                            className="text-[11px] sm:text-xs font-bold px-3 py-1 rounded-lg bg-white border border-slate-200/90 text-slate-700 hover:border-secondary hover:text-secondary hover:bg-emerald-50/40 transition-all flex-shrink-0 shadow-2xs"
+                            className="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-white border border-slate-200/90 text-slate-700 hover:border-secondary hover:text-secondary hover:bg-emerald-50/40 transition-all flex-shrink-0 shadow-2xs"
                           >
                             {sub}
                           </Link>
@@ -923,22 +923,22 @@ export default function HomeContent() {
                   </div>
 
                   {/* Product Cards Shelf */}
-                  <div className="p-2.5 sm:p-4 md:p-6 bg-slate-50/30">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 md:gap-5">
+                  <div className="p-2 sm:p-3 md:p-4 bg-slate-50/30">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-3.5">
                       {items.map((product) => (
                         <ProductCard key={product.id} product={product} viewMode="grid" />
                       ))}
                     </div>
 
                     {/* End-Shelf "Explore Full Collection" Bar */}
-                    <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100">
-                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700">
+                    <div className="mt-2.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-100">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                         <span className="text-secondary font-black">●</span>
                         Showing top {items.length} of {totalCount} products in {config.name}
                       </div>
                       <Link
                         href={categoryUrl}
-                        className="text-xs sm:text-sm font-black text-secondary hover:underline flex items-center gap-1.5"
+                        className="text-xs font-black text-secondary hover:underline flex items-center gap-1.5"
                       >
                         Browse all {config.name} catalog
                         <FontAwesomeIcon icon={faArrowRight} size="xs" />
@@ -950,7 +950,7 @@ export default function HomeContent() {
 
                 {/* Intersperse Promotional Banner after 2nd and 4th categories */}
                 {sectionIdx === 1 && (
-                  <div className="mt-6 sm:mt-8">
+                  <div className="mt-3 sm:mt-5">
                     <HomeBanners />
                   </div>
                 )}
@@ -961,8 +961,8 @@ export default function HomeContent() {
       </div>
 
       {/* 5. The Journey of MY SHOP (Brand Story & Trust) */}
-      <section className="container px-3 sm:px-4 md:px-6 py-4 sm:py-8 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center bg-white rounded-3xl border border-slate-200/80 p-6 md:p-12 shadow-xs">
+      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-2 sm:py-4 md:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-center bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 md:p-8 shadow-xs">
           <div className="relative aspect-4/3 sm:aspect-square rounded-2xl md:rounded-3xl overflow-hidden shadow-xl bg-gray-100">
             <Image 
               src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=1200" 

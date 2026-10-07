@@ -518,7 +518,7 @@ export default function ProductDetailPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-24 md:pb-16 text-slate-800">
+    <div className="min-h-screen bg-[#f8fafc] pb-12 md:pb-8 text-slate-800">
       {/* Toast Notification */}
       <AnimatePresence>
         {addedToast && (
@@ -526,9 +526,9 @@ export default function ProductDetailPage({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 sm:right-8 z-50 bg-emerald-700 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
+            className="fixed top-16 right-3 sm:right-6 z-50 bg-emerald-700 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2.5 font-bold text-xs sm:text-sm"
           >
-            <FontAwesomeIcon icon={faCheck} className="text-white text-base" />
+            <FontAwesomeIcon icon={faCheck} className="text-white text-sm" />
             <span>Added {product.name} to your Cart!</span>
             <Link
               href="/cart"
@@ -542,7 +542,7 @@ export default function ProductDetailPage({
 
       {/* Breadcrumbs Navigation (Amazon Exact) */}
       <div className="bg-white border-b border-slate-200/90 text-xs">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-1.5 text-slate-600 overflow-x-auto whitespace-nowrap">
+        <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1 text-slate-600 overflow-x-auto whitespace-nowrap">
           <Link href="/products?category=Smart%20Technology" className="hover:text-orange-600 hover:underline">
             Electronics
           </Link>
@@ -562,8 +562,8 @@ export default function ProductDetailPage({
       </div>
 
       {/* Main Container: Amazon 3-Column Layout */}
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-4 md:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
           {/* ======================= COLUMN 1 (4 cols): Gallery & Thumbnails ======================= */}
           <div className="lg:col-span-4 flex gap-3 sticky top-20">

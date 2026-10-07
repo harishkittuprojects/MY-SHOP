@@ -70,20 +70,20 @@ export default function CategoriesPage() {
   }, []);
 
   return (
-    <div className="container pt-6 md:pt-12 pb-20 md:pb-24 min-h-screen text-black">
+    <div className="container pt-3 sm:pt-6 pb-12 min-h-screen text-black">
       {/* Header */}
-      <div className="mb-8 md:mb-12 text-center md:text-left">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-          <span className="w-2.5 h-8 bg-blue-600 rounded-full inline-block" />
+      <div className="mb-3 sm:mb-6 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2 sm:gap-3">
+          <span className="w-2 h-6 sm:w-2.5 sm:h-7 bg-blue-600 rounded-full inline-block" />
           <span>Explore All Departments &amp; Categories</span>
         </h1>
-        <p className="text-xs sm:text-sm text-gray-500 font-semibold uppercase tracking-wider mt-1.5">
+        <p className="text-[11px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">
           Curated collection of top smartphones, wearables, gold jewellery, laptops, appliances &amp; accessories
         </p>
       </div>
 
       {/* Category Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-7">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
         {isLoading ? (
           [...Array(8)].map((_, i) => (
             <div key={i} className="h-56 sm:h-64 bg-gray-100 animate-pulse rounded-3xl"></div>

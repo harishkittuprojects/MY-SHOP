@@ -45,15 +45,15 @@ export default function CartPage() {
 
   if (cart.length === 0 && !isCheckoutOpen) {
     return (
-      <div className="container pt-32 pb-24 flex flex-col items-center justify-center text-center">
-        <div className="text-8xl mb-8 opacity-20">🛒</div>
-        <h2 className="text-3xl font-black mb-4">Your cart is empty</h2>
-        <p className="text-gray-500 mb-10 max-w-sm">Looks like you haven't added anything to your cart yet. Latest smartphones and gadgets are waiting!</p>
+      <div className="container pt-8 sm:pt-16 pb-12 flex flex-col items-center justify-center text-center">
+        <div className="text-6xl sm:text-7xl mb-4 opacity-20">🛒</div>
+        <h2 className="text-2xl sm:text-3xl font-black mb-2">Your cart is empty</h2>
+        <p className="text-gray-500 mb-6 max-w-sm text-xs sm:text-sm">Looks like you haven't added anything to your cart yet. Latest smartphones and gadgets are waiting!</p>
         <Link 
           href="/" 
-          className="bg-secondary text-white font-black px-10 py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all active:scale-95 flex items-center gap-3"
+          className="bg-secondary text-white font-black px-6 py-3 rounded-xl shadow-md hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 text-sm"
         >
-          <FontAwesomeIcon icon={faShoppingBag} />
+          <FontAwesomeIcon icon={faShoppingBag} size="xs" />
           Start Shopping
         </Link>
       </div>
@@ -61,22 +61,22 @@ export default function CartPage() {
   }
 
   return (
-    <div className="pb-12 pt-24 md:pt-32">
+    <div className="pb-8 pt-3 sm:pt-6 md:pt-8">
       <div className="container">
-        <div className="flex items-center gap-4 mb-10">
-          <Link href="/" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-accent transition-colors">
-            <FontAwesomeIcon icon={faArrowLeft} />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <Link href="/" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-accent transition-colors">
+            <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
           </Link>
-          <h1 className="text-3xl font-black">Shopping Cart</h1>
+          <h1 className="text-xl sm:text-2xl font-black">Shopping Cart</h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* Item List */}
-          <div className="lg:w-2/3 flex flex-col gap-6">
+          <div className="lg:w-2/3 flex flex-col gap-3 sm:gap-4">
             {cart.map((item, index) => (
               <div 
                 key={`${item.id}-${item.selectedUnit}-${index}`} 
-                className="bg-white p-3 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 flex items-center gap-3 md:gap-6"
+                className="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-xs border border-gray-100 flex items-center gap-3 sm:gap-4"
               >
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden shadow-md shrink-0 bg-gray-50 flex items-center justify-center">
                   {(item.image || (item as any).image_url) ? (

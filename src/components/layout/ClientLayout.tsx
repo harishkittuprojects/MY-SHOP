@@ -33,7 +33,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden relative">
             <Navbar />
             <CartToast />
-            <main className="min-h-screen pb-24 md:pb-0 pt-0 w-full max-w-full overflow-x-hidden">
+            <main className="min-h-screen pb-14 md:pb-0 pt-0 w-full max-w-full overflow-x-hidden">
               {children}
             </main>
             <Footer />
