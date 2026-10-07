@@ -697,49 +697,20 @@ export default function HomeContent() {
 
               return (
                 <div key={cat.id} className="relative flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasFlyout) {
-                        setActiveMegaMenu(isSelected ? null : cat.id);
-                      } else {
-                        router.push(cat.url);
-                      }
-                    }}
-                    onMouseEnter={() => {
-                      if (hasFlyout) setActiveMegaMenu(cat.id);
-                    }}
-                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-1 min-w-[64px] sm:min-w-[76px] cursor-pointer ${
-                      isSelected ? "scale-105" : ""
-                    }`}
+                  <Link
+                    href={cat.url}
+                    className={`flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all relative pb-1 min-w-[64px] sm:min-w-[76px] cursor-pointer`}
                   >
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border transition-all flex items-center justify-center text-2xl sm:text-3xl shadow-xs ${
-                      isSelected 
-                        ? "bg-blue-50 border-blue-500 shadow-md ring-2 ring-blue-400/40" 
-                        : "bg-slate-50 group-hover:bg-blue-50 border-slate-200/80 group-hover:border-blue-300 group-hover:scale-110"
-                    }`}>
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border transition-all flex items-center justify-center text-2xl sm:text-3xl shadow-xs bg-slate-50 group-hover:bg-emerald-50 border-slate-200/80 group-hover:border-emerald-500 group-hover:scale-105 group-hover:shadow-md`}>
                       <span>{cat.icon}</span>
                     </div>
 
                     <div className="flex items-center gap-1 mt-1.5">
-                      <span className={`text-xs sm:text-sm font-bold text-center transition-colors whitespace-nowrap ${
-                        isSelected || (cat.isActive && !activeMegaMenu)
-                          ? "text-blue-600 font-black" 
-                          : "text-slate-700 group-hover:text-blue-600"
-                      }`}>
+                      <span className={`text-xs sm:text-sm font-bold text-center transition-colors whitespace-nowrap text-slate-700 group-hover:text-[#2E6F40] group-hover:font-black`}>
                         {cat.name}
                       </span>
-                      {hasFlyout && (
-                        <span className={`text-[9px] transition-transform ${isSelected ? "rotate-180 text-blue-600 font-black" : "text-slate-400 group-hover:text-blue-600"}`}>
-                          ▼
-                        </span>
-                      )}
                     </div>
-
-                    {(isSelected || (cat.isActive && !activeMegaMenu)) && (
-                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-600 rounded-full" />
-                    )}
-                  </button>
+                  </Link>
                 </div>
               );
             })}

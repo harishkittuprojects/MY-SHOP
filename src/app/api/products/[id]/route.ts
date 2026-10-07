@@ -3,10 +3,13 @@ import { ProductsDB } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const rawParams = context?.params;
+    const resolvedParams = rawParams instanceof Promise ? await rawParams : rawParams;
+    const id = resolvedParams?.id;
+
     if (!id) {
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
     }
@@ -18,7 +21,7 @@ export async function GET(
 
     const mapped = {
       ...product,
-      is_out_of_stock: product.stock_quantity <= 0 || !product.is_available,
+      is_out_of_stock: (Number(product.stock_quantity) <= 0) || product.is_available === false,
     };
 
     return NextResponse.json(mapped);

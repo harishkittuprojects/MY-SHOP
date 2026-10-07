@@ -255,8 +255,11 @@ export const ProductsDB = {
   },
 
   async getById(id: string) {
+    if (!id) return null;
+    const cleanId = decodeURIComponent(String(id)).toLowerCase().trim();
+
     try {
-      const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
       if (!error && data) {
         return {
           ...data,
@@ -264,10 +267,34 @@ export const ProductsDB = {
         };
       }
     } catch (err) {
-      console.error('ProductsDB.getById Error:', err);
+      console.error('ProductsDB.getById Supabase Error:', err);
     }
-    const cleanId = decodeURIComponent(String(id)).toLowerCase().trim();
-    const def = defaultProducts.find((p) => String(p.id).toLowerCase().trim() === cleanId);
+
+    // Check all merged products (DB + default catalog)
+    try {
+      const all = await this.getAll();
+      const found = all.find((p) => {
+        const pId = String(p.id).toLowerCase().trim();
+        if (pId === cleanId) return true;
+        const slug = (p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        if (slug === cleanId) return true;
+        if (cleanId.includes(pId) || pId.includes(cleanId)) return true;
+        return false;
+      });
+      if (found) {
+        return found;
+      }
+    } catch (err) {
+      console.error('ProductsDB.getById fallback Error:', err);
+    }
+
+    const def = defaultProducts.find((p) => {
+      const pId = String(p.id).toLowerCase().trim();
+      if (pId === cleanId) return true;
+      const slug = (p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return slug === cleanId || cleanId.includes(pId) || pId.includes(cleanId);
+    });
+
     if (def) {
       return {
         ...def,

@@ -131,9 +131,35 @@ export default function ProductDetailPage({
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/products/${productId}`, { cache: "no-store" });
-        if (res.ok) {
-          const data: Product = await res.json();
+        let data: Product | null = null;
+        try {
+          const res = await fetch(`/api/products/${productId}`, { cache: "no-store" });
+          if (res.ok) {
+            data = await res.json();
+          }
+        } catch {
+          // ignore
+        }
+
+        if (!data) {
+          try {
+            const listRes = await fetch(`/api/productList`, { cache: "no-store" });
+            if (listRes.ok) {
+              const allProds: Product[] = await listRes.json();
+              const cleanId = decodeURIComponent(String(productId)).toLowerCase().trim();
+              data = allProds.find((p) => {
+                const pId = String(p.id).toLowerCase().trim();
+                if (pId === cleanId) return true;
+                const slug = (p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                return slug === cleanId || cleanId.includes(pId) || pId.includes(cleanId);
+              }) || null;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        if (data) {
           setProduct(data);
           const initialImg = normalizeImageUrl(
             (data.images && data.images[0]) || data.image_url || data.image
@@ -168,7 +194,7 @@ export default function ProductDetailPage({
             const relData = await relatedRes.json();
             setRelatedProducts(
               Array.isArray(relData)
-                ? relData.filter((p: Product) => String(p.id) !== String(data.id))
+                ? relData.filter((p: Product) => String(p.id) !== String(data?.id))
                 : []
             );
           }
@@ -762,31 +788,46 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Colour Swatches */}
+            {/* Colour Swatches with Color-Specific Rates */}
             {availableColors.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-3">
-                <span className="text-xs text-slate-600 font-bold">
-                  Colour: <strong className="text-slate-900">{selectedColor || availableColors[0]?.color}</strong>
-                </span>
-                <div className="flex gap-2 flex-wrap">
+              <div className="space-y-2.5 border-b border-slate-200 pb-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-600 font-bold">
+                    Colour: <strong className="text-slate-900">{selectedColor || availableColors[0]?.color}</strong>
+                  </span>
+                  {activeVariant?.price && (
+                    <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                      Rate: ₹{Number(activeVariant.price).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2.5 flex-wrap">
                   {availableColors.map((v) => {
                     const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
+                    const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
                     return (
                       <button
                         key={v.id || v.color}
                         type="button"
                         onClick={() => handleColorSelect(v)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-2 transition-all ${
+                        className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
                           isColorSelected
-                            ? "bg-amber-50 border-orange-500 text-slate-950 ring-1 ring-orange-500 shadow-xs"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400"
-                        }`}
+                            ? "bg-amber-50/90 border-orange-500 text-slate-950 ring-2 ring-orange-500/40 shadow-xs scale-[1.02]"
+                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50/70"
+                        } ${isOut ? "opacity-60" : ""}`}
                       >
                         <span
-                          className="w-3.5 h-3.5 rounded-full border border-black/20"
+                          className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-2xs"
                           style={{ backgroundColor: v.color_code || getColorHex(v.color) }}
                         />
-                        <span>{v.color}</span>
+                        <div className="flex flex-col items-start leading-tight">
+                          <span className="truncate max-w-[130px]">{v.color}</span>
+                          {v.price && (
+                            <span className={`text-[10.5px] font-black ${isColorSelected ? "text-orange-700" : "text-emerald-700"}`}>
+                              ₹{Number(v.price).toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
