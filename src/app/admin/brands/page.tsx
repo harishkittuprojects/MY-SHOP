@@ -114,25 +114,32 @@ export default function AdminBrandsPage() {
       });
 
       const base64Data = await base64Promise;
+      // Immediately set the base64 preview so the image shows right away
+      setFormData((prev) => ({ ...prev, logo_url: base64Data }));
 
+      // Upload to Cloudinary / storage for CDN optimization
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          image: base64Data,
           data: base64Data,
           folder: "brands",
         }),
       });
 
-      const data = await res.json();
-      if (data.url) {
-        setFormData((prev) => ({ ...prev, logo_url: data.url }));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url || data.secure_url) {
+          setFormData((prev) => ({ ...prev, logo_url: data.url || data.secure_url }));
+        }
       }
     } catch (err) {
-      console.error("Image upload error:", err);
-      alert("Failed to upload image. Please enter image URL manually.");
+      console.warn("Cloud upload warning (retaining base64 image):", err);
     } finally {
       setUploadingImage(false);
+      // Reset input value so user can re-select same or different image
+      e.target.value = "";
     }
   };
 

@@ -5,9 +5,9 @@ import { MediaGalleryDB } from '@/lib/db';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { image, fileData, folder = 'myshop', resource_type = 'auto', alt_text = '' } = body;
+    const { image, fileData, data, file, folder = 'myshop', resource_type = 'auto', alt_text = '' } = body;
 
-    const dataToUpload = image || fileData;
+    const dataToUpload = image || fileData || data || file;
     if (!dataToUpload) {
       return NextResponse.json({ error: 'No image or file data provided' }, { status: 400 });
     }
