@@ -499,13 +499,13 @@ export default function AdminProductsPage() {
     return varColors;
   };
 
-  const handleAddColor = (name: string, code?: string) => {
+  const handleAddColor = (name: string, code?: string, initialImgUrl?: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
     const finalCode = code || customColorCode || getColorHexFromName(trimmed);
     const current = getCurrentColors();
     if (!current.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) {
-      const nextColors = [...current, { name: trimmed, code: finalCode }];
+      const nextColors = [...current, { name: trimmed, code: finalCode, image_url: initialImgUrl || "" }];
       
       setFormData((prev) => {
         const sizes = getCurrentSizes();
@@ -525,7 +525,11 @@ export default function AdminProductsPage() {
               (v: any) => (v.storage_label || v.size) === s && v.color?.toLowerCase() === c.name.toLowerCase()
             );
             if (existingVar) {
-              updatedVariants.push(existingVar);
+              if (initialImgUrl && !existingVar.image_url) {
+                updatedVariants.push({ ...existingVar, image_url: initialImgUrl });
+              } else {
+                updatedVariants.push(existingVar);
+              }
             } else {
               updatedVariants.push({
                 id: `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -539,7 +543,7 @@ export default function AdminProductsPage() {
                 original_price: prev.original_price || prev.price || 0,
                 stock_quantity: Math.max(5, Math.floor((prev.stock_quantity || 20) / Math.max(1, nextColors.length))),
                 sku: `${(prev.sku || "SKU").replace(/\s+/g, "")}-${s.replace(/[^a-zA-Z0-9]/g, "")}-${c.name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}`,
-                image_url: prev.image_url || "",
+                image_url: initialImgUrl || prev.image_url || "",
                 is_active: true,
               });
             }
@@ -552,6 +556,8 @@ export default function AdminProductsPage() {
           variants: updatedVariants,
         };
       });
+    } else if (initialImgUrl) {
+      handleAssignImageToColor(initialImgUrl, trimmed);
     }
     setCustomColorName("");
   };
@@ -815,9 +821,27 @@ export default function AdminProductsPage() {
 
   const handleAssignImageToColor = (imgUrl: string, colorName: string) => {
     if (!colorName) return;
+    const trimmed = colorName.trim();
+
+    if (trimmed === "__custom__") {
+      const customName = typeof window !== "undefined" 
+        ? window.prompt("Enter custom colour name for this photo (e.g. Natural Titanium, Desert Gold, Mint Green, Lavender):")
+        : null;
+      if (customName && customName.trim()) {
+        handleAddColor(customName.trim(), undefined, imgUrl);
+      }
+      return;
+    }
+
+    const current = getCurrentColors();
+    if (trimmed !== "all" && !current.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) {
+      handleAddColor(trimmed, undefined, imgUrl);
+      return;
+    }
+
     setFormData((prev) => {
       const updatedVariants = (prev.variants || []).map((v: any) => {
-        if (colorName === "all" || (v.color || "").toLowerCase() === colorName.toLowerCase()) {
+        if (trimmed === "all" || (v.color || "").toLowerCase() === trimmed.toLowerCase()) {
           return { ...v, image_url: imgUrl };
         }
         return v;
@@ -825,7 +849,7 @@ export default function AdminProductsPage() {
 
       const updatedColors = (prev.colors || []).map((c: any) => {
         const cName = typeof c === "string" ? c : c.name;
-        if (colorName === "all" || (cName && cName.toLowerCase() === colorName.toLowerCase())) {
+        if (trimmed === "all" || (cName && cName.toLowerCase() === trimmed.toLowerCase())) {
           return typeof c === "string" ? { name: c, image_url: imgUrl } : { ...c, image_url: imgUrl };
         }
         return c;
@@ -1426,20 +1450,58 @@ export default function AdminProductsPage() {
                               )}
                             </div>
 
-                            {/* Tag to Color Dropdown */}
+                            {/* Tag to Color Dropdown with Custom Option */}
                             <select
                               value={assignedColor || ""}
                               onChange={(e) => handleAssignImageToColor(imgUrl, e.target.value)}
                               className="w-full text-[10px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-1.5 py-1 text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                              title="Assign this photo to a specific color variant"
+                              title="Assign this photo to a specific color variant or add a custom color"
                             >
                               <option value="">🎨 Tag Color...</option>
-                              {getCurrentColors().map((c) => (
-                                <option key={c.name} value={c.name}>
-                                  👉 {c.name}
-                                </option>
-                              ))}
-                              <option value="all">🌟 All Colors</option>
+                              
+                              {getCurrentColors().length > 0 && (
+                                <optgroup label="✨ Configured Colours">
+                                  {getCurrentColors().map((c) => (
+                                    <option key={c.name} value={c.name}>
+                                      👉 {c.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              )}
+
+                              <optgroup label="⚡ Quick Add Colour">
+                                {[
+                                  "Black",
+                                  "White",
+                                  "Titanium Grey",
+                                  "Natural Titanium",
+                                  "Desert Gold",
+                                  "Silver",
+                                  "Navy Blue",
+                                  "Royal Blue",
+                                  "Sky Blue",
+                                  "Teal",
+                                  "Emerald Green",
+                                  "Olive Green",
+                                  "Mint Green",
+                                  "Crimson Red",
+                                  "Rose Pink",
+                                  "Purple / Lavender",
+                                  "Yellow",
+                                  "Orange",
+                                ]
+                                  .filter((q) => !getCurrentColors().some((c) => c.name.toLowerCase() === q.toLowerCase()))
+                                  .map((q) => (
+                                    <option key={q} value={q}>
+                                      + {q}
+                                    </option>
+                                  ))}
+                              </optgroup>
+
+                              <optgroup label="🌟 Custom / All">
+                                <option value="all">🌟 All Colors</option>
+                                <option value="__custom__">➕ Type Custom Colour...</option>
+                              </optgroup>
                             </select>
                           </div>
                         );
