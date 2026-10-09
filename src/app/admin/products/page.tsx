@@ -821,23 +821,54 @@ export default function AdminProductsPage() {
 
     setSubmitting(true);
     try {
+      let finalImages = [...(formData.images || [])].filter(Boolean);
+      let finalPrimaryImg = formData.image_url || finalImages[0] || "";
+
+      // Ensure all base64 images are uploaded to Cloudinary CDN before final save
+      for (let i = 0; i < finalImages.length; i++) {
+        const img = finalImages[i];
+        if (img.startsWith("data:")) {
+          try {
+            const upRes = await fetch("/api/upload", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                image: img,
+                folder: "myshop/products",
+                alt_text: formData.name || "Product Image",
+              }),
+            });
+            if (upRes.ok) {
+              const upData = await upRes.json();
+              if (upData.url) {
+                finalImages[i] = upData.url;
+                if (finalPrimaryImg === img) {
+                  finalPrimaryImg = upData.url;
+                }
+              }
+            }
+          } catch (uploadErr) {
+            console.warn("Base64 upload sync warning:", uploadErr);
+          }
+        }
+      }
+
+      if (finalPrimaryImg.startsWith("data:") && finalImages.length > 0) {
+        finalPrimaryImg = finalImages[0];
+      }
+
       const cat = categories.find((c) => c.id === formData.category_id);
-      const primaryImg = formData.image_url || (Array.isArray(formData.images) && formData.images[0]) || "";
       const cleanedVariants = Array.isArray(formData.variants)
         ? formData.variants.map((v: any) => ({
             ...v,
-            image_url: (!v.image_url || v.image_url === "/products/iphone-16-pro-max.png") ? primaryImg : v.image_url,
+            image_url: (!v.image_url || v.image_url === "/products/iphone-16-pro-max.png") ? finalPrimaryImg : v.image_url,
           }))
         : [];
 
-      const allImages = Array.isArray(formData.images) && formData.images.length > 0
-        ? formData.images.filter(Boolean)
-        : (primaryImg ? [primaryImg] : []);
-
       const payload = {
         ...formData,
-        image_url: primaryImg,
-        images: allImages,
+        image_url: finalPrimaryImg,
+        images: finalImages.length > 0 ? finalImages : (finalPrimaryImg ? [finalPrimaryImg] : []),
         variants: cleanedVariants,
         category_name: cat ? cat.name : formData.category_name,
         price: Number(formData.price),
