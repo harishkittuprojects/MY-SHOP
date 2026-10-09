@@ -27,6 +27,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import StreamingTagline from "./StreamingTagline";
 import { addRecentSearch, getRecentSearches, removeRecentSearch, clearRecentHistory } from "@/lib/recentHistory";
+import { matchProductSearch, normalizeSearchTerm } from "@/lib/searchUtils";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -126,28 +127,30 @@ export default function Navbar() {
     { name: "Tanishq", icon: "👑", category: "Jewellery" }
   ];
 
-  // Matched Brands for query
+  // Matched Brands for query (with typo correction)
+  const normalizedQuery = normalizeSearchTerm(searchQuery.trim());
   const matchedBrands = searchQuery.trim().length > 0
-    ? POPULAR_BRANDS.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? POPULAR_BRANDS.filter(b => {
+        const bName = b.name.toLowerCase();
+        const sq = searchQuery.toLowerCase();
+        return bName.includes(sq) || bName.includes(normalizedQuery);
+      })
     : [];
 
-  // Matched Products
+  // Matched Products (with full model number & typo tolerance)
   const searchSuggestions = searchQuery.trim().length > 0
     ? products
-        .filter((p) => {
-          const q = searchQuery.toLowerCase();
-          const nameMatch = (p.name || "").toLowerCase().includes(q);
-          const catMatch = (p.category || p.category_name || "").toLowerCase().includes(q);
-          const subMatch = (p.sub_category || "").toLowerCase().includes(q);
-          const descMatch = (p.description || "").toLowerCase().includes(q);
-          return nameMatch || catMatch || subMatch || descMatch;
-        })
-        .slice(0, 6)
+        .filter((p) => matchProductSearch(p, searchQuery))
+        .slice(0, 8)
     : [];
 
   // Matching Categories
   const matchedCategories = searchQuery.trim().length > 0
-    ? categories.filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 3)
+    ? categories.filter(c => {
+        const cName = (c.name || "").toLowerCase();
+        const sq = searchQuery.toLowerCase();
+        return cName.includes(sq) || cName.includes(normalizedQuery);
+      }).slice(0, 3)
     : [];
 
   const handleSearch = (e?: React.FormEvent, customQuery?: string, categoryFilter?: string) => {

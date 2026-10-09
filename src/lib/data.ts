@@ -382,6 +382,127 @@ export const products = [
     ]
   },
   {
+    id: "iphone-17-pro-max",
+    category: "Mobiles",
+    category_id: "mobiles",
+    sub_category: "Flagship Phones",
+    name: "Apple iPhone 17 Pro Max (Titanium Silver, 256 GB) with Apple Intelligence, A19 Pro Chip, 48MP Pro Fusion Camera, 120Hz ProMotion Super Retina XDR",
+    unit: "256GB / 512GB / 1TB • A19 Pro 2nm Chip • 6.9\" ProMotion OLED • Apple Intelligence",
+    price: 149999,
+    original_price: 159900,
+    stock_quantity: 35,
+    cashback_amount: 5000,
+    warranty_period: "1 Year Official Apple India Warranty",
+    condition: "Brand New Sealed",
+    image_url: "/products/iphone-16-pro-max.png",
+    images: [
+      "/products/iphone-16-pro-max.png"
+    ],
+    is_available: true,
+    is_popular: true,
+    is_featured: true,
+    rating: 5.0,
+    reviews_count: 840,
+    description: "The next-generation Apple iPhone 17 Pro Max. Powered by the groundbreaking 2nm A19 Pro chip with upgraded Neural Engine for on-device Apple Intelligence. Features a 6.9-inch borderless Super Retina XDR display with ProMotion 120Hz, 48MP Triple Pro Fusion camera with 10x optical zoom, and aerospace-grade Titanium enclosure.",
+    variants: [
+      {
+        id: "ip17pm_256_silver",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Titanium Silver",
+        color_code: "#d1d5db",
+        price: 149999,
+        original_price: 159900,
+        stock_quantity: 15,
+        sku: "IP17PM-256-SILVER",
+        image_url: "/products/iphone-16-pro-max.png",
+        is_active: true
+      },
+      {
+        id: "ip17pm_512_black",
+        ram: "12GB",
+        rom: "512GB",
+        storage_label: "12GB RAM + 512GB ROM",
+        color: "Space Black",
+        color_code: "#18181b",
+        price: 169999,
+        original_price: 179900,
+        stock_quantity: 12,
+        sku: "IP17PM-512-BLACK",
+        image_url: "/products/iphone-16-pro-max.png",
+        is_active: true
+      },
+      {
+        id: "ip17pm_1tb_gold",
+        ram: "12GB",
+        rom: "1TB",
+        storage_label: "12GB RAM + 1TB ROM",
+        color: "Desert Gold",
+        color_code: "#e2b87f",
+        price: 189999,
+        original_price: 199900,
+        stock_quantity: 8,
+        sku: "IP17PM-1TB-GOLD",
+        image_url: "/products/iphone-16-pro-max.png",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "iphone-17",
+    category: "Mobiles",
+    category_id: "mobiles",
+    sub_category: "Flagship Phones",
+    name: "Apple iPhone 17 (Ultramarine Blue, 128 GB) with Apple Intelligence, A19 Bionic Chip, 48MP Fusion Camera",
+    unit: "128GB / 256GB • A19 Bionic • 6.3\" Super Retina XDR OLED",
+    price: 79999,
+    original_price: 89900,
+    stock_quantity: 40,
+    cashback_amount: 3000,
+    warranty_period: "1 Year Official Apple India Warranty",
+    condition: "Brand New Sealed",
+    image_url: "/products/iphone-16-pro-max.png",
+    images: [
+      "/products/iphone-16-pro-max.png"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.8,
+    reviews_count: 512,
+    description: "Apple iPhone 17 brings next-level intelligence and speed with the A19 Bionic chip, vibrant 6.3-inch Super Retina XDR display with Ceramic Shield front, 48MP Fusion camera system with 4K Dolby Vision, and all-day battery life.",
+    variants: [
+      {
+        id: "ip17_128_blue",
+        ram: "8GB",
+        rom: "128GB",
+        storage_label: "8GB RAM + 128GB ROM",
+        color: "Ultramarine Blue",
+        color_code: "#2563eb",
+        price: 79999,
+        original_price: 89900,
+        stock_quantity: 20,
+        sku: "IP17-128-BLUE",
+        image_url: "/products/iphone-16-pro-max.png",
+        is_active: true
+      },
+      {
+        id: "ip17_256_white",
+        ram: "8GB",
+        rom: "256GB",
+        storage_label: "8GB RAM + 256GB ROM",
+        color: "Starlight White",
+        color_code: "#f8fafc",
+        price: 89999,
+        original_price: 99900,
+        stock_quantity: 20,
+        sku: "IP17-256-WHITE",
+        image_url: "/products/iphone-16-pro-max.png",
+        is_active: true
+      }
+    ]
+  },
+  {
     id: "iphone-16-pro-max",
     category: "Mobiles",
     category_id: "mobiles-accessories",

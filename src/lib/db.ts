@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { categories as defaultCategories, products as defaultProducts } from './data';
+import { matchProductSearch } from './searchUtils';
 
 // ==============================================================================
 // 1. AUDIT LOGGING HELPER
@@ -236,13 +237,7 @@ export const ProductsDB = {
       );
     }
     if (filter?.search) {
-      const s = filter.search.toLowerCase();
-      list = list.filter((p) =>
-        (p.name && p.name.toLowerCase().includes(s)) ||
-        (p.description && p.description.toLowerCase().includes(s)) ||
-        (p.sku && p.sku.toLowerCase().includes(s)) ||
-        (p.sub_category && p.sub_category.toLowerCase().includes(s))
-      );
+      list = list.filter((p) => matchProductSearch(p, filter.search!));
     }
     if (filter?.is_popular) {
       list = list.filter((p) => p.is_popular);

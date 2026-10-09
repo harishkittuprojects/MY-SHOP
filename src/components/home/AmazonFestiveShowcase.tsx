@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/common/ProductCard";
 import { getRecentSearches, getRecentlyViewedProductIds, clearRecentHistory } from "@/lib/recentHistory";
 import { products as defaultProducts } from "@/lib/data";
+import { matchProductSearch, normalizeSearchTerm } from "@/lib/searchUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar,
@@ -1794,28 +1795,11 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     // For You Mode: Match by recent searches and viewed products
     if (activeKey === "for-you") {
       if (selectedBrand) {
-        const q = selectedBrand.trim().toLowerCase();
-        const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
-        const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
-
-        list = list.filter(p => {
-          const name = (p.name || "").toLowerCase();
-          const brand = (p.brand || "").toLowerCase();
-          const sub = (p.sub_category || "").toLowerCase();
-          return (brand && keywords.some(k => brand.includes(k))) ||
-                 keywords.some(k => name.includes(k)) ||
-                 keywords.some(k => sub.includes(k));
-        });
+        list = list.filter(p => matchProductSearch(p, selectedBrand));
       } else if (recentSearches.length > 0 || recentViewedIds.length > 0) {
         const matched = list.filter((p) => {
-          const name = (p.name || "").toLowerCase();
-          const cat = (p.category || p.category_name || "").toLowerCase();
-          const sub = (p.sub_category || "").toLowerCase();
           const isViewed = recentViewedIds.includes(p.id);
-          const matchesSearch = recentSearches.some((s) => {
-            const sq = s.toLowerCase();
-            return name.includes(sq) || cat.includes(sq) || sub.includes(sq);
-          });
+          const matchesSearch = recentSearches.some((s) => matchProductSearch(p, s));
           return isViewed || matchesSearch;
         });
 
@@ -1865,7 +1849,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             (cond.includes("used") && !cond.includes("brand new"));
 
           if (isRefurbishedMode) {
-            // Never include accessories/cables/adapters in refurbished mobiles shelf
             const isAccessory = 
               c.includes("accessories") || cid.includes("accessories") || 
               sub.includes("accessories") || sub.includes("charger") || 
@@ -1915,28 +1898,39 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         });
       }
 
-      // Filter by search query or selected brand strictly
+      // Filter by search query or selected brand strictly (with smart typo and model number matching)
       if (selectedBrand) {
         const q = selectedBrand.trim().toLowerCase();
         const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
         const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
 
-        list = list.filter(p => {
+        const matchedBySmartSearch = list.filter(p => {
+          // 1. Direct and smart typo/number match (e.g. "17", "ihpone 17", "16", "s26")
+          if (matchProductSearch(p, selectedBrand)) return true;
+
+          // 2. Brand keyword match
           const name = (p.name || "").toLowerCase();
           const brand = (p.brand || "").toLowerCase();
           const sub = (p.sub_category || "").toLowerCase();
 
-          // 1. Match product brand attribute
           if (brand && keywords.some(k => brand.includes(k))) return true;
-
-          // 2. Match product name
           if (keywords.some(k => name.includes(k))) return true;
-
-          // 3. Match sub-category if specifically named after the brand
           if (keywords.some(k => sub.includes(k))) return true;
 
           return false;
         });
+
+        if (matchedBySmartSearch.length > 0) {
+          list = matchedBySmartSearch;
+        } else {
+          // Fallback to searching all catalog products across categories if category filter was overly restrictive
+          const globalMatches = catalogProducts.filter(p => matchProductSearch(p, selectedBrand));
+          if (globalMatches.length > 0) {
+            list = globalMatches;
+          } else {
+            list = [];
+          }
+        }
       }
     }
 
