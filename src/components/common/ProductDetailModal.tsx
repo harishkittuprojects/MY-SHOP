@@ -50,7 +50,7 @@ export default function ProductDetailModal({ isOpen, onClose, product, onAddToCa
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-contain p-4"
+                  className="object-cover"
                   unoptimized
                 />
                 <button

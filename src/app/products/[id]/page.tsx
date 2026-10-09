@@ -567,14 +567,14 @@ export default function ProductDetailPage({
           
           {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails ======================= */}
           <div className="lg:col-span-5 w-full flex flex-col gap-3">
-            {/* Main Image Viewer */}
-            <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden shadow-2xs flex items-center justify-center min-h-[340px] sm:min-h-[420px]">
+            {/* Main Image Viewer (Full Edge-to-Edge Cover) */}
+            <div className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square min-h-[340px] sm:min-h-[440px] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs flex items-center justify-center group">
               {/* Top Action Buttons */}
-              <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+              <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowShareModal(true)}
-                  className="w-9 h-9 rounded-full bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center shadow-md border border-slate-200 transition-all"
+                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-700 flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90"
                   title="Share product"
                 >
                   <FontAwesomeIcon icon={faShareNodes} className="text-sm" />
@@ -582,8 +582,8 @@ export default function ProductDetailPage({
                 <button
                   type="button"
                   onClick={() => product && toggleWishlist(product as any)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md border border-slate-200 transition-all ${
-                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90 ${
+                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white/90 hover:bg-rose-50 text-slate-600 hover:text-rose-600"
                   }`}
                   title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
                 >
@@ -591,23 +591,23 @@ export default function ProductDetailPage({
                 </button>
               </div>
 
-              {/* Main Image */}
-              <div className="relative w-full h-64 sm:h-80 md:h-96 flex items-center justify-center">
+              {/* Main Image (Fully Covers Container) */}
+              <div className="relative w-full h-full overflow-hidden">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-contain p-2 transition-transform duration-300 hover:scale-105 cursor-zoom-in"
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
                     priority
                     unoptimized
                   />
                 ) : (
-                  <div className="text-sm text-slate-400">No Image Available</div>
+                  <div className="w-full h-full flex items-center justify-center text-sm text-slate-400">No Image Available</div>
                 )}
 
                 {isOutOfStock && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-20">
                     <span className="bg-red-600 text-white font-black px-4 py-1.5 rounded-lg text-sm uppercase tracking-wider shadow-lg">
                       Out of Stock
                     </span>
@@ -623,9 +623,9 @@ export default function ProductDetailPage({
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   onMouseEnter={() => setSelectedImage(img)}
-                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
+                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden ${
                     selectedImage === img
-                      ? "border-orange-500 shadow-md ring-2 ring-orange-400/50 scale-105"
+                      ? "border-[#2E6F40] shadow-md ring-2 ring-[#2E6F40]/50 scale-105"
                       : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100"
                   }`}
                 >
@@ -633,7 +633,7 @@ export default function ProductDetailPage({
                     src={img}
                     alt={`${product.name} thumbnail ${idx + 1}`}
                     fill
-                    className="object-contain p-0.5"
+                    className="object-cover w-full h-full"
                     unoptimized
                   />
                 </button>
