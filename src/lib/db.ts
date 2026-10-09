@@ -331,9 +331,23 @@ export const ProductsDB = {
 
     let result = record;
     try {
-      const { data, error } = await supabase.from('products').insert([record]).select().single();
+      if (record.category_id) {
+        try {
+          await supabase.from('categories').upsert([
+            {
+              id: record.category_id,
+              name: record.category_name || record.category_id,
+              is_active: true
+            }
+          ], { onConflict: 'id' });
+        } catch { /* ignore category ensure */ }
+      }
+
+      const { data, error } = await supabase.from('products').upsert([record], { onConflict: 'id' }).select().single();
       if (!error && data) {
         result = data;
+      } else if (error) {
+        console.error('ProductsDB.create Supabase error:', error);
       }
     } catch (err) {
       console.warn('ProductsDB.create Supabase fallback:', err);
@@ -420,6 +434,18 @@ export const ProductsDB = {
 
     let result = recordToUpsert;
     try {
+      if (recordToUpsert.category_id) {
+        try {
+          await supabase.from('categories').upsert([
+            {
+              id: recordToUpsert.category_id,
+              name: recordToUpsert.category_name || recordToUpsert.category_id,
+              is_active: true
+            }
+          ], { onConflict: 'id' });
+        } catch { /* ignore category ensure */ }
+      }
+
       const { data, error } = await supabase
         .from('products')
         .upsert([recordToUpsert], { onConflict: 'id' })
@@ -428,6 +454,8 @@ export const ProductsDB = {
 
       if (!error && data) {
         result = data;
+      } else if (error) {
+        console.error('ProductsDB.update Supabase error:', error);
       }
     } catch (err) {
       console.warn('ProductsDB.update Supabase fallback:', err);
