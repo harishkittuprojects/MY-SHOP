@@ -1463,7 +1463,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             query: b.query || b.name,
             logo_url: b.logo_url || ""
           })));
-        } else {
+        } else if (!categoryFilter || activeKey === "mobiles") {
           const resAll = await fetch(`/api/brands`, { cache: "no-store" });
           const allData = await resAll.json();
           if (Array.isArray(allData) && allData.length > 0) {
@@ -1474,18 +1474,25 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               query: b.query || b.name,
               logo_url: b.logo_url || ""
             })));
+          } else {
+            setDbBrands([]);
           }
+        } else {
+          // For non-mobile categories without custom DB brands, reset dbBrands so category config brands are used
+          setDbBrands([]);
         }
       } catch {
-        // Fallback to static config
+        setDbBrands([]);
       }
     }
     loadDynamicBrands();
-  }, [categoryFilter]);
+  }, [categoryFilter, activeKey]);
 
-  // Brand list for quick brand selection
+  // Brand list for quick brand selection (tailored per active category)
   const brandList: BrandItem[] = useMemo(() => {
-    const EXCLUDED = ["anker", "boat", "spigen", "noise", "nike", "tanishq"];
+    const isMobileOrRefurb = activeKey === "mobiles" || activeKey === "refurbished";
+    const EXCLUDED_FROM_MOBILES = ["anker", "boat", "spigen", "noise", "nike", "tanishq"];
+
     let rawList: BrandItem[] = [];
     if (dbBrands.length > 0) {
       rawList = dbBrands;
@@ -1506,12 +1513,16 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       ];
     }
 
-    return rawList.filter((b) => {
-      const n = (b.name || "").toLowerCase();
-      const q = (b.query || "").toLowerCase();
-      return !EXCLUDED.some((ex) => n.includes(ex) || q.includes(ex));
-    });
-  }, [dbBrands, config.brands]);
+    if (isMobileOrRefurb) {
+      return rawList.filter((b) => {
+        const n = (b.name || "").toLowerCase();
+        const q = (b.query || "").toLowerCase();
+        return !EXCLUDED_FROM_MOBILES.some((ex) => n.includes(ex) || q.includes(ex));
+      });
+    }
+
+    return rawList;
+  }, [dbBrands, config.brands, activeKey]);
 
   // Sync selectedBrand with URL query param
   const selectedBrand = brandSearch || null;
@@ -1607,14 +1618,15 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     fetchProducts();
   }, []);
 
-  // Brand keyword mapping for accurate matching
+  // Brand keyword mapping for accurate matching across all categories
   const BRAND_ALIAS_MAP: Record<string, string[]> = {
+    // Mobiles
     samsung: ["samsung", "galaxy", "z fold", "z flip"],
-    apple: ["apple", "iphone"],
+    apple: ["apple", "iphone", "macbook", "ipad", "airpods", "apple watch"],
     oneplus: ["oneplus", "nord"],
-    pixel: ["google pixel", "pixel"],
-    google: ["google pixel", "pixel"],
-    vivo: ["vivo"],
+    pixel: ["google pixel", "pixel", "google"],
+    google: ["google pixel", "pixel", "google"],
+    vivo: ["vivo", "iqoo"],
     motorola: ["motorola", "moto", "razr"],
     moto: ["motorola", "moto", "razr"],
     realme: ["realme", "narzo"],
@@ -1622,6 +1634,57 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     xiaomi: ["redmi", "xiaomi", "mi "],
     nothing: ["nothing", "cmf"],
     iqoo: ["iqoo"],
+    
+    // Laptops & Computers
+    dell: ["dell", "inspiron", "xps", "alienware"],
+    hp: ["hp", "pavilion", "omen", "victus", "spectre", "envy"],
+    lenovo: ["lenovo", "thinkpad", "legion", "ideapad", "yoga"],
+    asus: ["asus", "rog", "tuf", "zenbook", "vivobook"],
+    acer: ["acer", "predator", "nitro", "aspire", "swift"],
+    msi: ["msi", "cyborg", "katana", "stealth"],
+    
+    // Fashion & Lifestyle
+    nike: ["nike", "air max", "jordan"],
+    puma: ["puma"],
+    zara: ["zara"],
+    levi: ["levi", "levi's", "levis"],
+    "allen solly": ["allen solly", "solly"],
+    tommy: ["tommy", "tommy hilfiger", "hilfiger"],
+    fossil: ["fossil"],
+    "ray-ban": ["ray-ban", "rayban", "aviator", "wayfarer"],
+    
+    // Watches & Smart Wearables
+    noise: ["noise", "colorfit"],
+    boat: ["boat", "storm", "wave", "airdopes", "rockerz"],
+    "fire-boltt": ["fire-boltt", "fireboltt", "boltt"],
+    amazfit: ["amazfit", "gtr", "gts", "bip"],
+    garmin: ["garmin", "forerunner", "fenix"],
+    
+    // Jewellery
+    tanishq: ["tanishq", "mia"],
+    kalyan: ["kalyan"],
+    malabar: ["malabar"],
+    giva: ["giva"],
+    caratlane: ["caratlane"],
+    joyalukkas: ["joyalukkas"],
+    senco: ["senco"],
+    
+    // Accessories
+    anker: ["anker", "ganprime", "soundcore"],
+    spigen: ["spigen", "ultra hybrid", "tough armor"],
+    belkin: ["belkin", "boostcharge"],
+    ambrane: ["ambrane"],
+    baseus: ["baseus"],
+    portronics: ["portronics"],
+    
+    // EV Vehicles
+    ather: ["ather", "450x", "450s", "rizta"],
+    ola: ["ola", "s1 pro", "s1 air", "s1x"],
+    tvs: ["tvs", "iqube"],
+    chetak: ["chetak", "bajaj"],
+    vida: ["vida", "hero vida"],
+    simple: ["simple energy", "simple one"],
+    revolt: ["revolt", "rv400"]
   };
 
   const matchedCatalogProducts = useMemo(() => {
@@ -2076,8 +2139,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         ? "Explore Refurbished Mobile Brands"
                         : activeKey === "mobiles"
                         ? "Explore Mobile Brands"
+                        : activeKey === "laptops"
+                        ? "Explore Laptop & Computer Brands"
+                        : activeKey === "fashion"
+                        ? "Explore Fashion & Lifestyle Brands"
+                        : activeKey === "electronics"
+                        ? "Explore Smartwatch & Gadget Brands"
+                        : activeKey === "jewellery"
+                        ? "Explore Precious Jewellery Brands"
                         : activeKey === "accessories"
                         ? "Explore Accessories Brands"
+                        : activeKey === "ev"
+                        ? "Explore EV & Mobility Brands"
                         : "Shop by Brand"}
                     </span>
                     <span className="text-xs font-bold text-slate-400 font-mono">
@@ -2087,7 +2160,19 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
                     {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
                       ? "Select a brand to view 32-point tested Grade A+ refurbished smartphones with 6-month warranty"
-                      : "Select a brand to view authentic smartphones with official warranty & offers"}
+                      : activeKey === "laptops"
+                      ? "Select a brand to view high-performance laptops, MacBooks & gaming rigs with official warranty"
+                      : activeKey === "fashion"
+                      ? "Select a brand to view 100% authentic designer apparel, sneakers & lifestyle fashion"
+                      : activeKey === "electronics"
+                      ? "Select a brand to view AMOLED calling smartwatches, fitness bands & audio wearables"
+                      : activeKey === "jewellery"
+                      ? "Select a brand to view 100% BIS hallmarked gold & certified diamond jewellery"
+                      : activeKey === "accessories"
+                      ? "Select a brand to view GaN fast chargers, armor cases & power accessories"
+                      : activeKey === "ev"
+                      ? "Select a brand to view high speed electric scooters with subsidy benefits"
+                      : "Select a brand to view authentic products with official warranty & offers"}
                   </p>
                 </div>
                 
@@ -2222,7 +2307,25 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
                       <span>
                         {selectedBrand 
-                          ? `Showing "${selectedBrand}" ${activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished")) ? "Refurbished Mobiles" : activeKey === "accessories" ? "Accessories" : "Smartphones"} (${matchedCatalogProducts.length})` 
+                          ? `Showing "${selectedBrand}" ${
+                              activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                                ? "Refurbished Mobiles"
+                                : activeKey === "mobiles"
+                                ? "Smartphones"
+                                : activeKey === "laptops"
+                                ? "Laptops & Tablets"
+                                : activeKey === "fashion"
+                                ? "Fashion & Lifestyle"
+                                : activeKey === "electronics"
+                                ? "Smartwatches & Wearables"
+                                : activeKey === "jewellery"
+                                ? "Jewellery Collections"
+                                : activeKey === "accessories"
+                                ? "Accessories"
+                                : activeKey === "ev"
+                                ? "Electric Vehicles"
+                                : "Products"
+                            } (${matchedCatalogProducts.length})` 
                           : `${config.categoryHeading} Catalog (${matchedCatalogProducts.length})`}
                       </span>
                     </h2>
