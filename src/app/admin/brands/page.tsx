@@ -656,7 +656,7 @@ export default function AdminBrandsPage() {
                       )}
                     </div>
                     <span className="text-[11px] font-bold text-slate-900 truncate w-full text-center">{formData.name || "Brand"}</span>
-                    <span className="text-[9px] font-bold bg-[#2E6F40] text-white px-2 py-0.5 rounded-full mt-1">Explore</span>
+                    <span className="text-[9px] text-slate-400 font-semibold mt-0.5">Official Store</span>
                   </div>
                 </div>
               </div>

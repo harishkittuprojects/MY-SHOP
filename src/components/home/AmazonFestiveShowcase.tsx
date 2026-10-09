@@ -2059,30 +2059,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       </div>
 
                       {/* 2. Brand Card Details */}
-                      <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
-                        <div>
-                          <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
-                            {b.name}
-                          </h3>
-                          <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
-                            Official Brand Store
-                          </p>
-                        </div>
-
-                        {/* 3. Action CTA Button */}
-                        <div className="mt-2.5">
-                          <button
-                            type="button"
-                            className={`w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs ${
-                              isSelected 
-                                ? "bg-[#2E6F40] text-white" 
-                                : "bg-slate-100 group-hover:bg-[#2E6F40] text-slate-800 group-hover:text-white"
-                            }`}
-                          >
-                            <span>{isSelected ? "Selected" : "Explore"}</span>
-                            <FontAwesomeIcon icon={isSelected ? faCheck : faArrowRight} className="text-[9px]" />
-                          </button>
-                        </div>
+                      <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
+                        <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
+                          {b.name}
+                        </h3>
+                        <p className="text-[10px] text-slate-400 font-semibold line-clamp-1 mt-0.5">
+                          Official Store
+                        </p>
                       </div>
                     </div>
                   );
