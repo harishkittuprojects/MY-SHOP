@@ -2318,6 +2318,167 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
 
             {/* =========================================================================
+                2. BRAND SHOWCASE (Explore by Brand)
+            ========================================================================= */}
+            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
+                  <div>
+                    <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      <span>
+                        {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                          ? "Explore Refurbished Mobile Brands"
+                          : activeKey === "mobiles"
+                          ? "Explore Mobile Brands"
+                          : activeKey === "laptops"
+                          ? "Explore Laptop & Computer Brands"
+                          : activeKey === "fashion"
+                          ? "Explore Fashion & Lifestyle Brands"
+                          : activeKey === "electronics"
+                          ? "Explore Smartwatch & Gadget Brands"
+                          : activeKey === "jewellery"
+                          ? "Explore Precious Jewellery Brands"
+                          : activeKey === "accessories"
+                          ? "Explore Accessories Brands"
+                          : activeKey === "ev"
+                          ? "Explore EV & Mobility Brands"
+                          : "Explore Brands"}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400 font-mono">
+                        ({brandList.length})
+                      </span>
+                    </h2>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
+                      {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                        ? "Select a brand to view 32-point tested Grade A+ refurbished smartphones with 6-month warranty"
+                        : activeKey === "laptops"
+                        ? "Select a brand to view high-performance laptops, MacBooks & gaming rigs with official warranty"
+                        : activeKey === "fashion"
+                        ? "Select a brand to view 100% authentic designer apparel, sneakers & lifestyle fashion"
+                        : activeKey === "electronics"
+                        ? "Select a brand to view AMOLED calling smartwatches, fitness bands & audio wearables"
+                        : activeKey === "jewellery"
+                        ? "Select a brand to view 100% BIS hallmarked gold & certified diamond jewellery"
+                        : activeKey === "accessories"
+                        ? "Select a brand to view GaN fast chargers, armor cases & power accessories"
+                        : activeKey === "ev"
+                        ? "Select a brand to view high speed electric scooters with subsidy benefits"
+                        : "Select a brand to view authentic products with official warranty & offers"}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Sort & Filters */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Quick Sort */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                    <select
+                      value={priceSort || "featured"}
+                      onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
+                      className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
+                    >
+                      <option value="low-to-high">Price: Low to High</option>
+                      <option value="high-to-low">Price: High to Low</option>
+                      <option value="featured">Featured / Default</option>
+                    </select>
+                  </div>
+
+                  {selectedBrand && (
+                    <button
+                      type="button"
+                      onClick={() => handleBrandClick("")}
+                      className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <span>Clear ({selectedBrand})</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* BRAND CARDS GRID */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 w-full">
+                {/* All Brands Tile */}
+                <div
+                  onClick={() => handleBrandClick("")}
+                  className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full select-none ${
+                    !selectedBrand 
+                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
+                      : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-100/70 text-[#2E6F40] font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                      ★ ALL
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
+                        All Brands
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
+                        Full Catalog
+                      </p>
+                    </div>
+                  </div>
+                  {!selectedBrand && (
+                    <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
+                      Active
+                    </span>
+                  )}
+                </div>
+
+                {/* Specific Brand Cards */}
+                {brandList.map((b, i) => {
+                  const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
+                  return (
+                    <div
+                      key={b.id || i}
+                      onClick={() => handleBrandClick(b.query)}
+                      className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full select-none ${
+                        isSelected 
+                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
+                          : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1 overflow-hidden shrink-0">
+                          {b.logo_url ? (
+                            <Image 
+                              src={b.logo_url} 
+                              alt={b.name} 
+                              fill 
+                              className="object-contain p-1 group-hover:scale-105 transition-transform duration-200" 
+                              unoptimized 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-700 font-black text-xs">
+                              {b.name.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
+                            {b.name}
+                          </h3>
+                          <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
+                            Official Store
+                          </p>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* =========================================================================
                 3. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
             ========================================================================= */}
             <div 
