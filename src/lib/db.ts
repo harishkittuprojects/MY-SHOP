@@ -329,10 +329,22 @@ export const ProductsDB = {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from('products').insert([record]).select().single();
-    if (error) {
-      console.error('ProductsDB.create Supabase Error:', error);
-      throw error;
+    let result = record;
+    try {
+      const { data, error } = await supabase.from('products').insert([record]).select().single();
+      if (!error && data) {
+        result = data;
+      }
+    } catch (err) {
+      console.warn('ProductsDB.create Supabase fallback:', err);
+    }
+
+    // Sync in memory cache
+    const existingIdx = defaultProducts.findIndex((p) => String(p.id) === String(id));
+    if (existingIdx !== -1) {
+      defaultProducts[existingIdx] = result;
+    } else {
+      defaultProducts.unshift(result);
     }
 
     // Log Inventory initial creation
@@ -349,15 +361,17 @@ export const ProductsDB = {
       }]);
     } catch { /* ignore log error */ }
 
-    await logActivity({
-      admin_name: adminName,
-      action: 'create_product',
-      entity_type: 'product',
-      entity_id: id,
-      details: { name: record.name, price: record.price, stock: record.stock_quantity }
-    });
+    try {
+      await logActivity({
+        admin_name: adminName,
+        action: 'create_product',
+        entity_type: 'product',
+        entity_id: id,
+        details: { name: record.name, price: record.price, stock: record.stock_quantity }
+      });
+    } catch { /* ignore */ }
 
-    return data;
+    return result;
   },
 
   async update(id: string, updates: any, adminName: string = 'Admin') {
@@ -390,6 +404,7 @@ export const ProductsDB = {
       price: updates.price !== undefined ? Number(updates.price) : Number(prev?.price || 0),
       original_price: updates.original_price !== undefined ? Number(updates.original_price) : Number(prev?.original_price || prev?.price || 0),
       stock_quantity: updates.stock_quantity !== undefined ? Number(updates.stock_quantity) : Number(prev?.stock_quantity || 10),
+      sku: updates.sku !== undefined ? updates.sku : (prev?.sku || `SKU-${id.toUpperCase()}`),
       image_url: updates.image_url !== undefined ? updates.image_url : (prev?.image_url || (Array.isArray(updates.images) && updates.images.length > 0 ? updates.images[0] : '')),
       images: updates.images !== undefined ? (Array.isArray(updates.images) ? updates.images.filter(Boolean) : [updates.image_url].filter(Boolean)) : (prev?.images || []),
       description: updates.description !== undefined ? updates.description : (prev?.description || ''),
@@ -418,6 +433,14 @@ export const ProductsDB = {
       console.warn('ProductsDB.update Supabase fallback:', err);
     }
 
+    // Always update in-memory catalog cache so changes are immediately visible
+    const defIdx = defaultProducts.findIndex((p) => String(p.id).toLowerCase() === String(id).toLowerCase());
+    if (defIdx !== -1) {
+      defaultProducts[defIdx] = { ...defaultProducts[defIdx], ...recordToUpsert };
+    } else {
+      defaultProducts.unshift(recordToUpsert);
+    }
+
     try {
       await logActivity({
         admin_name: adminName,
@@ -432,10 +455,15 @@ export const ProductsDB = {
   },
 
   async delete(id: string, adminName: string = 'Admin') {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      console.error('ProductsDB.delete Supabase Error:', error);
-      throw error;
+    try {
+      await supabase.from('products').delete().eq('id', id);
+    } catch (err) {
+      console.warn('ProductsDB.delete Supabase fallback:', err);
+    }
+
+    const defIdx = defaultProducts.findIndex((p) => String(p.id).toLowerCase() === String(id).toLowerCase());
+    if (defIdx !== -1) {
+      defaultProducts.splice(defIdx, 1);
     }
 
     await logActivity({
