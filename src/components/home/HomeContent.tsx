@@ -267,7 +267,7 @@ export default function HomeContent() {
   const [products, setProducts] = useState<any[]>(defaultProducts || []);
   const [mobileBrands, setMobileBrands] = useState<any[]>([]);
   const [selectedMobileBrand, setSelectedMobileBrand] = useState<string>("all");
-  const [homeExploreMode, setHomeExploreMode] = useState<"category" | "brand">("category");
+  const [showCategoryGrid, setShowCategoryGrid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
@@ -578,50 +578,50 @@ export default function HomeContent() {
         </div>
       </section>
 
-      {/* 2.5. SHOP BY CATEGORY / SHOP BY BRAND SWITCHABLE SHOWCASE */}
+      {/* 2.5. SHOP BY CATEGORY SHOWCASE WITH ON/OFF TOGGLE */}
       <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
         <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-5 shadow-2xs space-y-4">
           
-          {/* Header with Green Accent, Mode Switcher & View All */}
+          {/* Header with Green Accent, ON/OFF Toggle & View All */}
           <div className="flex items-center justify-between flex-wrap gap-2.5 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2 sm:gap-2.5">
               <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
               <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                {homeExploreMode === "category" ? "Shop by Category" : "Shop by Brand"}
+                Shop by Category
               </h2>
             </div>
 
             {/* ON / OFF Toggle Switch & View All link */}
             <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
               <div 
-                onClick={() => setHomeExploreMode(prev => prev === "brand" ? "category" : "brand")}
+                onClick={() => setShowCategoryGrid(prev => !prev)}
                 className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs transition-all cursor-pointer select-none"
-                title="Toggle between Category and Brand view"
+                title="Toggle Shop by Category grid"
               >
                 <span className="text-xs font-bold text-slate-700">
-                  {homeExploreMode === "brand" ? "Brands View" : "Category View"}
+                  Shop by Category
                 </span>
 
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={homeExploreMode === "brand"}
+                  aria-checked={showCategoryGrid}
                   className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    homeExploreMode === "brand" ? "bg-[#2E6F40]" : "bg-slate-300"
+                    showCategoryGrid ? "bg-[#2E6F40]" : "bg-slate-300"
                   }`}
                 >
-                  <span className="sr-only">Toggle Category and Brand view</span>
+                  <span className="sr-only">Toggle Shop by Category grid</span>
                   <span
                     className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                      homeExploreMode === "brand" ? "translate-x-5" : "translate-x-0"
+                      showCategoryGrid ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
                 </button>
 
                 <span className={`text-[10px] font-black uppercase tracking-wider ${
-                  homeExploreMode === "brand" ? "text-[#2E6F40]" : "text-slate-400"
+                  showCategoryGrid ? "text-[#2E6F40]" : "text-slate-400"
                 }`}>
-                  {homeExploreMode === "brand" ? "ON" : "OFF"}
+                  {showCategoryGrid ? "ON" : "OFF"}
                 </span>
               </div>
 
@@ -636,9 +636,9 @@ export default function HomeContent() {
             </div>
           </div>
 
-          {/* MODE 1: SHOP BY CATEGORY GRID (Matching screenshot cards) */}
-          {homeExploreMode === "category" && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* SHOP BY CATEGORY GRID (Visible when toggle is ON) */}
+          {showCategoryGrid && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all duration-300">
               {HOME_FEATURED_CATEGORIES.map((cat) => (
                 <Link
                   key={cat.id}
@@ -666,48 +666,6 @@ export default function HomeContent() {
                       {cat.subtitle}
                     </span>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* MODE 2: SHOP BY BRAND GRID */}
-          {homeExploreMode === "brand" && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
-              {HOME_FEATURED_BRANDS.map((b) => (
-                <Link
-                  key={b.name}
-                  href={b.url}
-                  className="group bg-white rounded-2xl border border-slate-200/90 hover:border-[#2E6F40] shadow-2xs hover:shadow-md transition-all duration-200 flex items-center justify-between p-3 sm:p-3.5 cursor-pointer"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                      {b.logo ? (
-                        <Image
-                          src={b.logo}
-                          alt={b.name}
-                          fill
-                          className="object-contain p-1"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-700 font-black text-xs">
-                          {b.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
-                        {b.name}
-                      </h3>
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
-                        {b.desc}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[#2E6F40] group-hover:translate-x-0.5 transition-transform shrink-0 ml-1">
-                    <FontAwesomeIcon icon={faArrowRight} className="text-[11px]" />
-                  </span>
                 </Link>
               ))}
             </div>

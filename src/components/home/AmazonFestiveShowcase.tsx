@@ -2350,34 +2350,34 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* ON / OFF Toggle Switch */}
                   <div 
-                    onClick={() => setExploreMode(prev => prev === "brand" ? "category" : "brand")}
+                    onClick={() => setExploreMode(prev => prev === "category" ? "brand" : "category")}
                     className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-2.5 py-1 rounded-xl shadow-2xs transition-all cursor-pointer select-none"
-                    title="Toggle between Category and Brand view"
+                    title="Toggle Shop by Category grid"
                   >
                     <span className="text-[11px] font-bold text-slate-700">
-                      {exploreMode === "brand" ? "Brands View" : "Category View"}
+                      Shop by Category
                     </span>
 
                     <button
                       type="button"
                       role="switch"
-                      aria-checked={exploreMode === "brand"}
+                      aria-checked={exploreMode === "category"}
                       className={`relative inline-flex h-4.5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        exploreMode === "brand" ? "bg-[#2E6F40]" : "bg-slate-300"
+                        exploreMode === "category" ? "bg-[#2E6F40]" : "bg-slate-300"
                       }`}
                     >
-                      <span className="sr-only">Toggle Category and Brand view</span>
+                      <span className="sr-only">Toggle Shop by Category grid</span>
                       <span
                         className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                          exploreMode === "brand" ? "translate-x-4.5" : "translate-x-0"
+                          exploreMode === "category" ? "translate-x-4.5" : "translate-x-0"
                         }`}
                       />
                     </button>
 
                     <span className={`text-[10px] font-black uppercase tracking-wider ${
-                      exploreMode === "brand" ? "text-[#2E6F40]" : "text-slate-400"
+                      exploreMode === "category" ? "text-[#2E6F40]" : "text-slate-400"
                     }`}>
-                      {exploreMode === "brand" ? "ON" : "OFF"}
+                      {exploreMode === "category" ? "ON" : "OFF"}
                     </span>
                   </div>
 
