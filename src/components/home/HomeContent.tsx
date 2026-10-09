@@ -159,6 +159,7 @@ const FLIPKART_APP_CATEGORIES = [
 export default function HomeContent() {
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>(defaultProducts || []);
+  const [mobileBrands, setMobileBrands] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
@@ -188,13 +189,15 @@ export default function HomeContent() {
     
     async function fetchData() {
       try {
-        const [catRes, prodRes] = await Promise.all([
+        const [catRes, prodRes, brandRes] = await Promise.all([
           fetch("/api/categoryList", { signal: controller.signal, cache: "no-store", headers: { "Accept": "application/json" } }),
-          fetch("/api/productList", { signal: controller.signal, cache: "no-store", headers: { "Accept": "application/json" } })
+          fetch("/api/productList", { signal: controller.signal, cache: "no-store", headers: { "Accept": "application/json" } }),
+          fetch("/api/brands?category=Mobiles", { signal: controller.signal, cache: "no-store", headers: { "Accept": "application/json" } })
         ]);
         
         const catData = catRes.ok ? await catRes.json() : [];
         const prodData = prodRes.ok ? await prodRes.json() : [];
+        const brandData = brandRes.ok ? await brandRes.json() : [];
         
         if (Array.isArray(catData) && catData.length > 0) {
           setCategories(catData);
@@ -203,6 +206,9 @@ export default function HomeContent() {
           setProducts(prodData);
         } else {
           setProducts(defaultProducts);
+        }
+        if (Array.isArray(brandData) && brandData.length > 0) {
+          setMobileBrands(brandData);
         }
       } catch (err: any) {
         if (err.name !== 'AbortError') {
@@ -510,6 +516,33 @@ export default function HomeContent() {
                       </Link>
                     </div>
                   </div>
+
+                  {/* Quick Brand Pills Rail for Mobiles */}
+                  {config.id === "mobiles" && (
+                    <div className="px-3 py-2 bg-slate-50/90 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
+                      <span className="text-[10px] font-black uppercase text-slate-400 shrink-0 mr-0.5">Brands:</span>
+                      {(mobileBrands.length > 0 ? mobileBrands : [
+                        { name: "Samsung Galaxy", query: "Samsung" },
+                        { name: "Apple iPhone", query: "Apple" },
+                        { name: "OnePlus", query: "OnePlus" },
+                        { name: "Google Pixel", query: "Pixel" },
+                        { name: "Vivo", query: "Vivo" },
+                        { name: "Motorola", query: "Motorola" },
+                        { name: "Realme", query: "realme" },
+                        { name: "Xiaomi / Redmi", query: "Redmi" },
+                        { name: "Nothing Phone", query: "Nothing" },
+                        { name: "iQOO", query: "iQOO" }
+                      ]).map((b: any, bIdx: number) => (
+                        <Link
+                          key={b.id || bIdx}
+                          href={`/products?category=Mobiles&search=${encodeURIComponent(b.query || b.name)}`}
+                          className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-white hover:bg-[#2E6F40] text-slate-700 hover:text-white border border-slate-200/90 shadow-2xs shrink-0 active:scale-95 transition-all"
+                        >
+                          {b.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Product Cards Shelf (Compact 5-6 cards on desktop) */}
                   <div className="p-2 sm:p-2.5 md:p-3 bg-[#fbfcfd]">

@@ -1628,8 +1628,22 @@ export const BrandsDB = {
     }
 
     if (category && category.toLowerCase() !== 'all') {
-      const c = category.toLowerCase();
-      list = list.filter((b) => !b.category || b.category.toLowerCase() === c || b.category.toLowerCase() === 'all');
+      const c = category.toLowerCase().trim();
+      list = list.filter((b) => {
+        if (!b.category || b.category.toLowerCase() === 'all') return true;
+        const bCat = b.category.toLowerCase();
+        if (bCat === c) return true;
+        if (c.includes('mobile') || c.includes('smart') || c.includes('phone') || c.includes('flagship')) {
+          return bCat.includes('mobile') || bCat === 'mobiles';
+        }
+        if (c.includes('access') || c.includes('charger') || c.includes('power')) {
+          return bCat.includes('access');
+        }
+        if (c.includes('refurb') || c.includes('old')) {
+          return bCat.includes('mobile') || bCat.includes('refurb');
+        }
+        return bCat.includes(c) || c.includes(bCat);
+      });
     }
 
     return list;

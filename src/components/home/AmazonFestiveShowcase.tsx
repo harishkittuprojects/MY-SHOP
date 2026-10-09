@@ -196,6 +196,8 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
       { name: "Motorola", query: "Motorola" },
       { name: "Realme", query: "realme" },
       { name: "Xiaomi / Redmi", query: "Redmi" },
+      { name: "Nothing Phone", query: "Nothing" },
+      { name: "iQOO", query: "iQOO" },
     ],
     bannerBadge: "✨ GRAND FESTIVAL OFFERS",
     bannerHeadline: "Smartphones at Best Price.",
@@ -1448,6 +1450,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setDbBrands(data.map((b: any) => ({ name: b.name, query: b.query || b.name })));
+        } else {
+          const resAll = await fetch(`/api/brands`, { cache: "no-store" });
+          const allData = await resAll.json();
+          if (Array.isArray(allData) && allData.length > 0) {
+            const filtered = allData.filter((b: any) => !b.category || b.category === "Mobiles" || b.category.toLowerCase().includes("mobile"));
+            setDbBrands((filtered.length > 0 ? filtered : allData).map((b: any) => ({ name: b.name, query: b.query || b.name })));
+          }
         }
       } catch {
         // Fallback to static config
