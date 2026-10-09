@@ -945,15 +945,15 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Action Buttons: Add to Cart & Buy Now (MY SHOP Brand Colors: Gold & Emerald Green) */}
+            {/* Action Buttons: Add to Cart & Buy Now (MY SHOP Brand Colors: Emerald Green) */}
             <div className="space-y-2.5 pt-1">
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2 ${
+                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all shadow-md cursor-pointer active:scale-98 flex items-center justify-center gap-2 ${
                   isOutOfStock
                     ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 border border-[#d4b94a] shadow-xs"
+                    : "bg-[#2E6F40] hover:bg-[#245e35] text-white shadow-emerald-800/20 border border-[#245e35]"
                 }`}
               >
                 <FontAwesomeIcon icon={faCartPlus} />
@@ -1217,7 +1217,7 @@ export default function ProductDetailPage({
           className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
             isOutOfStock
               ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-              : "bg-[#E9CF6A] active:bg-[#dec253] text-slate-950 shadow-xs border border-[#d4b94a]"
+              : "bg-[#2E6F40] active:bg-[#245e35] text-white shadow-md shadow-emerald-800/20 border border-[#245e35]"
           }`}
         >
           <FontAwesomeIcon icon={faCartPlus} />

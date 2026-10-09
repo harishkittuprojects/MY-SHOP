@@ -226,7 +226,7 @@ export default function QuantityModal({ isOpen, onClose, onConfirm, onBuyNow, pr
                 <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 mt-2 md:mt-4">
                   <button
                     onClick={handleConfirm}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-black font-black py-3.5 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20 text-[10px] md:text-xs uppercase tracking-widest"
+                    className="flex-1 bg-secondary hover:bg-[#255732] text-white font-black py-3.5 md:py-4 rounded-xl md:rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-secondary/20 text-[10px] md:text-xs uppercase tracking-widest"
                   >
                     <FontAwesomeIcon icon={faCartPlus} />
                     Add to Cart

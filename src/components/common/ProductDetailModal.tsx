@@ -123,7 +123,7 @@ export default function ProductDetailModal({ isOpen, onClose, product, onAddToCa
                       onClose();
                       onAddToCart(1, product.unit, product.price);
                     }}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-black font-black py-4 rounded-xl md:rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-widest shadow-md shadow-primary/20"
+                    className="flex-1 bg-secondary text-white hover:bg-[#255732] font-black py-4 rounded-xl md:rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-widest shadow-xl shadow-secondary/20"
                   >
                     <FontAwesomeIcon icon={faCartPlus} />
                     Add to Cart
