@@ -1931,33 +1931,38 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* =========================================================================
-                BRAND SHOWCASE RAIL (Prominent Circular Brand Logos with Instant Filter)
+                BRAND SHOWCASE CARDS (Product-Style Brand Cards Grid with Logos)
             ========================================================================= */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center justify-between mb-2.5 px-0.5 flex-wrap gap-2">
+            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
                 <div>
-                  <h2 className="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                    <span className="w-2 h-4 bg-[#2E6F40] rounded-full" />
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <span className="w-2.5 h-5 bg-[#2E6F40] rounded-full" />
                     <span>{activeKey === "mobiles" ? "Explore Mobile Brands" : "Shop by Brand"}</span>
+                    <span className="text-xs font-bold text-slate-400 font-mono">
+                      ({brandList.length})
+                    </span>
                   </h2>
-                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                    Tap any brand logo to view original devices &amp; offers
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
+                    Select a brand to view authentic smartphones with official warranty &amp; offers
                   </p>
                 </div>
                 
-                {/* Quick Sort Selector for Mobile & Desktop */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
-                  <select
-                    value={priceSort || "featured"}
-                    onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
-                    className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
-                  >
-                    <option value="low-to-high">Price: Low to High</option>
-                    <option value="high-to-low">Price: High to Low</option>
-                    <option value="featured">Featured / Default</option>
-                  </select>
-                  
+                {/* Quick Sort & Clear Filter */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                    <select
+                      value={priceSort || "featured"}
+                      onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
+                      className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
+                    >
+                      <option value="low-to-high">Price: Low to High</option>
+                      <option value="high-to-low">Price: High to Low</option>
+                      <option value="featured">Featured / Default</option>
+                    </select>
+                  </div>
+
                   {selectedBrand && (
                     <button
                       type="button"
@@ -1967,7 +1972,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           : `/products`;
                         router.push(targetUrl);
                       }}
-                      className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-full flex items-center gap-1 ml-1 cursor-pointer transition-colors"
+                      className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <span>Clear ({selectedBrand})</span>
                       <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
@@ -1976,75 +1981,72 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </div>
               </div>
 
-              {/* Scrollable Prominent Circular Brand Logo Cards */}
-              <div className="flex items-center gap-2.5 sm:gap-4 overflow-x-auto pb-1.5 pt-1 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth px-0.5">
-                {/* All Brands Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const targetUrl = categoryFilter 
-                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                      : `/products`;
-                    router.push(targetUrl);
-                  }}
-                  className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[58px] sm:min-w-[68px] cursor-pointer"
-                >
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 shadow-2xs relative ${
-                    !selectedBrand 
-                      ? "bg-[#2E6F40] text-white ring-2 ring-[#2E6F40]/40 shadow-sm" 
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/90"
-                  }`}>
-                    <FontAwesomeIcon icon={faTag} className="text-sm sm:text-base" />
-                  </div>
-                  <span className={`mt-1.5 text-[10px] sm:text-[11px] font-bold text-center tracking-tight transition-colors ${
-                    !selectedBrand ? "text-[#2E6F40] font-black" : "text-slate-700 group-hover:text-[#2E6F40]"
-                  }`}>
-                    All Brands
-                  </span>
-                </button>
-
-                {/* Dynamic Brand Circles with Logos */}
+              {/* Product-Style Brand Cards Grid (2-column on mobile, up to 5-column on desktop) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
                 {brandList.map((b, i) => {
                   const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                   return (
-                    <button
+                    <div
                       key={b.id || i}
-                      type="button"
                       onClick={() => handleBrandClick(b.query)}
-                      className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[58px] sm:min-w-[68px] cursor-pointer"
-                    >
-                      <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border flex items-center justify-center p-2 transition-all duration-200 shadow-2xs relative ${
+                      className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
                         isSelected 
-                          ? "border-[#2E6F40] ring-3 ring-[#2E6F40]/40 shadow-sm scale-105" 
-                          : "border-slate-200/90 hover:border-[#2E6F40] hover:scale-105"
-                      }`}>
+                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
+                          : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                      }`}
+                    >
+                      {/* 1. Brand Logo Canvas (Product Card Style) */}
+                      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-3 sm:p-4 overflow-hidden border-b border-slate-100">
+                        {isSelected && (
+                          <span className="absolute top-2 right-2 z-10 bg-[#2E6F40] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-xs">
+                            Active
+                          </span>
+                        )}
+                        
                         {b.logo_url ? (
                           <div className="relative w-full h-full flex items-center justify-center">
                             <Image 
                               src={b.logo_url} 
                               alt={b.name} 
                               fill 
-                              className="object-contain p-0.5" 
+                              className="object-contain p-2 group-hover:scale-110 transition-transform duration-300" 
                               unoptimized 
                             />
                           </div>
                         ) : (
-                          <span className="text-[11px] sm:text-xs font-black text-[#2E6F40]">
+                          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-[#2E6F40] font-black text-lg flex items-center justify-center shadow-inner">
                             {b.name.slice(0, 2).toUpperCase()}
-                          </span>
-                        )}
-                        {isSelected && (
-                          <span className="absolute -top-1 -right-1 bg-[#2E6F40] text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] shadow-xs border border-white font-black">
-                            ✓
-                          </span>
+                          </div>
                         )}
                       </div>
-                      <span className={`mt-1.5 text-[10px] sm:text-[11px] font-bold text-center tracking-tight truncate max-w-[70px] sm:max-w-[80px] transition-colors ${
-                        isSelected ? "text-[#2E6F40] font-black" : "text-slate-800 group-hover:text-[#2E6F40]"
-                      }`}>
-                        {b.name}
-                      </span>
-                    </button>
+
+                      {/* 2. Brand Card Details */}
+                      <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
+                        <div>
+                          <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
+                            {b.name}
+                          </h3>
+                          <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
+                            Official Brand Store
+                          </p>
+                        </div>
+
+                        {/* 3. Action CTA Button */}
+                        <div className="mt-2.5">
+                          <button
+                            type="button"
+                            className={`w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs ${
+                              isSelected 
+                                ? "bg-[#2E6F40] text-white" 
+                                : "bg-slate-100 group-hover:bg-[#2E6F40] text-slate-800 group-hover:text-white"
+                            }`}
+                          >
+                            <span>{isSelected ? "Selected" : "Explore"}</span>
+                            <FontAwesomeIcon icon={isSelected ? faCheck : faArrowRight} className="text-[9px]" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
