@@ -584,12 +584,12 @@ export default function HomeContent() {
           
           {/* Header with Green Accent, ON/OFF Toggle & View All */}
           <div className="flex items-center justify-between flex-wrap gap-2.5 pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
-              <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight">
+            <Link href="/categories" className="flex items-center gap-2 sm:gap-2.5 hover:opacity-85 transition-opacity group">
+              <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full group-hover:scale-110 transition-transform" />
+              <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight group-hover:text-[#2E6F40] transition-colors">
                 Shop by Category
               </h2>
-            </div>
+            </Link>
 
             {/* ON / OFF Toggle Switch & View All link */}
             <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
@@ -625,9 +625,9 @@ export default function HomeContent() {
                 </span>
               </div>
 
-              {/* View All link */}
+              {/* View All Categories link */}
               <Link
-                href="/products"
+                href="/categories"
                 className="text-xs sm:text-sm font-bold text-[#2E6F40] hover:text-emerald-700 hover:underline flex items-center gap-1 transition-colors"
               >
                 <span>View All</span>

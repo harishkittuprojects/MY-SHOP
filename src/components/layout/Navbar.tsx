@@ -440,6 +440,7 @@ export default function Navbar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[#222222]">
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
+          <Link href="/categories" className={`hover:text-gray-600 font-medium ${pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""}`}>Categories</Link>
           <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
           <Link href="/services/display-replacement" className={`hover:text-gray-600 font-medium flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}>
             <FontAwesomeIcon icon={faWrench} className="text-xs text-secondary" />
@@ -604,18 +605,29 @@ export default function Navbar() {
               <span>Home</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-xs text-slate-400" />
             </Link>
-            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 text-secondary font-black text-sm flex items-center justify-between">
-              <span>All Smartphones &amp; Devices</span>
+            <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 font-bold text-sm text-secondary flex items-center justify-between">
+              <span>Categories</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-xs text-secondary" />
+            </Link>
+            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 font-bold text-sm text-slate-700 flex items-center justify-between">
+              <span>All Products &amp; Devices</span>
+              <FontAwesomeIcon icon={faArrowRight} className="text-xs text-slate-400" />
             </Link>
             
             <div className="py-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2.5 flex items-center gap-2">
-                <FontAwesomeIcon icon={faLayerGroup} className="text-secondary" />
-                Shop By Category
-              </p>
+              <Link 
+                href="/categories" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-secondary mb-2.5 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faLayerGroup} className="text-secondary" />
+                  Shop By Category
+                </span>
+                <span className="text-[10px] text-secondary font-bold">View All →</span>
+              </Link>
               <div className="grid grid-cols-3 gap-2">
-                {categories.slice(0, 6).map((cat) => (
+                {categories.slice(0, 5).map((cat) => (
                   <Link 
                     key={cat.id} 
                     href={`/products?category=${encodeURIComponent(cat.name)}`}
@@ -640,12 +652,12 @@ export default function Navbar() {
                 <Link 
                   href="/categories" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-xl bg-secondary/10 active:scale-95 transition-all text-center"
+                  className="flex flex-col items-center gap-1 p-2 rounded-xl bg-secondary/10 border border-secondary/20 active:scale-95 transition-all text-center"
                 >
                   <div className="w-10 h-10 bg-secondary text-white rounded-lg flex items-center justify-center shadow-xs">
                     <FontAwesomeIcon icon={faArrowRight} size="xs" />
                   </div>
-                  <span className="text-[9px] font-black uppercase leading-tight text-secondary">All Brands</span>
+                  <span className="text-[9px] font-black uppercase leading-tight text-secondary">All Categories</span>
                 </Link>
               </div>
             </div>
