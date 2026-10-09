@@ -143,7 +143,7 @@ export default function QuantityModal({ isOpen, onClose, onConfirm, onBuyNow, pr
                         src={normalizeImageUrl(product.image_url || product.image)}
                         alt={product.name || "Product"}
                         fill
-                        className="object-cover"
+                        className="object-contain p-1.5"
                         unoptimized
                       />
                     ) : (

@@ -45,12 +45,12 @@ export default function ProductDetailModal({ isOpen, onClose, product, onAddToCa
               className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl pointer-events-auto overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
             >
               {/* Image Section */}
-              <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-accent/30 sm:h-auto h-64">
+              <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-white p-4 sm:h-auto h-64 flex items-center justify-center">
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-2"
                   unoptimized
                 />
                 <button

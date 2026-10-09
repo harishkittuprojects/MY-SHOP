@@ -565,16 +565,16 @@ export default function ProductDetailPage({
       <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
-          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails ======================= */}
+          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Flipkart Style) ======================= */}
           <div className="lg:col-span-5 w-full flex flex-col gap-3">
-            {/* Main Image Viewer (Full Edge-to-Edge Cover) */}
-            <div className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square min-h-[340px] sm:min-h-[440px] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs flex items-center justify-center group">
+            {/* Main Image Viewer (Flipkart Clean Card - Full Uncropped Product) */}
+            <div className="relative w-full aspect-square min-h-[340px] sm:min-h-[440px] md:min-h-[480px] bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-5 shadow-2xs flex items-center justify-center group overflow-hidden">
               {/* Top Action Buttons */}
               <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowShareModal(true)}
-                  className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-700 flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90"
+                  className="w-9 h-9 rounded-full bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90"
                   title="Share product"
                 >
                   <FontAwesomeIcon icon={faShareNodes} className="text-sm" />
@@ -583,7 +583,7 @@ export default function ProductDetailPage({
                   type="button"
                   onClick={() => product && toggleWishlist(product as any)}
                   className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90 ${
-                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white/90 hover:bg-rose-50 text-slate-600 hover:text-rose-600"
+                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600"
                   }`}
                   title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
                 >
@@ -591,15 +591,16 @@ export default function ProductDetailPage({
                 </button>
               </div>
 
-              {/* Main Image (Fully Covers Container) */}
-              <div className="relative w-full h-full overflow-hidden">
+              {/* Main Product Image (Centered, Full Proportion, Uncropped) */}
+              <div className="relative w-full h-full max-h-[440px] flex items-center justify-center">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
+                    className="object-contain p-1 sm:p-2 transition-transform duration-300 group-hover:scale-105 cursor-zoom-in"
                     priority
+                    sizes="(max-width: 768px) 100vw, 500px"
                     unoptimized
                   />
                 ) : (
@@ -607,7 +608,7 @@ export default function ProductDetailPage({
                 )}
 
                 {isOutOfStock && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-20">
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
                     <span className="bg-red-600 text-white font-black px-4 py-1.5 rounded-lg text-sm uppercase tracking-wider shadow-lg">
                       Out of Stock
                     </span>
@@ -623,7 +624,7 @@ export default function ProductDetailPage({
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   onMouseEnter={() => setSelectedImage(img)}
-                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden ${
+                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden p-1 ${
                     selectedImage === img
                       ? "border-[#2E6F40] shadow-md ring-2 ring-[#2E6F40]/50 scale-105"
                       : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100"
@@ -633,7 +634,7 @@ export default function ProductDetailPage({
                     src={img}
                     alt={`${product.name} thumbnail ${idx + 1}`}
                     fill
-                    className="object-cover w-full h-full"
+                    className="object-contain p-0.5"
                     unoptimized
                   />
                 </button>
