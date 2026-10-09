@@ -131,10 +131,9 @@ export const products = [
     cashback_amount: 5249,
     warranty_period: "1 Year Official Samsung Brand Warranty",
     condition: "Brand New Sealed",
-    image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+    image_url: "/products/samsung-galaxy-z-fold7.jpg",
     images: [
-      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
+      "/products/samsung-galaxy-z-fold7.jpg",
       "/products/samsung-galaxy-s26-ultra.jpg",
       "/products/samsung-galaxy-s25-ultra.png"
     ],
@@ -156,7 +155,7 @@ export const products = [
         original_price: 204999,
         stock_quantity: 14,
         sku: "ZFOLD7-12-256-SILVER",
-        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+        image_url: "/products/samsung-galaxy-z-fold7.jpg",
         is_active: true
       },
       {
@@ -170,7 +169,7 @@ export const products = [
         original_price: 219999,
         stock_quantity: 10,
         sku: "ZFOLD7-12-512-BLACK",
-        image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
+        image_url: "/products/samsung-galaxy-z-fold7.jpg",
         is_active: true
       }
     ]
@@ -188,9 +187,9 @@ export const products = [
     cashback_amount: 1500,
     warranty_period: "1 Year Official OnePlus Warranty",
     condition: "Brand New Sealed",
-    image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+    image_url: "/products/oneplus-nord-6-lite.jpg",
     images: [
-      "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+      "/products/oneplus-nord-6-lite.jpg",
       "/products/google-pixel-9-pro-xl.png"
     ],
     is_available: true,
@@ -211,7 +210,7 @@ export const products = [
         original_price: 33999,
         stock_quantity: 25,
         sku: "CE6-8-128-SILVER",
-        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+        image_url: "/products/oneplus-nord-6-lite.jpg",
         is_active: true
       },
       {
@@ -225,7 +224,7 @@ export const products = [
         original_price: 36999,
         stock_quantity: 20,
         sku: "CE6-8-256-BLUE",
-        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+        image_url: "/products/oneplus-nord-6-lite.jpg",
         is_active: true
       }
     ]
