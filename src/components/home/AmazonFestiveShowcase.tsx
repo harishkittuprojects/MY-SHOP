@@ -1830,18 +1830,19 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           const sub = (p.sub_category || "").toLowerCase();
           const pName = (p.name || "").toLowerCase();
           const desc = (p.description || "").toLowerCase();
+          const cond = (p.condition || "").toLowerCase();
+          const isRefurbishedProduct = 
+            c.includes("refurbish") || c.includes("old") ||
+            cid.includes("refurbish") || cid.includes("old") ||
+            sub.includes("refurbish") || sub.includes("old") ||
+            pName.includes("refurbished") || pName.includes("like new") ||
+            pName.includes("pre-owned") || pName.includes("second hand") ||
+            desc.includes("refurbished") ||
+            cond.includes("refurbish") || cond.includes("grade") || 
+            cond.includes("like new") || cond.includes("pre-owned") || 
+            (cond.includes("used") && !cond.includes("brand new"));
 
           if (isRefurbishedMode) {
-            // Must strictly be a refurbished mobile
-            const isRefurbishedProduct = 
-              c.includes("refurbish") || c.includes("old") ||
-              cid.includes("refurbish") || cid.includes("old") ||
-              sub.includes("refurbish") || sub.includes("old") ||
-              pName.includes("refurbished") || pName.includes("like new") ||
-              pName.includes("pre-owned") || pName.includes("second hand") ||
-              desc.includes("refurbished") ||
-              Boolean(p.condition);
-
             // Never include accessories/cables/adapters in refurbished mobiles shelf
             const isAccessory = 
               c.includes("accessories") || cid.includes("accessories") || 
@@ -1864,25 +1865,27 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           }
 
           if (isNewMobilesMode) {
-            // Exclude refurbished and accessories from brand new mobiles
-            const isRefurbishedProduct = 
-              c.includes("refurbish") || c.includes("old") ||
-              cid.includes("refurbish") || cid.includes("old") ||
-              sub.includes("refurbish") || sub.includes("old") ||
-              pName.includes("refurbished") ||
-              Boolean(p.condition);
-
             const isAccessory = 
               c.includes("accessories") || cid.includes("accessories") || 
               sub.includes("accessories") || pName.includes("adapter") || 
-              pName.includes("cable") || pName.includes("charger");
+              pName.includes("cable") || pName.includes("charger") ||
+              pName.includes("power bank") || pName.includes("case") ||
+              pName.includes("cover") || pName.includes("screen guard");
 
             if (isRefurbishedProduct || isAccessory) return false;
 
             return (
               c.includes("mobile") || cid.includes("mobile") || 
               sub.includes("mobile") || sub.includes("phone") || 
-              sub.includes("flagship") || c === "mobiles"
+              sub.includes("flagship") || c === "mobiles" ||
+              pName.includes("galaxy") || pName.includes("iphone") || 
+              pName.includes("oneplus") || pName.includes("pixel") || 
+              pName.includes("vivo") || pName.includes("realme") || 
+              pName.includes("redmi") || pName.includes("poco") || 
+              pName.includes("motorola") || pName.includes("moto") || 
+              pName.includes("oppo") || pName.includes("iqoo") || 
+              pName.includes("nothing") || pName.includes("5g") || 
+              pName.includes("smartphone")
             );
           }
 
