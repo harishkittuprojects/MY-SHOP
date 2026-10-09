@@ -272,6 +272,7 @@ export default function ProductDetailPage({
   }, [productVariants, selectedStorage]);
 
   // Universal Available Colors across ALL products & categories
+  // Universal Available Colors across ALL products & categories
   const availableColors = React.useMemo(() => {
     // 1. If explicit variants exist for selected size/storage
     if (colorsForSelectedStorage.length > 0) {
@@ -282,7 +283,7 @@ export default function ProductDetailPage({
         price: v.price || product?.price || 0,
         stock_quantity: v.stock_quantity,
         is_active: v.is_active,
-        image_url: v.image_url,
+        image_url: v.image_url || product?.image_url || "/products/iphone-16-pro-max.png",
       }));
     }
 
@@ -300,7 +301,7 @@ export default function ProductDetailPage({
             price: v.price || product?.price || 0,
             stock_quantity: v.stock_quantity,
             is_active: v.is_active,
-            image_url: v.image_url,
+            image_url: v.image_url || product?.image_url || "/products/iphone-16-pro-max.png",
           });
         }
       });
@@ -320,6 +321,7 @@ export default function ProductDetailPage({
           price: product?.price || 0,
           stock_quantity: product?.stock_quantity || 15,
           is_active: true,
+          image_url: (typeof c === 'object' && c.image_url) ? c.image_url : (product?.image_url || "/products/iphone-16-pro-max.png"),
         };
       });
     }
@@ -331,15 +333,16 @@ export default function ProductDetailPage({
         price: product?.price || 0,
         stock_quantity: product?.stock_quantity || 15,
         is_active: true,
+        image_url: product?.image_url || "/products/iphone-16-pro-max.png",
       }));
     }
 
     // 4. Default 4 popular colors for any product in all categories
     return [
-      { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
-      { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
-      { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
-      { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true },
+      { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
+      { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
+      { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
+      { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
     ];
   }, [colorsForSelectedStorage, productVariants, product]);
 
@@ -699,45 +702,56 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Colour Swatches with Color-Specific Rates (Directly below Price) */}
+            {/* Visual Color Cards Selector (Matching Amazon / Apple screenshot) */}
             {availableColors.length > 0 && (
-              <div className="space-y-2.5 border-b border-slate-200 pb-3.5">
+              <div className="space-y-2.5 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600 font-bold">
-                    Colour: <strong className="text-slate-900">{selectedColor || availableColors[0]?.color}</strong>
+                  <span className="text-sm font-semibold text-slate-800">
+                    Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || availableColors[0]?.color}</strong>
                   </span>
                   {activeVariant?.price && (
                     <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                      Rate: ₹{Number(activeVariant.price).toLocaleString("en-IN")}
+                      ₹{Number(activeVariant.price).toLocaleString("en-IN")}
                     </span>
                   )}
                 </div>
-                <div className="flex gap-2.5 flex-wrap">
+
+                {/* Visual Thumbnail Cards Row */}
+                <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
                   {availableColors.map((v) => {
                     const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
                     const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
+                    const imgToDisplay = v.image_url || product?.image_url || "/products/iphone-16-pro-max.png";
+
                     return (
                       <button
                         key={v.id || v.color}
                         type="button"
                         onClick={() => handleColorSelect(v)}
-                        className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
+                        title={v.color}
+                        className={`group relative w-14 h-20 sm:w-16 sm:h-22 rounded-2xl p-1 bg-white flex flex-col items-center justify-between transition-all cursor-pointer shrink-0 ${
                           isColorSelected
-                            ? "bg-amber-50/90 border-orange-500 text-slate-950 ring-2 ring-orange-500/40 shadow-xs scale-[1.02]"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50/70"
-                        } ${isOut ? "opacity-60" : ""}`}
+                            ? "border-2 border-slate-950 ring-2 ring-slate-950/15 shadow-sm scale-105"
+                            : "border border-slate-200 hover:border-slate-400 hover:shadow-2xs"
+                        } ${isOut ? "opacity-50" : ""}`}
                       >
-                        <span
-                          className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-2xs"
-                          style={{ backgroundColor: v.color_code || getColorHex(v.color) }}
-                        />
-                        <div className="flex flex-col items-start leading-tight">
-                          <span className="truncate max-w-[130px]">{v.color}</span>
-                          {v.price && (
-                            <span className={`text-[10.5px] font-black ${isColorSelected ? "text-orange-700" : "text-emerald-700"}`}>
-                              ₹{Number(v.price).toLocaleString("en-IN")}
-                            </span>
-                          )}
+                        {/* Device Product Image in Color */}
+                        <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+                          <Image
+                            src={imgToDisplay}
+                            alt={v.color}
+                            fill
+                            className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
+                            unoptimized
+                          />
+                        </div>
+
+                        {/* Subtle color swatch dot at bottom */}
+                        <div className="flex items-center justify-center gap-1 w-full pt-0.5 pb-0.5">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border border-black/15 shadow-2xs shrink-0"
+                            style={{ backgroundColor: v.color_code || getColorHex(v.color) }}
+                          />
                         </div>
                       </button>
                     );
