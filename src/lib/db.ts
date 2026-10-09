@@ -1565,6 +1565,184 @@ export const ServiceBookingsDB = {
   }
 };
 
+// ==============================================================================
+// 14. BRANDS REPOSITORY (Mobile & Category Brands)
+// ==============================================================================
+export const defaultBrands = [
+  { id: "samsung", name: "Samsung Galaxy", query: "Samsung", category: "Mobiles", logo_url: "", is_active: true, display_order: 1 },
+  { id: "apple", name: "Apple iPhone", query: "Apple", category: "Mobiles", logo_url: "", is_active: true, display_order: 2 },
+  { id: "oneplus", name: "OnePlus", query: "OnePlus", category: "Mobiles", logo_url: "", is_active: true, display_order: 3 },
+  { id: "google-pixel", name: "Google Pixel", query: "Pixel", category: "Mobiles", logo_url: "", is_active: true, display_order: 4 },
+  { id: "vivo", name: "Vivo", query: "Vivo", category: "Mobiles", logo_url: "", is_active: true, display_order: 5 },
+  { id: "motorola", name: "Motorola", query: "Motorola", category: "Mobiles", logo_url: "", is_active: true, display_order: 6 },
+  { id: "realme", name: "Realme", query: "realme", category: "Mobiles", logo_url: "", is_active: true, display_order: 7 },
+  { id: "xiaomi-redmi", name: "Xiaomi / Redmi", query: "Redmi", category: "Mobiles", logo_url: "", is_active: true, display_order: 8 },
+  { id: "nothing", name: "Nothing Phone", query: "Nothing", category: "Mobiles", logo_url: "", is_active: true, display_order: 9 },
+  { id: "iqoo", name: "iQOO", query: "iQOO", category: "Mobiles", logo_url: "", is_active: true, display_order: 10 },
+  { id: "anker", name: "Anker", query: "Anker", category: "Mobile Accessories", logo_url: "", is_active: true, display_order: 11 },
+  { id: "spigen", name: "Spigen", query: "Spigen", category: "Mobile Accessories", logo_url: "", is_active: true, display_order: 12 },
+  { id: "boat", name: "boAt", query: "boAt", category: "Mobile Accessories", logo_url: "", is_active: true, display_order: 13 },
+  { id: "noise", name: "Noise", query: "Noise", category: "Smart Technology", logo_url: "", is_active: true, display_order: 14 },
+  { id: "nike", name: "Nike", query: "Nike", category: "Fashion", logo_url: "", is_active: true, display_order: 15 },
+  { id: "tanishq", name: "Tanishq", query: "Tanishq", category: "Jewellery", logo_url: "", is_active: true, display_order: 16 },
+  { id: "ather", name: "Ather Energy", query: "Ather", category: "EV Vehicles", logo_url: "", is_active: true, display_order: 17 },
+  { id: "ola", name: "Ola Electric", query: "Ola", category: "EV Vehicles", logo_url: "", is_active: true, display_order: 18 },
+];
+
+export const BrandsDB = {
+  async getAll(category?: string) {
+    let list: any[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        list = data;
+      }
+    } catch {
+      // Fallback
+    }
+
+    if (list.length === 0) {
+      try {
+        const { data: settingsData } = await supabase
+          .from('site_settings')
+          .select('*')
+          .eq('key', 'custom_brands')
+          .single();
+        if (settingsData && settingsData.value) {
+          const parsed = typeof settingsData.value === 'string' ? JSON.parse(settingsData.value) : settingsData.value;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            list = parsed;
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
+    if (list.length === 0) {
+      list = defaultBrands;
+    }
+
+    if (category && category.toLowerCase() !== 'all') {
+      const c = category.toLowerCase();
+      list = list.filter((b) => !b.category || b.category.toLowerCase() === c || b.category.toLowerCase() === 'all');
+    }
+
+    return list;
+  },
+
+  async getById(id: string) {
+    const all = await this.getAll();
+    return all.find((b) => b.id === id || b.name.toLowerCase() === id.toLowerCase()) || null;
+  },
+
+  async create(brandData: any, adminName: string = 'Admin') {
+    const slug = brandData.id || brandData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const newBrand = {
+      id: slug,
+      name: brandData.name,
+      query: brandData.query || brandData.name,
+      category: brandData.category || 'Mobiles',
+      logo_url: brandData.logo_url || '',
+      is_active: brandData.is_active !== false,
+      display_order: Number(brandData.display_order) || 1,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      await supabase.from('brands').insert([newBrand]);
+    } catch {
+      // Fallback
+    }
+
+    // Save to settings backup
+    try {
+      const existing = await this.getAll();
+      const updated = [...existing.filter(b => b.id !== slug), newBrand];
+      await supabase.from('site_settings').upsert({
+        key: 'custom_brands',
+        value: JSON.stringify(updated),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch {
+      // Ignore
+    }
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'create_brand',
+      entity_type: 'brand',
+      entity_id: slug,
+      details: newBrand
+    });
+
+    return newBrand;
+  },
+
+  async update(id: string, updates: any, adminName: string = 'Admin') {
+    try {
+      await supabase.from('brands').update(updates).eq('id', id);
+    } catch {
+      // Fallback
+    }
+
+    try {
+      const existing = await this.getAll();
+      const updated = existing.map(b => (b.id === id ? { ...b, ...updates } : b));
+      await supabase.from('site_settings').upsert({
+        key: 'custom_brands',
+        value: JSON.stringify(updated),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch {
+      // Ignore
+    }
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'update_brand',
+      entity_type: 'brand',
+      entity_id: id,
+      details: updates
+    });
+
+    return { id, ...updates };
+  },
+
+  async delete(id: string, adminName: string = 'Admin') {
+    try {
+      await supabase.from('brands').delete().eq('id', id);
+    } catch {
+      // Fallback
+    }
+
+    try {
+      const existing = await this.getAll();
+      const updated = existing.filter(b => b.id !== id);
+      await supabase.from('site_settings').upsert({
+        key: 'custom_brands',
+        value: JSON.stringify(updated),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch {
+      // Ignore
+    }
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'delete_brand',
+      entity_type: 'brand',
+      entity_id: id
+    });
+
+    return true;
+  }
+};
+
 export default {
   CategoriesDB,
   ProductsDB,
@@ -1579,4 +1757,6 @@ export default {
   ActivityLogsDB,
   InventoryLogsDB,
   ServiceBookingsDB,
+  BrandsDB,
 };
+

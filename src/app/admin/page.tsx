@@ -21,6 +21,7 @@ import {
   faPhotoVideo,
   faSyncAlt,
   faChartLine,
+  faMobileScreenButton,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface DashboardStats {
@@ -383,16 +384,16 @@ export default function AdminDashboardPage() {
               </Link>
 
               <Link
-                href="/admin/gallery"
+                href="/admin/brands"
                 className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/80 transition-all text-slate-800 hover:text-emerald-900 group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-sm border border-teal-200">
-                    <FontAwesomeIcon icon={faPhotoVideo} />
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm border border-purple-200">
+                    <FontAwesomeIcon icon={faMobileScreenButton} />
                   </div>
                   <div>
-                    <div className="text-sm font-bold">Cloudinary Media</div>
-                    <div className="text-[11px] text-slate-500">Upload images & PDF documents</div>
+                    <div className="text-sm font-bold">Mobile Brands</div>
+                    <div className="text-[11px] text-slate-500">Manage brands &amp; store filters</div>
                   </div>
                 </div>
                 <span className="text-slate-400 group-hover:text-emerald-700 transition-colors font-bold">→</span>

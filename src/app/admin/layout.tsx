@@ -24,6 +24,7 @@ import {
   faTimes,
   faStore,
   faWrench,
+  faMobileScreenButton,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface AdminUser {
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: faChartPie, permission: "all" },
   { href: "/admin/products", label: "Products", icon: faBox, permission: "products" },
   { href: "/admin/categories", label: "Categories", icon: faTags, permission: "categories" },
+  { href: "/admin/brands", label: "Mobile Brands", icon: faMobileScreenButton, permission: "products" },
   { href: "/admin/orders", label: "Orders", icon: faShoppingBag, permission: "orders" },
   { href: "/admin/services", label: "Display Services", icon: faWrench, permission: "orders" },
   { href: "/admin/inventory", label: "Inventory", icon: faWarehouse, permission: "inventory" },

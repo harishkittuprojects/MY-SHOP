@@ -1438,8 +1438,29 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
   const { config, key: activeKey } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
 
+  const [dbBrands, setDbBrands] = useState<{ name: string; query: string }[]>([]);
+
+  useEffect(() => {
+    async function loadDynamicBrands() {
+      try {
+        const cat = categoryFilter || "Mobiles";
+        const res = await fetch(`/api/brands?category=${encodeURIComponent(cat)}`, { cache: "no-store" });
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setDbBrands(data.map((b: any) => ({ name: b.name, query: b.query || b.name })));
+        }
+      } catch {
+        // Fallback to static config
+      }
+    }
+    loadDynamicBrands();
+  }, [categoryFilter]);
+
   // Brand list for quick brand selection
   const brandList = useMemo(() => {
+    if (dbBrands.length > 0) {
+      return dbBrands;
+    }
     if (config.brands && config.brands.length > 0) {
       return config.brands;
     }
@@ -1454,7 +1475,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       { name: "Nike", query: "Nike" },
       { name: "Tanishq", query: "Tanishq" }
     ];
-  }, [config.brands]);
+  }, [dbBrands, config.brands]);
 
   // Sync selectedBrand with URL query param
   const selectedBrand = brandSearch || null;
@@ -1823,7 +1844,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 )}
               </div>
               <div className="space-y-1 text-slate-700 max-h-56 overflow-y-auto pr-1">
-                {config.brands.map((b, i) => {
+                {brandList.map((b, i) => {
                   const isChecked = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                   return (
                     <label 
