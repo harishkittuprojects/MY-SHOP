@@ -1485,23 +1485,32 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
   // Brand list for quick brand selection
   const brandList: BrandItem[] = useMemo(() => {
+    const EXCLUDED = ["anker", "boat", "spigen", "noise", "nike", "tanishq"];
+    let rawList: BrandItem[] = [];
     if (dbBrands.length > 0) {
-      return dbBrands;
+      rawList = dbBrands;
+    } else if (config.brands && config.brands.length > 0) {
+      rawList = config.brands;
+    } else {
+      rawList = [
+        { name: "Samsung Galaxy", query: "Samsung" },
+        { name: "Apple iPhone", query: "Apple" },
+        { name: "OnePlus", query: "OnePlus" },
+        { name: "Google Pixel", query: "Pixel" },
+        { name: "Vivo", query: "Vivo" },
+        { name: "Motorola", query: "Motorola" },
+        { name: "Realme", query: "realme" },
+        { name: "Xiaomi / Redmi", query: "Redmi" },
+        { name: "Nothing Phone", query: "Nothing" },
+        { name: "iQOO", query: "iQOO" }
+      ];
     }
-    if (config.brands && config.brands.length > 0) {
-      return config.brands;
-    }
-    return [
-      { name: "Samsung Galaxy", query: "Samsung" },
-      { name: "Apple iPhone", query: "Apple" },
-      { name: "OnePlus", query: "OnePlus" },
-      { name: "Google Pixel", query: "Pixel" },
-      { name: "Anker", query: "Anker" },
-      { name: "Noise", query: "Noise" },
-      { name: "Spigen", query: "Spigen" },
-      { name: "Nike", query: "Nike" },
-      { name: "Tanishq", query: "Tanishq" }
-    ];
+
+    return rawList.filter((b) => {
+      const n = (b.name || "").toLowerCase();
+      const q = (b.query || "").toLowerCase();
+      return !EXCLUDED.some((ex) => n.includes(ex) || q.includes(ex));
+    });
   }, [dbBrands, config.brands]);
 
   // Sync selectedBrand with URL query param
