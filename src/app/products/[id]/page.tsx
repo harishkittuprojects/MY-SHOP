@@ -102,7 +102,8 @@ export default function ProductDetailPage({
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string>("");
   
-  // Storage & Color Variant States
+  // Storage, RAM & Color Variant States
+  const [selectedRam, setSelectedRam] = useState<string>("");
   const [selectedStorage, setSelectedStorage] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [notifyEmail, setNotifyEmail] = useState("");
@@ -166,12 +167,13 @@ export default function ProductDetailPage({
           );
           setSelectedImage(initialImg);
 
-          // Setup initial storage & color variant
+          // Setup initial storage, RAM & color variant
           const variants = Array.isArray(data.variants) ? data.variants : [];
           if (variants.length > 0) {
             // Find first in-stock variant or first variant
             const firstInStock = variants.find(v => (v.stock_quantity || 0) > 0 && v.is_active !== false) || variants[0];
-            const storage = firstInStock.storage_label || (firstInStock.ram && firstInStock.rom ? `${firstInStock.ram} RAM + ${firstInStock.rom} ROM` : "Standard");
+            setSelectedRam(firstInStock.ram || "");
+            const storage = firstInStock.storage_label || firstInStock.rom || (firstInStock.ram && firstInStock.rom ? `${firstInStock.ram} RAM + ${firstInStock.rom} ROM` : "Standard");
             setSelectedStorage(storage);
             setSelectedColor(firstInStock.color || "Standard");
             if (firstInStock.image_url) {
@@ -238,14 +240,47 @@ export default function ProductDetailPage({
     return "#475569";
   };
 
-  // Distinct Available Storage / Size Options
+  // Distinct Available RAM Options (e.g. 6GB, 8GB, 12GB, 16GB)
+  const availableRams = React.useMemo(() => {
+    if (productVariants.length === 0) return [];
+    const set = new Set<string>();
+    productVariants.forEach((v) => {
+      if (v.ram && v.ram.trim()) {
+        set.add(v.ram.trim().toUpperCase());
+      } else {
+        const label = v.storage_label || v.size || "";
+        const match = label.match(/(\d+\s*GB)\s*RAM/i) || label.match(/(\d+\s*GB)\s*(\+|\/)/i);
+        if (match && match[1]) {
+          set.add(match[1].replace(/\s+/g, "").toUpperCase());
+        }
+      }
+    });
+    return Array.from(set);
+  }, [productVariants]);
+
+  // Filter variants by selected RAM if applicable
+  const variantsForSelectedRam = React.useMemo(() => {
+    if (!selectedRam || availableRams.length === 0) return productVariants;
+    const filtered = productVariants.filter((v) => {
+      if (v.ram && v.ram.toLowerCase() === selectedRam.toLowerCase()) return true;
+      const label = (v.storage_label || v.size || "").toLowerCase();
+      return label.includes(selectedRam.toLowerCase());
+    });
+    return filtered.length > 0 ? filtered : productVariants;
+  }, [productVariants, selectedRam, availableRams]);
+
+  // Distinct Available Storages / Sizes for current RAM
   const availableStorages = React.useMemo(() => {
-    if (productVariants.length === 0) {
-      return product?.unit ? product.unit.split(",").map(u => u.trim()).filter(Boolean) : [];
+    if (variantsForSelectedRam.length === 0) {
+      return product?.unit ? product.unit.split(",").map((u) => u.trim()).filter(Boolean) : [];
     }
     const map = new Map<string, { label: string; minPrice: number; hasStock: boolean }>();
-    productVariants.forEach(v => {
-      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
+    variantsForSelectedRam.forEach((v) => {
+      let label = v.rom || v.storage_label || v.size || "Standard";
+      if (selectedRam && label.includes("+")) {
+        const parts = label.split("+");
+        if (parts[1]) label = parts[1].trim();
+      }
       const current = map.get(label);
       const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
       if (!current) {
@@ -254,29 +289,29 @@ export default function ProductDetailPage({
         map.set(label, {
           label,
           minPrice: Math.min(current.minPrice, v.price),
-          hasStock: current.hasStock || isInstock
+          hasStock: current.hasStock || isInstock,
         });
       }
     });
     return Array.from(map.values());
-  }, [productVariants, product]);
+  }, [variantsForSelectedRam, product, selectedRam]);
 
-  // Available Colors for the currently selected Storage / Size
-  const colorsForSelectedStorage = React.useMemo(() => {
-    if (productVariants.length === 0) return [];
-    const matchedVariants = productVariants.filter(v => {
-      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
-      return label.toLowerCase() === selectedStorage.toLowerCase();
+  // Available Colors for the currently selected RAM + Storage
+  const colorsForSelectedConfiguration = React.useMemo(() => {
+    if (variantsForSelectedRam.length === 0) return [];
+    const matchedVariants = variantsForSelectedRam.filter((v) => {
+      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
+      const sTarget = selectedStorage.toLowerCase();
+      return label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
     });
-    return matchedVariants;
-  }, [productVariants, selectedStorage]);
+    return matchedVariants.length > 0 ? matchedVariants : variantsForSelectedRam;
+  }, [variantsForSelectedRam, selectedStorage]);
 
-  // Universal Available Colors across ALL products & categories
   // Universal Available Colors across ALL products & categories
   const availableColors = React.useMemo(() => {
-    // 1. If explicit variants exist for selected size/storage
-    if (colorsForSelectedStorage.length > 0) {
-      return colorsForSelectedStorage.map(v => ({
+    // 1. If explicit variants exist for selected configuration
+    if (colorsForSelectedConfiguration.length > 0) {
+      return colorsForSelectedConfiguration.map((v) => ({
         id: v.id,
         color: v.color,
         color_code: v.color_code || getColorHex(v.color),
@@ -291,7 +326,7 @@ export default function ProductDetailPage({
     if (productVariants.length > 0) {
       const seen = new Set<string>();
       const list: any[] = [];
-      productVariants.forEach(v => {
+      productVariants.forEach((v) => {
         if (v.color && !seen.has(v.color.toLowerCase())) {
           seen.add(v.color.toLowerCase());
           list.push({
@@ -308,12 +343,12 @@ export default function ProductDetailPage({
       if (list.length > 0) return list;
     }
 
-    // 3. If product has `colors` array or string in metadata
+    // 3. Fallback from rawColors metadata
     const rawColors = (product as any)?.colors;
     if (Array.isArray(rawColors) && rawColors.length > 0) {
       return rawColors.map((c: any) => {
-        const cName = typeof c === 'string' ? c : c.name || c.color;
-        const cCode = typeof c === 'object' ? (c.code || c.color_code) : getColorHex(cName);
+        const cName = typeof c === "string" ? c : c.name || c.color;
+        const cCode = typeof c === "object" ? c.code || c.color_code : getColorHex(cName);
         return {
           id: cName,
           color: cName,
@@ -321,58 +356,93 @@ export default function ProductDetailPage({
           price: product?.price || 0,
           stock_quantity: product?.stock_quantity || 15,
           is_active: true,
-          image_url: (typeof c === 'object' && c.image_url) ? c.image_url : (product?.image_url || "/products/iphone-16-pro-max.png"),
+          image_url: typeof c === "object" && c.image_url ? c.image_url : (product?.image_url || "/products/iphone-16-pro-max.png"),
         };
       });
     }
-    if (typeof rawColors === 'string' && rawColors) {
-      return rawColors.split(',').map((c: string) => c.trim()).filter(Boolean).map((cName: string) => ({
-        id: cName,
-        color: cName,
-        color_code: getColorHex(cName),
-        price: product?.price || 0,
-        stock_quantity: product?.stock_quantity || 15,
-        is_active: true,
-        image_url: product?.image_url || "/products/iphone-16-pro-max.png",
-      }));
-    }
 
-    // 4. Default 4 popular colors for any product in all categories
+    // 4. Default 4 popular colors
     return [
       { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
       { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
       { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
       { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
     ];
-  }, [colorsForSelectedStorage, productVariants, product]);
+  }, [colorsForSelectedConfiguration, productVariants, product]);
 
   // Active Selected Variant Object
   const activeVariant = React.useMemo(() => {
     if (productVariants.length === 0) return null;
-    return productVariants.find(v => {
-      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
-      return label.toLowerCase() === selectedStorage.toLowerCase() &&
-             v.color.toLowerCase() === selectedColor.toLowerCase();
-    }) || colorsForSelectedStorage[0] || productVariants[0] || null;
-  }, [productVariants, selectedStorage, selectedColor, colorsForSelectedStorage]);
+
+    // 1. Exact match for (RAM + Storage + Color)
+    const exact = productVariants.find((v) => {
+      const matchColor = !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase();
+      const matchRam = !selectedRam || (v.ram && v.ram.toLowerCase() === selectedRam.toLowerCase()) || (v.storage_label && v.storage_label.toLowerCase().includes(selectedRam.toLowerCase()));
+      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
+      const sTarget = selectedStorage.toLowerCase();
+      const matchStorage = !selectedStorage || label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      return matchColor && matchRam && matchStorage;
+    });
+    if (exact) return exact;
+
+    // 2. Match for (Storage + Color)
+    const storageColor = productVariants.find((v) => {
+      const matchColor = !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase();
+      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
+      const sTarget = selectedStorage.toLowerCase();
+      const matchStorage = !selectedStorage || label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      return matchColor && matchStorage;
+    });
+    if (storageColor) return storageColor;
+
+    // 3. Match for Color
+    const colorMatch = productVariants.find((v) => v.color.toLowerCase() === selectedColor.toLowerCase());
+    if (colorMatch) return colorMatch;
+
+    return colorsForSelectedConfiguration[0] || productVariants[0] || null;
+  }, [productVariants, selectedRam, selectedStorage, selectedColor, colorsForSelectedConfiguration]);
+
+  // Handle RAM Change
+  const handleRamSelect = (newRam: string) => {
+    setSelectedRam(newRam);
+    const variantsInRam = productVariants.filter((v) => {
+      if (v.ram && v.ram.toLowerCase() === newRam.toLowerCase()) return true;
+      const label = (v.storage_label || v.size || "").toLowerCase();
+      return label.includes(newRam.toLowerCase());
+    });
+
+    const match = variantsInRam.find(
+      (v) => (v.rom?.toLowerCase() === selectedStorage.toLowerCase() || v.storage_label?.toLowerCase().includes(selectedStorage.toLowerCase())) &&
+             v.color.toLowerCase() === selectedColor.toLowerCase() &&
+             (v.stock_quantity || 0) > 0
+    ) || variantsInRam[0];
+
+    if (match) {
+      const storage = match.rom || match.storage_label || match.size || "Standard";
+      setSelectedStorage(storage);
+      setSelectedColor(match.color);
+      if (match.image_url) setSelectedImage(normalizeImageUrl(match.image_url));
+    }
+  };
 
   // Handle Storage Change
   const handleStorageSelect = (newStorage: string) => {
     setSelectedStorage(newStorage);
-    const colorsInNewStorage = productVariants.filter(v => {
-      const label = v.storage_label || v.size || (v.ram && v.rom ? `${v.ram} RAM + ${v.rom} ROM` : "Standard");
-      return label.toLowerCase() === newStorage.toLowerCase();
+    const variantsInStorage = variantsForSelectedRam.filter((v) => {
+      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
+      const sTarget = newStorage.toLowerCase();
+      return label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
     });
 
-    const sameColorMatch = colorsInNewStorage.find(
-      c => c.color.toLowerCase() === selectedColor.toLowerCase() && (c.stock_quantity || 0) > 0
+    const sameColorMatch = variantsInStorage.find(
+      (c) => c.color.toLowerCase() === selectedColor.toLowerCase() && (c.stock_quantity || 0) > 0
     );
 
     if (sameColorMatch) {
       setSelectedColor(sameColorMatch.color);
       if (sameColorMatch.image_url) setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
     } else {
-      const firstInStock = colorsInNewStorage.find(c => (c.stock_quantity || 0) > 0) || colorsInNewStorage[0];
+      const firstInStock = variantsInStorage.find((c) => (c.stock_quantity || 0) > 0) || variantsInStorage[0];
       if (firstInStock) {
         setSelectedColor(firstInStock.color);
         if (firstInStock.image_url) setSelectedImage(normalizeImageUrl(firstInStock.image_url));
@@ -456,6 +526,12 @@ export default function ProductDetailPage({
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
+    const formattedUnit = [
+      activeVariant?.ram || selectedRam,
+      activeVariant?.storage_label || activeVariant?.rom || selectedStorage,
+      activeVariant?.color || selectedColor,
+    ].filter(Boolean).join(" • ") || selectedStorage || product.unit;
+
     addToCart({
       id: product.id,
       name: product.name,
@@ -463,13 +539,13 @@ export default function ProductDetailPage({
       image: selectedImage || normalizeImageUrl(product.image_url || product.image),
       quantity,
       category: displayCategory,
-      selectedUnit: selectedStorage || product.unit,
+      selectedUnit: formattedUnit,
       variant_id: activeVariant?.id,
       color: activeVariant?.color || selectedColor,
-      storage: selectedStorage,
-      ram: activeVariant?.ram,
-      rom: activeVariant?.rom,
-      sku: activeVariant?.sku || product.sku
+      storage: activeVariant?.storage_label || activeVariant?.rom || selectedStorage,
+      ram: activeVariant?.ram || selectedRam,
+      rom: activeVariant?.rom || selectedStorage,
+      sku: activeVariant?.sku || product.sku,
     });
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 3000);
@@ -477,6 +553,12 @@ export default function ProductDetailPage({
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
+    const formattedUnit = [
+      activeVariant?.ram || selectedRam,
+      activeVariant?.storage_label || activeVariant?.rom || selectedStorage,
+      activeVariant?.color || selectedColor,
+    ].filter(Boolean).join(" • ") || selectedStorage || product.unit;
+
     addToCart({
       id: product.id,
       name: product.name,
@@ -484,13 +566,13 @@ export default function ProductDetailPage({
       image: selectedImage || normalizeImageUrl(product.image_url || product.image),
       quantity,
       category: displayCategory,
-      selectedUnit: selectedStorage || product.unit,
+      selectedUnit: formattedUnit,
       variant_id: activeVariant?.id,
       color: activeVariant?.color || selectedColor,
-      storage: selectedStorage,
-      ram: activeVariant?.ram,
-      rom: activeVariant?.rom,
-      sku: activeVariant?.sku || product.sku
+      storage: activeVariant?.storage_label || activeVariant?.rom || selectedStorage,
+      ram: activeVariant?.ram || selectedRam,
+      rom: activeVariant?.rom || selectedStorage,
+      sku: activeVariant?.sku || product.sku,
     });
     router.push("/cart");
   };
@@ -760,28 +842,66 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Storage / Configuration Selector */}
+            {/* RAM / Memory Options Selector (e.g. 6GB, 8GB, 12GB, 16GB) */}
+            {availableRams.length > 0 && (
+              <div className="space-y-2 border-b border-slate-200 pb-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-700 font-bold">
+                    RAM: <strong className="text-slate-950 font-black">{selectedRam || availableRams[0]}</strong>
+                  </span>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {availableRams.map((ramOption, idx) => {
+                    const isSelected = (selectedRam || availableRams[0]).toLowerCase() === ramOption.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleRamSelect(ramOption)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                          isSelected
+                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
+                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                        }`}
+                      >
+                        {ramOption}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Storage / Configuration Selector with dynamic rates */}
             {availableStorages.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-3">
-                <span className="text-xs text-slate-600 font-bold">
-                  Size / Storage: <strong className="text-slate-900">{selectedStorage}</strong>
-                </span>
+              <div className="space-y-2 border-b border-slate-200 pb-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-700 font-bold">
+                    Storage / Size: <strong className="text-slate-950 font-black">{selectedStorage}</strong>
+                  </span>
+                </div>
                 <div className="flex gap-2 flex-wrap">
                   {availableStorages.map((item, idx) => {
                     const label = typeof item === 'string' ? item : item.label;
                     const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
+                    const minPrice = typeof item === 'object' ? item.minPrice : null;
                     return (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleStorageSelect(label)}
-                        className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-start gap-0.5 ${
                           isSelected
-                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400"
+                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
+                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                         }`}
                       >
-                        {label}
+                        <span>{label}</span>
+                        {minPrice && minPrice > 0 ? (
+                          <span className={`text-[10px] ${isSelected ? "text-orange-700 font-black" : "text-slate-500 font-semibold"}`}>
+                            ₹{Number(minPrice).toLocaleString("en-IN")}
+                          </span>
+                        ) : null}
                       </button>
                     );
                   })}

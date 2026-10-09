@@ -133,7 +133,9 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
                   <tr key={i} className="hover:bg-gray-50/50">
                     <td className="px-6 py-5">
                        <p className="font-black text-gray-800 text-sm uppercase tracking-tight">{item.name}</p>
-                       <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">{item.unit}</p>
+                       <p className="text-[10px] text-gray-500 font-bold uppercase mt-0.5">
+                         {item.selectedUnit || item.unit || [item.ram, item.storage, item.color].filter(Boolean).join(" • ")}
+                       </p>
                     </td>
                     <td className="px-6 py-5 text-center font-bold text-gray-600">{item.quantity}</td>
                     <td className="px-6 py-5 text-right font-bold text-gray-600">₹{Math.floor(item.price)}</td>

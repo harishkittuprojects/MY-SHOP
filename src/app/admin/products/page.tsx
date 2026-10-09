@@ -394,7 +394,52 @@ export default function AdminProductsPage() {
     const current = getCurrentSizes();
     if (!current.includes(trimmed)) {
       const next = [...current, trimmed];
-      setFormData((prev) => ({ ...prev, unit: next.join(", ") }));
+
+      setFormData((prev) => {
+        const colors = getCurrentColors();
+        const activeColors = colors.length > 0 ? colors : [{ name: "Standard", code: "#18181b" }];
+        
+        const updatedVariants: any[] = [];
+        next.forEach((s) => {
+          let sRam = "";
+          let sRom = s;
+          const sRamMatch = s.match(/(\d+\s*GB)\s*RAM/i) || s.match(/(\d+\s*GB)\s*(\+|\/)/i);
+          if (sRamMatch && sRamMatch[1]) sRam = sRamMatch[1].replace(/\s+/g, "").toUpperCase();
+          const sRomMatch = s.match(/(\d+\s*(?:GB|TB))\s*(?:ROM|Storage)?$/i) || s.match(/(?:\+|\/)\s*(\d+\s*(?:GB|TB))/i);
+          if (sRomMatch && sRomMatch[1]) sRom = sRomMatch[1].replace(/\s+/g, "").toUpperCase();
+
+          activeColors.forEach((c) => {
+            const existingVar = (prev.variants || []).find(
+              (v: any) => (v.storage_label || v.size) === s && v.color?.toLowerCase() === c.name.toLowerCase()
+            );
+            if (existingVar) {
+              updatedVariants.push(existingVar);
+            } else {
+              updatedVariants.push({
+                id: `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                ram: sRam || "",
+                rom: sRom || s,
+                storage_label: s,
+                size: s,
+                color: c.name,
+                color_code: c.code,
+                price: prev.price || 0,
+                original_price: prev.original_price || prev.price || 0,
+                stock_quantity: Math.max(5, Math.floor((prev.stock_quantity || 20) / Math.max(1, activeColors.length))),
+                sku: `${(prev.sku || "SKU").replace(/\s+/g, "")}-${s.replace(/[^a-zA-Z0-9]/g, "")}-${c.name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}`,
+                image_url: prev.image_url || "",
+                is_active: true,
+              });
+            }
+          });
+        });
+
+        return {
+          ...prev,
+          unit: next.join(", "),
+          variants: updatedVariants,
+        };
+      });
     }
     setCustomSizeInput("");
   };
@@ -467,6 +512,13 @@ export default function AdminProductsPage() {
         
         const updatedVariants: any[] = [];
         activeSizes.forEach((s) => {
+          let sRam = "";
+          let sRom = s;
+          const sRamMatch = s.match(/(\d+\s*GB)\s*RAM/i) || s.match(/(\d+\s*GB)\s*(\+|\/)/i);
+          if (sRamMatch && sRamMatch[1]) sRam = sRamMatch[1].replace(/\s+/g, "").toUpperCase();
+          const sRomMatch = s.match(/(\d+\s*(?:GB|TB))\s*(?:ROM|Storage)?$/i) || s.match(/(?:\+|\/)\s*(\d+\s*(?:GB|TB))/i);
+          if (sRomMatch && sRomMatch[1]) sRom = sRomMatch[1].replace(/\s+/g, "").toUpperCase();
+
           nextColors.forEach((c) => {
             const existingVar = (prev.variants || []).find(
               (v: any) => (v.storage_label || v.size) === s && v.color?.toLowerCase() === c.name.toLowerCase()
@@ -476,12 +528,14 @@ export default function AdminProductsPage() {
             } else {
               updatedVariants.push({
                 id: `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                ram: sRam || "",
+                rom: sRom || s,
                 storage_label: s,
                 size: s,
                 color: c.name,
                 color_code: c.code,
                 price: prev.price || 0,
-                original_price: prev.original_price || 0,
+                original_price: prev.original_price || prev.price || 0,
                 stock_quantity: Math.max(5, Math.floor((prev.stock_quantity || 20) / Math.max(1, nextColors.length))),
                 sku: `${(prev.sku || "SKU").replace(/\s+/g, "")}-${s.replace(/[^a-zA-Z0-9]/g, "")}-${c.name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}`,
                 image_url: prev.image_url || "",
@@ -532,6 +586,61 @@ export default function AdminProductsPage() {
         variants: updatedVariants,
       };
     });
+  };
+
+  const handleUpdateVariantField = (index: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const list = [...(prev.variants || [])];
+      if (list[index]) {
+        list[index] = { ...list[index], [field]: value };
+      }
+      return { ...prev, variants: list };
+    });
+  };
+
+  const handleAddCustomVariantRow = () => {
+    const defaultColor = getCurrentColors()[0]?.name || "Black";
+    const defaultSize = getCurrentSizes()[0] || "128 GB";
+    const newVariant: any = {
+      id: `var_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      color: defaultColor,
+      color_code: getColorHexFromName(defaultColor),
+      ram: "8GB",
+      rom: defaultSize,
+      storage_label: defaultSize,
+      size: defaultSize,
+      price: formData.price || 0,
+      original_price: formData.original_price || formData.price || 0,
+      stock_quantity: 10,
+      sku: `${(formData.sku || "SKU").replace(/\s+/g, "")}-${Date.now().toString().slice(-4)}`,
+      image_url: formData.image_url || "",
+      is_active: true,
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      variants: [...(prev.variants || []), newVariant],
+    }));
+  };
+
+  const handleRemoveVariantRow = (index: number) => {
+    setFormData((prev) => {
+      const list = [...(prev.variants || [])];
+      list.splice(index, 1);
+      return { ...prev, variants: list };
+    });
+  };
+
+  const handleApplyBasePriceToAllVariants = () => {
+    if (!formData.price) return;
+    setFormData((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).map((v: any) => ({
+        ...v,
+        price: Number(prev.price) || v.price,
+        original_price: Number(prev.original_price) || Number(prev.price) || v.original_price,
+      })),
+    }));
   };
 
   const fetchData = async () => {
@@ -1550,6 +1659,188 @@ export default function AdminProductsPage() {
                     })}
                   </div>
                 </div>
+              </div>
+
+              {/* Comprehensive Variant Combination Pricing & Stock Table */}
+              <div className="space-y-3 bg-slate-900 text-white p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-md">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📊</span>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                        Variant Pricing & Stock Matrix ({formData.variants?.length || 0} combinations)
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Set custom prices, MRP, and stock for each Colour + RAM + Storage combination.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleApplyBasePriceToAllVariants}
+                      title="Set all variant prices to the main product price"
+                      className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-bold border border-slate-700 transition-colors cursor-pointer"
+                    >
+                      ⚡ Fill Base Price (₹{formData.price || 0})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddCustomVariantRow}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                    >
+                      + Add Combination
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table */}
+                {formData.variants && formData.variants.length > 0 ? (
+                  <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-slate-800 rounded-xl bg-slate-950/60 no-scrollbar">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead className="bg-slate-900/90 sticky top-0 z-10 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th className="p-2.5">Colour</th>
+                          <th className="p-2.5">RAM</th>
+                          <th className="p-2.5">Storage / Unit</th>
+                          <th className="p-2.5">Selling Price (₹) *</th>
+                          <th className="p-2.5">Original MRP (₹)</th>
+                          <th className="p-2.5">Stock</th>
+                          <th className="p-2.5">SKU</th>
+                          <th className="p-2.5 text-center">Active</th>
+                          <th className="p-2.5 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 font-medium">
+                        {formData.variants.map((v: any, vIdx: number) => (
+                          <tr key={v.id || vIdx} className="hover:bg-slate-900/40 transition-colors">
+                            {/* Color */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full border border-white/20 shrink-0 shadow-2xs"
+                                  style={{ backgroundColor: v.color_code || getColorHexFromName(v.color) }}
+                                />
+                                <input
+                                  type="text"
+                                  value={v.color || ""}
+                                  onChange={(e) => handleUpdateVariantField(vIdx, "color", e.target.value)}
+                                  className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                                />
+                              </div>
+                            </td>
+
+                            {/* RAM */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <input
+                                type="text"
+                                value={v.ram || ""}
+                                onChange={(e) => handleUpdateVariantField(vIdx, "ram", e.target.value)}
+                                placeholder="8GB"
+                                className="w-16 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold text-center focus:outline-none focus:border-emerald-500"
+                              />
+                            </td>
+
+                            {/* Storage / Size */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <input
+                                type="text"
+                                value={v.storage_label || v.rom || v.size || ""}
+                                onChange={(e) => {
+                                  handleUpdateVariantField(vIdx, "storage_label", e.target.value);
+                                  handleUpdateVariantField(vIdx, "rom", e.target.value);
+                                  handleUpdateVariantField(vIdx, "size", e.target.value);
+                                }}
+                                placeholder="128GB"
+                                className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                              />
+                            </td>
+
+                            {/* Selling Price */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <div className="relative flex items-center">
+                                <span className="absolute left-2 text-emerald-400 text-xs font-bold">₹</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={v.price ?? ""}
+                                  onChange={(e) => handleUpdateVariantField(vIdx, "price", parseFloat(e.target.value) || 0)}
+                                  placeholder="0"
+                                  className="w-28 pl-5 pr-2 py-1 bg-slate-900 border border-emerald-500/50 rounded-lg text-emerald-300 text-xs font-black focus:outline-none focus:border-emerald-400 focus:bg-slate-850"
+                                />
+                              </div>
+                            </td>
+
+                            {/* MRP */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <div className="relative flex items-center">
+                                <span className="absolute left-2 text-slate-500 text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={v.original_price ?? ""}
+                                  onChange={(e) => handleUpdateVariantField(vIdx, "original_price", parseFloat(e.target.value) || 0)}
+                                  placeholder="0"
+                                  className="w-24 pl-5 pr-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-slate-400 text-xs focus:outline-none focus:border-emerald-500"
+                                />
+                              </div>
+                            </td>
+
+                            {/* Stock Quantity */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <input
+                                type="number"
+                                min="0"
+                                value={v.stock_quantity ?? ""}
+                                onChange={(e) => handleUpdateVariantField(vIdx, "stock_quantity", parseInt(e.target.value) || 0)}
+                                placeholder="10"
+                                className="w-16 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs text-center font-bold focus:outline-none focus:border-emerald-500"
+                              />
+                            </td>
+
+                            {/* SKU */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <input
+                                type="text"
+                                value={v.sku || ""}
+                                onChange={(e) => handleUpdateVariantField(vIdx, "sku", e.target.value)}
+                                placeholder="SKU-..."
+                                className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 text-[11px] font-mono focus:outline-none focus:border-emerald-500"
+                              />
+                            </td>
+
+                            {/* Active */}
+                            <td className="p-2.5 text-center whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={v.is_active !== false}
+                                onChange={(e) => handleUpdateVariantField(vIdx, "is_active", e.target.checked)}
+                                className="w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 cursor-pointer"
+                              />
+                            </td>
+
+                            {/* Delete */}
+                            <td className="p-2.5 text-center whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveVariantRow(vIdx)}
+                                className="w-6 h-6 rounded-md bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white text-xs flex items-center justify-center transition-colors cursor-pointer"
+                                title="Delete variant row"
+                              >
+                                ✕
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                    No variant combinations generated yet. Add sizes, storage, or colours above, or click "+ Add Combination" to create custom variant rows.
+                  </div>
+                )}
               </div>
 
               <div>

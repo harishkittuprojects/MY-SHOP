@@ -380,7 +380,7 @@ export default function AccountPage() {
                                 <div key={i} className="py-2 flex items-center justify-between text-xs">
                                   <div>
                                     <p className="font-bold text-slate-900">{item.name}</p>
-                                    <p className="text-[10px] text-slate-400">Qty: {item.quantity} • {item.unit || item.selectedUnit || "Default"}</p>
+                                    <p className="text-[10px] text-slate-500 font-semibold">Qty: {item.quantity} • {item.selectedUnit || item.unit || [item.ram, item.storage, item.color].filter(Boolean).join(" • ") || "Standard"}</p>
                                   </div>
                                   <span className="font-black text-slate-800">₹{Math.floor(item.price * item.quantity).toLocaleString("en-IN")}</span>
                                 </div>
