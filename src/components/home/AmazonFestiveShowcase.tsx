@@ -1508,15 +1508,14 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const selectedBrand = brandSearch || null;
 
   const handleBrandClick = (bQuery: string) => {
-    const isCurrentlySelected = selectedBrand?.toLowerCase() === bQuery.toLowerCase();
-    if (isCurrentlySelected) {
-      // Unselect brand -> return to main category directly without scroll jumping
+    if (!bQuery || selectedBrand?.toLowerCase() === bQuery.toLowerCase()) {
+      // Unselect brand / Click All Brands -> return to full category products directly
       const targetUrl = categoryFilter 
         ? `/products?category=${encodeURIComponent(categoryFilter)}` 
         : `/products`;
       router.push(targetUrl, { scroll: false });
     } else {
-      // Select brand directly in place without scrolling up or down
+      // Select brand directly in place without scroll jumping
       const targetUrl = categoryFilter 
         ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(bQuery)}`
         : `/products?search=${encodeURIComponent(bQuery)}`;
@@ -2019,24 +2018,54 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </div>
               </div>
 
-              {/* Product-Style Brand Cards Grid (2-column on mobile, up to 5-column on desktop) */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+              {/* Product-Style Brand Cards Grid (2-column on mobile, up to 6-column on desktop) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-2.5">
+                {/* All Brands Option Card */}
+                <div
+                  onClick={() => handleBrandClick("")}
+                  className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+                    !selectedBrand 
+                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
+                      : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                  }`}
+                >
+                  <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-emerald-50/60 to-white flex items-center justify-center p-3 border-b border-slate-100">
+                    {!selectedBrand && (
+                      <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
+                        Active
+                      </span>
+                    )}
+                    <div className="w-11 h-11 rounded-xl bg-[#2E6F40]/10 text-[#2E6F40] flex items-center justify-center font-black text-xs border border-emerald-200 shadow-2xs group-hover:scale-105 transition-transform">
+                      ★ ALL
+                    </div>
+                  </div>
+                  <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
+                      All Brands
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-semibold line-clamp-1 mt-0.5">
+                      Full Catalog
+                    </p>
+                  </div>
+                </div>
+
+                {/* Specific Brand Cards */}
                 {brandList.map((b, i) => {
                   const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                   return (
                     <div
                       key={b.id || i}
                       onClick={() => handleBrandClick(b.query)}
-                      className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+                      className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
                         isSelected 
                           ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
                           : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
                       }`}
                     >
-                      {/* 1. Brand Logo Canvas (Product Card Style) */}
-                      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-3 sm:p-4 overflow-hidden border-b border-slate-100">
+                      {/* Brand Logo Canvas */}
+                      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-2.5 sm:p-3 overflow-hidden border-b border-slate-100">
                         {isSelected && (
-                          <span className="absolute top-2 right-2 z-10 bg-[#2E6F40] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-xs">
+                          <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
                             Active
                           </span>
                         )}
@@ -2047,18 +2076,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                               src={b.logo_url} 
                               alt={b.name} 
                               fill 
-                              className="object-contain p-2 group-hover:scale-110 transition-transform duration-300" 
+                              className="object-contain p-1.5 group-hover:scale-105 transition-transform duration-200" 
                               unoptimized 
                             />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-[#2E6F40] font-black text-lg flex items-center justify-center shadow-inner">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shadow-inner">
                             {b.name.slice(0, 2).toUpperCase()}
                           </div>
                         )}
                       </div>
 
-                      {/* 2. Brand Card Details */}
+                      {/* Brand Card Details */}
                       <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
                         <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
                           {b.name}
@@ -2090,34 +2119,17 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
                       <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
                       <span>
-                        {activeKey === "for-you"
-                          ? "✨ Recommended For You"
-                          : selectedBrand 
-                          ? `All "${selectedBrand}" Smartphones & Products` 
-                          : `${config.categoryHeading} Catalog`}
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-400 font-mono">
-                        ({matchedCatalogProducts.length})
+                        {selectedBrand 
+                          ? `Showing "${selectedBrand}" Smartphones (${matchedCatalogProducts.length})` 
+                          : `${config.categoryHeading} Catalog (${matchedCatalogProducts.length})`}
                       </span>
                     </h2>
-                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                      {selectedBrand
-                        ? `Official ${selectedBrand} sealed devices with 1-year warranty & same-day delivery`
-                        : activeKey === "for-you"
-                        ? "Personalized dynamically based on your search history"
-                        : "Verified authentic items with fast delivery"}
-                    </p>
                   </div>
 
                   {selectedBrand && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const targetUrl = categoryFilter 
-                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                          : `/products`;
-                        router.push(targetUrl, { scroll: false });
-                      }}
+                      onClick={() => handleBrandClick("")}
                       className="text-[11px] font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 px-3 py-1 rounded-full flex items-center gap-1.5 cursor-pointer transition-colors"
                     >
                       <span>Show All Brands</span>
