@@ -31,6 +31,7 @@ interface Product {
   is_featured: boolean;
   is_popular: boolean;
   variants?: any[];
+  colors?: any[];
 }
 
 interface Category {
@@ -812,6 +813,32 @@ export default function AdminProductsPage() {
     setFormData((prev) => ({ ...prev, image_url: url }));
   };
 
+  const handleAssignImageToColor = (imgUrl: string, colorName: string) => {
+    if (!colorName) return;
+    setFormData((prev) => {
+      const updatedVariants = (prev.variants || []).map((v: any) => {
+        if (colorName === "all" || (v.color || "").toLowerCase() === colorName.toLowerCase()) {
+          return { ...v, image_url: imgUrl };
+        }
+        return v;
+      });
+
+      const updatedColors = (prev.colors || []).map((c: any) => {
+        const cName = typeof c === "string" ? c : c.name;
+        if (colorName === "all" || (cName && cName.toLowerCase() === colorName.toLowerCase())) {
+          return typeof c === "string" ? { name: c, image_url: imgUrl } : { ...c, image_url: imgUrl };
+        }
+        return c;
+      });
+
+      return {
+        ...prev,
+        colors: updatedColors,
+        variants: updatedVariants,
+      };
+    });
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price) {
@@ -1346,48 +1373,74 @@ export default function AdminProductsPage() {
                   </button>
                 </div>
 
-                {/* Image Thumbnails List with Cover Selection */}
+                {/* Image Thumbnails List with Color Tagging and Cover Selection */}
                 {formData.images && formData.images.length > 0 && (
-                  <div className="space-y-1.5 pt-1">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                      Product Images (Hover to set Main Cover or Delete):
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        Product Images (Tag which Color each photo belongs to):
+                      </div>
+                      <span className="text-[10px] text-slate-400">
+                        Select color to automatically link photo
+                      </span>
                     </div>
-                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+
+                    <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                       {formData.images.map((imgUrl, idx) => {
                         const isPrimary = formData.image_url === imgUrl;
+                        const matchingVar = (formData.variants || []).find((v: any) => v.image_url === imgUrl);
+                        const assignedColor = matchingVar?.color || "";
+
                         return (
-                          <div
-                            key={idx}
-                            className={`relative aspect-square rounded-xl overflow-hidden border-2 bg-white group transition-all ${
-                              isPrimary ? "border-emerald-600 ring-2 ring-emerald-600/30 shadow-md" : "border-slate-200 hover:border-slate-400"
-                            }`}
-                          >
-                            <img src={imgUrl} alt="Preview" className="w-full h-full object-contain p-1" />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
-                              <button
-                                type="button"
-                                onClick={() => handleSetPrimaryImage(imgUrl)}
-                                title="Set as Main Cover"
-                                className={`w-7 h-7 rounded-full text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer ${
-                                  isPrimary ? "bg-emerald-600 ring-2 ring-white" : "bg-slate-700 hover:bg-emerald-600"
-                                }`}
-                              >
-                                ✓
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveImage(idx)}
-                                title="Remove image"
-                                className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer"
-                              >
-                                ✕
-                              </button>
+                          <div key={idx} className="flex flex-col gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+                            <div
+                              className={`relative aspect-square rounded-xl overflow-hidden border-2 bg-slate-50 group transition-all ${
+                                isPrimary ? "border-emerald-600 ring-2 ring-emerald-600/30 shadow-md" : "border-slate-200 hover:border-slate-400"
+                              }`}
+                            >
+                              <img src={imgUrl} alt="Preview" className="w-full h-full object-contain p-1" />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetPrimaryImage(imgUrl)}
+                                  title="Set as Main Cover"
+                                  className={`w-7 h-7 rounded-full text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer ${
+                                    isPrimary ? "bg-emerald-600 ring-2 ring-white" : "bg-slate-700 hover:bg-emerald-600"
+                                  }`}
+                                >
+                                  ✓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveImage(idx)}
+                                  title="Remove image"
+                                  className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              {isPrimary && (
+                                <span className="absolute bottom-1 left-1 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs">
+                                  COVER
+                                </span>
+                              )}
                             </div>
-                            {isPrimary && (
-                              <span className="absolute bottom-1 left-1 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs">
-                                COVER
-                              </span>
-                            )}
+
+                            {/* Tag to Color Dropdown */}
+                            <select
+                              value={assignedColor || ""}
+                              onChange={(e) => handleAssignImageToColor(imgUrl, e.target.value)}
+                              className="w-full text-[10px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-1.5 py-1 text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                              title="Assign this photo to a specific color variant"
+                            >
+                              <option value="">🎨 Tag Color...</option>
+                              {getCurrentColors().map((c) => (
+                                <option key={c.name} value={c.name}>
+                                  👉 {c.name}
+                                </option>
+                              ))}
+                              <option value="all">🌟 All Colors</option>
+                            </select>
                           </div>
                         );
                       })}
@@ -1705,6 +1758,58 @@ export default function AdminProductsPage() {
                     })}
                   </div>
                 </div>
+
+                {/* Per-Color Photo Assignment Manager */}
+                {getCurrentColors().length > 0 && (
+                  <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                    <div className="flex items-center justify-between flex-wrap gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                        <span>📸</span>
+                        <span>Match Each Colour Variant to its Specific Image:</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-700 font-semibold">
+                        Ensures exact photo displays when customer selects that color
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                      {getCurrentColors().map((col) => {
+                        const colorVariants = (formData.variants || []).filter((v: any) => (v.color || "").toLowerCase() === col.name.toLowerCase());
+                        const assignedImg = colorVariants.find((v: any) => v.image_url)?.image_url || formData.image_url || "";
+
+                        return (
+                          <div key={col.name} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                            <div className="relative w-12 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                              {assignedImg ? (
+                                <img src={assignedImg} alt={col.name} className="w-full h-full object-contain p-0.5" />
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-bold">No img</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="w-3 h-3 rounded-full border border-black/20 shrink-0" style={{ backgroundColor: col.code }} />
+                                <span className="text-xs font-bold text-slate-800 truncate">{col.name}</span>
+                              </div>
+                              <select
+                                value={assignedImg || ""}
+                                onChange={(e) => handleAssignImageToColor(e.target.value, col.name)}
+                                className="w-full text-[10px] font-semibold bg-slate-50 border border-slate-200 rounded-md px-1.5 py-1 text-slate-700 cursor-pointer focus:outline-none focus:border-emerald-500"
+                              >
+                                <option value="">Select Photo...</option>
+                                {(formData.images || []).map((img, iIdx) => (
+                                  <option key={iIdx} value={img}>
+                                    Photo #{iIdx + 1} {img === formData.image_url ? "(Main Cover)" : ""}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Comprehensive Variant Combination Pricing & Stock Table */}
@@ -1718,7 +1823,7 @@ export default function AdminProductsPage() {
                       </h4>
                     </div>
                     <p className="text-[11px] text-slate-400">
-                      Set custom prices, MRP, and stock for each Colour + RAM + Storage combination.
+                      Set custom prices, MRP, photo, and stock for each Colour + RAM + Storage combination.
                     </p>
                   </div>
 
@@ -1750,6 +1855,7 @@ export default function AdminProductsPage() {
                           <th className="p-2.5">Colour</th>
                           <th className="p-2.5">RAM</th>
                           <th className="p-2.5">Storage / Unit</th>
+                          <th className="p-2.5">Photo</th>
                           <th className="p-2.5">Selling Price (₹) *</th>
                           <th className="p-2.5">Original MRP (₹)</th>
                           <th className="p-2.5">Stock</th>
@@ -1801,6 +1907,31 @@ export default function AdminProductsPage() {
                                 placeholder="128GB"
                                 className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                               />
+                            </td>
+
+                            {/* Photo / Variant Image */}
+                            <td className="p-2.5 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <div className="relative w-7 h-7 rounded-md bg-slate-900 border border-slate-700 overflow-hidden shrink-0 flex items-center justify-center">
+                                  {(v.image_url || formData.image_url) ? (
+                                    <img src={v.image_url || formData.image_url} alt="Variant" className="w-full h-full object-contain p-0.5" />
+                                  ) : (
+                                    <span className="text-[8px] text-slate-500">None</span>
+                                  )}
+                                </div>
+                                <select
+                                  value={v.image_url || ""}
+                                  onChange={(e) => handleUpdateVariantField(vIdx, "image_url", e.target.value)}
+                                  className="w-24 px-1 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-[10px] font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                >
+                                  <option value="">Default Cover</option>
+                                  {(formData.images || []).map((img, iIdx) => (
+                                    <option key={iIdx} value={img}>
+                                      Photo #{iIdx + 1}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             </td>
 
                             {/* Selling Price */}
