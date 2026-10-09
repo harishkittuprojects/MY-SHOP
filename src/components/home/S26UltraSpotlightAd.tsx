@@ -291,7 +291,7 @@ export default function S26UltraSpotlightAd() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 active:scale-95 text-white font-bold text-xs sm:text-sm border border-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] active:scale-95 text-white font-bold text-xs sm:text-sm border border-[#245e35] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                 >
                   <FontAwesomeIcon icon={faCartPlus} />
                   <span>Add to Cart</span>

@@ -214,12 +214,12 @@ export default function ProductCard({
                 type="button"
                 onClick={handleDirectAddToCart}
                 disabled={isOutOfStock}
-                className={`py-2 px-3 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 font-black text-xs border border-[#d4b94a] flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs transition-all cursor-pointer ${
+                className={`py-2 px-3 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-xs border border-[#245e35] flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs transition-all cursor-pointer ${
                   isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 title="Add to Cart"
               >
-                <FontAwesomeIcon icon={faCartPlus} className="text-xs" />
+                <FontAwesomeIcon icon={faCartPlus} className="text-xs text-white" />
                 <span>Add</span>
               </button>
               <button
@@ -338,10 +338,10 @@ export default function ProductCard({
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="py-1.5 sm:py-2 rounded-xl bg-[#E9CF6A] hover:bg-[#dec253] text-slate-950 font-black text-[11px] sm:text-xs border border-[#d4b94a] flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
+                  className="py-1.5 sm:py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs border border-[#245e35] flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
                   title="Add to Cart"
                 >
-                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] text-slate-900" />
+                  <FontAwesomeIcon icon={faCartPlus} className="text-[10px] text-white" />
                   <span>Add</span>
                 </button>
                 <button
