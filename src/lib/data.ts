@@ -292,7 +292,7 @@ export const products = [
         original_price: 139999,
         stock_quantity: 0,
         sku: "S26U-12-256-VIOLET",
-        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
         is_active: true
       },
       {
@@ -334,7 +334,7 @@ export const products = [
         original_price: 149999,
         stock_quantity: 4,
         sku: "S26U-16-512-GOLD",
-        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600",
+        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
         is_active: true
       },
       {
@@ -348,7 +348,7 @@ export const products = [
         original_price: 149999,
         stock_quantity: 0,
         sku: "S26U-16-512-VIOLET",
-        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
         is_active: true
       },
       {
