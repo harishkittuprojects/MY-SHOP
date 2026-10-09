@@ -536,9 +536,20 @@ export default function HomeContent() {
                         <Link
                           key={b.id || bIdx}
                           href={`/products?category=Mobiles&search=${encodeURIComponent(b.query || b.name)}`}
-                          className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-white hover:bg-[#2E6F40] text-slate-700 hover:text-white border border-slate-200/90 shadow-2xs shrink-0 active:scale-95 transition-all"
+                          className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-white hover:bg-[#2E6F40] text-slate-700 hover:text-white border border-slate-200/90 shadow-2xs shrink-0 active:scale-95 transition-all flex items-center gap-1.5"
                         >
-                          {b.name}
+                          {b.logo_url && (
+                            <div className="w-3.5 h-3.5 rounded-full bg-white overflow-hidden relative shrink-0 border border-slate-200">
+                              <Image
+                                src={b.logo_url}
+                                alt={b.name}
+                                fill
+                                className="object-contain p-0.5"
+                                unoptimized
+                              />
+                            </div>
+                          )}
+                          <span>{b.name}</span>
                         </Link>
                       ))}
                     </div>

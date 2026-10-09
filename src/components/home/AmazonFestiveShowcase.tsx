@@ -1440,7 +1440,14 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
   const { config, key: activeKey } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
 
-  const [dbBrands, setDbBrands] = useState<{ name: string; query: string }[]>([]);
+  interface BrandItem {
+    name: string;
+    query: string;
+    logo_url?: string;
+    id?: string;
+  }
+
+  const [dbBrands, setDbBrands] = useState<BrandItem[]>([]);
 
   useEffect(() => {
     async function loadDynamicBrands() {
@@ -1449,13 +1456,23 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         const res = await fetch(`/api/brands?category=${encodeURIComponent(cat)}`, { cache: "no-store" });
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          setDbBrands(data.map((b: any) => ({ name: b.name, query: b.query || b.name })));
+          setDbBrands(data.map((b: any) => ({
+            id: b.id,
+            name: b.name,
+            query: b.query || b.name,
+            logo_url: b.logo_url || ""
+          })));
         } else {
           const resAll = await fetch(`/api/brands`, { cache: "no-store" });
           const allData = await resAll.json();
           if (Array.isArray(allData) && allData.length > 0) {
             const filtered = allData.filter((b: any) => !b.category || b.category === "Mobiles" || b.category.toLowerCase().includes("mobile"));
-            setDbBrands((filtered.length > 0 ? filtered : allData).map((b: any) => ({ name: b.name, query: b.query || b.name })));
+            setDbBrands((filtered.length > 0 ? filtered : allData).map((b: any) => ({
+              id: b.id,
+              name: b.name,
+              query: b.query || b.name,
+              logo_url: b.logo_url || ""
+            })));
           }
         }
       } catch {
@@ -1466,7 +1483,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   }, [categoryFilter]);
 
   // Brand list for quick brand selection
-  const brandList = useMemo(() => {
+  const brandList: BrandItem[] = useMemo(() => {
     if (dbBrands.length > 0) {
       return dbBrands;
     }
@@ -1857,8 +1874,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   const isChecked = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                   return (
                     <label 
-                      key={i} 
-                      className={`flex items-center gap-2.5 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                      key={b.id || i} 
+                      className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ${
                         isChecked ? "bg-emerald-50 text-[#2E6F40] font-bold border border-emerald-200" : "hover:bg-slate-50 text-slate-700"
                       }`}
                       onClick={(e) => {
@@ -1872,7 +1889,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         onChange={() => {}} 
                         className="w-4 h-4 rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
                       />
-                      <span className="text-xs">{b.name}</span>
+                      {b.logo_url && (
+                        <div className="w-4 h-4 rounded-full bg-white overflow-hidden relative shrink-0 border border-slate-200 shadow-2xs">
+                          <Image 
+                            src={b.logo_url} 
+                            alt={b.name} 
+                            fill 
+                            className="object-contain p-0.5" 
+                            unoptimized 
+                          />
+                        </div>
+                      )}
+                      <span className="text-xs truncate">{b.name}</span>
                     </label>
                   );
                 })}
@@ -1965,7 +1993,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                   return (
                     <button
-                      key={i}
+                      key={b.id || i}
                       type="button"
                       onClick={() => handleBrandClick(b.query)}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -1974,6 +2002,17 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:border-slate-300"
                       }`}
                     >
+                      {b.logo_url && (
+                        <div className="w-4 h-4 rounded-full bg-white overflow-hidden relative shrink-0 border border-slate-200 shadow-2xs">
+                          <Image 
+                            src={b.logo_url} 
+                            alt={b.name} 
+                            fill 
+                            className="object-contain p-0.5" 
+                            unoptimized 
+                          />
+                        </div>
+                      )}
                       <span>{b.name}</span>
                       {isSelected && <FontAwesomeIcon icon={faCheck} className="text-[10px]" />}
                     </button>
