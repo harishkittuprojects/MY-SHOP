@@ -1515,12 +1515,26 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         : `/products`;
       router.push(targetUrl, { scroll: false });
     } else {
-      // Select brand directly in place without scroll jumping
+      // Select brand directly
       const targetUrl = categoryFilter 
         ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(bQuery)}`
         : `/products?search=${encodeURIComponent(bQuery)}`;
       router.push(targetUrl, { scroll: false });
     }
+
+    // Directly scroll up to the matching products section
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        const brandProductsEl = document.getElementById("brand-products-section");
+        if (brandProductsEl) {
+          const yOffset = -70; // Header offset
+          const y = brandProductsEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+    }, 50);
   };
 
   // Filter and sort deals based on selectedBrand, primeFilter, priceRange, priceSort
