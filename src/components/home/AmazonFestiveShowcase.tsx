@@ -1521,8 +1521,33 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(bQuery)}`
         : `/products?search=${encodeURIComponent(bQuery)}`;
       router.push(targetUrl);
+
+      // Smoothly scroll down directly to the brand products
+      setTimeout(() => {
+        const el = document.getElementById("brand-products-section");
+        if (el) {
+          const yOffset = -90;
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+        }
+      }, 100);
     }
   };
+
+  // Auto-scroll when selectedBrand is active in URL
+  useEffect(() => {
+    if (selectedBrand) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById("brand-products-section");
+        if (el) {
+          const yOffset = -90;
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+        }
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedBrand]);
 
   // Filter and sort deals based on selectedBrand, primeFilter, priceRange, priceSort
   const displayedDeals = useMemo(() => {
@@ -2090,7 +2115,117 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               </div>
             </div>
 
-            {/* ======================= DYNAMIC BANNER SLIDER WITH ADD BANNER OPTION ======================= */}
+            {/* =========================================================================
+                2. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
+            ========================================================================= */}
+            {matchedCatalogProducts.length > 0 && (
+              <div 
+                id="brand-products-section" 
+                className={`bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border transition-all space-y-2.5 sm:space-y-3.5 md:space-y-4 ${
+                  selectedBrand 
+                    ? "border-emerald-300 ring-2 ring-[#2E6F40]/20 bg-emerald-50/10" 
+                    : "border-slate-200/90"
+                }`}
+              >
+                <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
+                  <div>
+                    <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
+                      <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
+                      <span>
+                        {activeKey === "for-you"
+                          ? "✨ Recommended For You"
+                          : selectedBrand 
+                          ? `All "${selectedBrand}" Smartphones & Products` 
+                          : `${config.categoryHeading} Catalog`}
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-400 font-mono">
+                        ({matchedCatalogProducts.length})
+                      </span>
+                    </h2>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
+                      {selectedBrand
+                        ? `Official ${selectedBrand} sealed devices with 1-year warranty & same-day delivery`
+                        : activeKey === "for-you"
+                        ? "Personalized dynamically based on your search history"
+                        : "Verified authentic items with fast delivery"}
+                    </p>
+                  </div>
+
+                  {selectedBrand && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetUrl = categoryFilter 
+                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                          : `/products`;
+                        router.push(targetUrl);
+                      }}
+                      className="text-[11px] font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 px-3 py-1 rounded-full flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <span>Show All Brands</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Recent Searches Pills when in For You mode */}
+                {activeKey === "for-you" && recentSearches.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100">
+                    <span className="text-[11px] sm:text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
+                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-[10px] sm:text-xs text-blue-600" />
+                      <span>Recent:</span>
+                    </span>
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                      {recentSearches.map((term, sIdx) => (
+                        <button
+                          key={sIdx}
+                          type="button"
+                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`)}
+                          className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                        >
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                  {matchedCatalogProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} viewMode="grid" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty state when selected brand has no products */}
+            {matchedCatalogProducts.length === 0 && selectedBrand && (
+              <div id="brand-products-section" className="bg-white p-8 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-3">
+                <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
+                  <FontAwesomeIcon icon={faTag} />
+                </div>
+                <h3 className="text-base font-bold text-slate-800">
+                  No products found for "{selectedBrand}"
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  We are updating inventory for {selectedBrand}. Please check out our other flagship smartphone collections.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetUrl = categoryFilter 
+                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                      : `/products`;
+                    router.push(targetUrl);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                >
+                  View All Mobile Brands
+                </button>
+              </div>
+            )}
+
+            {/* ======================= 3. DYNAMIC BANNER SLIDER ======================= */}
             <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
               
               {/* Banner Carousel Display (Compact & Proportionate on Mobile) */}
@@ -2174,93 +2309,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </>
               )}
             </div>
-
-
-
-            {/* =========================================================================
-                4. MATCHING PRODUCTS CATALOG SHELF (Grid Layout - Compact Mobile Flow)
-            ========================================================================= */}
-            {matchedCatalogProducts.length > 0 && (
-              <div className="bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border border-slate-200/90 space-y-2.5 sm:space-y-3.5 md:space-y-4">
-                <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
-                  <div>
-                    <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
-                      <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-blue-600 rounded-full" />
-                      <span>
-                        {activeKey === "for-you"
-                          ? "✨ Recommended For You"
-                          : selectedBrand 
-                          ? `All "${selectedBrand}" Products` 
-                          : `${config.categoryHeading} Catalog`}
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-400 font-mono">
-                        ({matchedCatalogProducts.length})
-                      </span>
-                    </h2>
-                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                      {activeKey === "for-you"
-                        ? "Personalized dynamically based on your search history"
-                        : "Verified authentic items with fast delivery"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Recent Searches Pills when in For You mode */}
-                {activeKey === "for-you" && recentSearches.length > 0 && (
-                  <div className="flex items-center gap-1.5 flex-wrap p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100">
-                    <span className="text-[11px] sm:text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
-                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-[10px] sm:text-xs text-blue-600" />
-                      <span>Recent:</span>
-                    </span>
-                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-                      {recentSearches.map((term, sIdx) => (
-                        <button
-                          key={sIdx}
-                          type="button"
-                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`)}
-                          className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
-                        >
-                          {term}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                  {matchedCatalogProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} viewMode="grid" />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Empty state when selected brand has no products */}
-            {matchedCatalogProducts.length === 0 && selectedBrand && (
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-3">
-                <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
-                  <FontAwesomeIcon icon={faTag} />
-                </div>
-                <h3 className="text-base font-bold text-slate-800">
-                  No products found for "{selectedBrand}"
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  We are updating inventory for {selectedBrand}. Please check out our other flagship smartphone collections.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const targetUrl = categoryFilter 
-                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                      : `/products`;
-                    router.push(targetUrl);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
-                >
-                  View All Mobile Brands
-                </button>
-              </div>
-            )}
 
           </div>
         </div>
