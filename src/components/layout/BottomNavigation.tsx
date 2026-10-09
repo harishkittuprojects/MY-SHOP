@@ -15,7 +15,7 @@ export default function BottomNavigation() {
   if (pathname?.startsWith("/admin")) return null;
 
   const isHome = pathname === "/";
-  const isCategories = pathname?.startsWith("/categories");
+  const isProducts = pathname?.startsWith("/products") || pathname?.startsWith("/categories");
   const isCart = pathname === "/cart";
   const isProfile = pathname === "/account" || pathname === "/login";
 
@@ -58,21 +58,21 @@ export default function BottomNavigation() {
           </span>
         </Link>
 
-        {/* Categories */}
+        {/* Products */}
         <Link
-          href="/categories"
+          href="/products"
           className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-90"
         >
-          <div className={`w-7 h-7 flex items-center justify-center mb-0.5 ${isCategories ? "text-secondary" : "text-slate-400"}`}>
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill={isCategories ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isCategories ? "1.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
+          <div className={`w-7 h-7 flex items-center justify-center mb-0.5 ${isProducts ? "text-secondary" : "text-slate-400"}`}>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill={isProducts ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isProducts ? "1.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1.5"/>
               <rect x="14" y="3" width="7" height="7" rx="1.5"/>
               <rect x="14" y="14" width="7" height="7" rx="1.5"/>
               <rect x="3" y="14" width="7" height="7" rx="1.5"/>
             </svg>
           </div>
-          <span className={`text-[10px] sm:text-[11px] font-bold leading-none ${isCategories ? "text-secondary font-black" : "text-slate-500"}`}>
-            Categories
+          <span className={`text-[10px] sm:text-[11px] font-bold leading-none ${isProducts ? "text-secondary font-black" : "text-slate-500"}`}>
+            Products
           </span>
         </Link>
 

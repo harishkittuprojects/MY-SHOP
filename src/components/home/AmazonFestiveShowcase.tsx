@@ -32,79 +32,7 @@ import {
   faTags
 } from "@fortawesome/free-solid-svg-icons";
 
-// Categories data for switchable Shop by Category grid
-const SHOWCASE_CATEGORIES = [
-  {
-    id: "mobiles",
-    name: "Mobiles & Accessories",
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Mobiles",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "computers-tablets",
-    name: "Computers & Tablets",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Computers%20%26%20Tablets",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "tv-audio",
-    name: "TV & Audio",
-    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=TV%20%26%20Audio",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "kitchen-appliances",
-    name: "Kitchen Appliances",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Kitchen%20Appliances",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "smart-technology",
-    name: "Smart Watches & Wearables",
-    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Smart%20Technology",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "fashion",
-    name: "Fashion & Lifestyle",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Fashion",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "jewellery",
-    name: "Precious Jewellery",
-    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Jewellery",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "ev-vehicles",
-    name: "Electric Vehicles",
-    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=EV%20Vehicles",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "refurbished-mobiles",
-    name: "Certified Refurbished Mobiles",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles",
-    subtitle: "View Catalog →",
-  },
-  {
-    id: "mobile-accessories",
-    name: "Fast Mobile Accessories",
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Mobile%20Accessories",
-    subtitle: "View Catalog →",
-  }
-];
+
 
 function parsePrice(val: any): number {
   if (typeof val === "number") return val;
@@ -1449,7 +1377,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
   const [priceSort, setPriceSort] = useState<string | null>("low-to-high");
   const [priceRange, setPriceRange] = useState<string | null>(searchParams.get("price") || null);
-  const [showCategoryGrid, setShowCategoryGrid] = useState<boolean>(true);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
 

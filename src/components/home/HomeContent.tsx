@@ -158,91 +158,7 @@ const FLIPKART_APP_CATEGORIES = [
   },
 ];
 
-// 1. Featured Category Cards for the "Shop by Category" Grid matching the design
-const HOME_FEATURED_CATEGORIES = [
-  {
-    id: "mobiles",
-    name: "Mobiles & Accessories",
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Mobiles",
-    subtitle: "View Catalog →",
-    tag: "Flagships & More"
-  },
-  {
-    id: "computers-tablets",
-    name: "Computers & Tablets",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Computers%20%26%20Tablets",
-    subtitle: "View Catalog →",
-    tag: "Laptops & Desktops"
-  },
-  {
-    id: "tv-audio",
-    name: "TV & Audio",
-    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=TV%20%26%20Audio",
-    subtitle: "View Catalog →",
-    tag: "4K TVs & Soundbars"
-  },
-  {
-    id: "kitchen-appliances",
-    name: "Kitchen Appliances",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Kitchen%20Appliances",
-    subtitle: "View Catalog →",
-    tag: "Home & Kitchen"
-  },
-  {
-    id: "smart-technology",
-    name: "Smart Watches & Wearables",
-    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Smart%20Technology",
-    subtitle: "View Catalog →",
-    tag: "AMOLED & Fitness"
-  },
-  {
-    id: "fashion",
-    name: "Fashion & Lifestyle",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Fashion",
-    subtitle: "View Catalog →",
-    tag: "Trends & Apparel"
-  },
-  {
-    id: "jewellery",
-    name: "Precious Jewellery",
-    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Jewellery",
-    subtitle: "View Catalog →",
-    tag: "100% BIS Hallmarked"
-  },
-  {
-    id: "ev-vehicles",
-    name: "Electric Vehicles",
-    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=EV%20Vehicles",
-    subtitle: "View Catalog →",
-    tag: "Green Mobility"
-  },
-  {
-    id: "refurbished-mobiles",
-    name: "Certified Refurbished Mobiles",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles",
-    subtitle: "View Catalog →",
-    tag: "32-Point Quality Tested"
-  },
-  {
-    id: "mobile-accessories",
-    name: "Fast Mobile Accessories",
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=800",
-    url: "/products?category=Mobile%20Accessories",
-    subtitle: "View Catalog →",
-    tag: "GaN Chargers & Cables"
-  }
-];
-
-// 2. Featured Brand Cards for the "Shop by Brand" Grid
+// 1. Featured Brand Cards for the "Shop by Brand" Grid
 const HOME_FEATURED_BRANDS = [
   { name: "Apple", query: "Apple", logo: "/brands/apple.png", desc: "iPhones & MacBooks", count: "Flagships", url: "/products?category=Mobiles&brand=Apple" },
   { name: "Samsung", query: "Samsung", logo: "/brands/samsung.png", desc: "Galaxy S26 & Fold", count: "Top Rated", url: "/products?category=Mobiles&brand=Samsung" },
@@ -267,7 +183,6 @@ export default function HomeContent() {
   const [products, setProducts] = useState<any[]>(defaultProducts || []);
   const [mobileBrands, setMobileBrands] = useState<any[]>([]);
   const [selectedMobileBrand, setSelectedMobileBrand] = useState<string>("all");
-  const [showCategoryGrid, setShowCategoryGrid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
@@ -575,102 +490,6 @@ export default function HomeContent() {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* 2.5. SHOP BY CATEGORY SHOWCASE WITH ON/OFF TOGGLE */}
-      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-5 shadow-2xs space-y-4">
-          
-          {/* Header with Green Accent, ON/OFF Toggle & View All */}
-          <div className="flex items-center justify-between flex-wrap gap-2.5 pb-3 border-b border-slate-100">
-            <Link href="/categories" className="flex items-center gap-2 sm:gap-2.5 hover:opacity-85 transition-opacity group">
-              <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full group-hover:scale-110 transition-transform" />
-              <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight group-hover:text-[#2E6F40] transition-colors">
-                Shop by Category
-              </h2>
-            </Link>
-
-            {/* ON / OFF Toggle Switch & View All link */}
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-              <div 
-                onClick={() => setShowCategoryGrid(prev => !prev)}
-                className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs transition-all cursor-pointer select-none"
-                title="Toggle Shop by Category grid"
-              >
-                <span className="text-xs font-bold text-slate-700">
-                  Shop by Category
-                </span>
-
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={showCategoryGrid}
-                  className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    showCategoryGrid ? "bg-[#2E6F40]" : "bg-slate-300"
-                  }`}
-                >
-                  <span className="sr-only">Toggle Shop by Category grid</span>
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                      showCategoryGrid ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-
-                <span className={`text-[10px] font-black uppercase tracking-wider ${
-                  showCategoryGrid ? "text-[#2E6F40]" : "text-slate-400"
-                }`}>
-                  {showCategoryGrid ? "ON" : "OFF"}
-                </span>
-              </div>
-
-              {/* View All Categories link */}
-              <Link
-                href="/categories"
-                className="text-xs sm:text-sm font-bold text-[#2E6F40] hover:text-emerald-700 hover:underline flex items-center gap-1 transition-colors"
-              >
-                <span>View All</span>
-                <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
-              </Link>
-            </div>
-          </div>
-
-          {/* SHOP BY CATEGORY GRID (Visible when toggle is ON) */}
-          {showCategoryGrid && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all duration-300">
-              {HOME_FEATURED_CATEGORIES.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={cat.url}
-                  className="group bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#2E6F40] transition-all overflow-hidden flex flex-col cursor-pointer"
-                >
-                  {/* Category Image */}
-                  <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
-                    <Image
-                      src={cat.image}
-                      alt={cat.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                      unoptimized
-                    />
-                  </div>
-
-                  {/* Category Details */}
-                  <div className="p-3 sm:p-4 flex flex-col items-center justify-center text-center bg-white flex-1">
-                    <h3 className="text-xs sm:text-sm md:text-base font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1">
-                      {cat.name}
-                    </h3>
-                    <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#2E6F40] flex items-center gap-1 mt-1 transition-colors">
-                      {cat.subtitle}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
         </div>
       </section>
 

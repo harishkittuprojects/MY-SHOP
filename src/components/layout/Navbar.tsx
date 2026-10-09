@@ -440,8 +440,7 @@ export default function Navbar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[#222222]">
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
-          <Link href="/categories" className={`hover:text-gray-600 font-medium ${pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""}`}>Categories</Link>
-          <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname === "/products" ? "text-secondary font-bold" : ""}`}>Products</Link>
+          <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname?.startsWith("/products") || pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""}`}>Products</Link>
           <Link href="/services/display-replacement" className={`hover:text-gray-600 font-medium flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}>
             <FontAwesomeIcon icon={faWrench} className="text-xs text-secondary" />
             Screen Repair
@@ -605,18 +604,14 @@ export default function Navbar() {
               <span>Home</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-xs text-slate-400" />
             </Link>
-            <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 font-bold text-sm text-secondary flex items-center justify-between">
-              <span>Categories</span>
+            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 font-bold text-sm text-secondary flex items-center justify-between">
+              <span>All Products</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-xs text-secondary" />
-            </Link>
-            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2.5 border-b border-slate-100 font-bold text-sm text-slate-700 flex items-center justify-between">
-              <span>All Products &amp; Devices</span>
-              <FontAwesomeIcon icon={faArrowRight} className="text-xs text-slate-400" />
             </Link>
             
             <div className="py-2">
               <Link 
-                href="/categories" 
+                href="/products" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-secondary mb-2.5 flex items-center justify-between"
               >

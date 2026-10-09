@@ -66,7 +66,6 @@ export const CategoriesDB = {
       return c;
     });
 
-    const dbCategoryIds = new Set(mappedDbCategories.map((c) => String(c.id)));
     const defaultList = defaultCategories.map((c, idx) => ({
       id: c.id,
       name: c.name,
@@ -77,10 +76,36 @@ export const CategoriesDB = {
       display_order: idx + 1,
     }));
 
-    return [
-      ...mappedDbCategories,
-      ...defaultList.filter((dc) => !dbCategoryIds.has(String(dc.id))),
-    ];
+    const combinedList = [...mappedDbCategories, ...defaultList];
+
+    // Deduplicate by normalized name AND id permanently
+    const uniqueMap = new Map<string, any>();
+    for (const item of combinedList) {
+      const nameKey = (item.name || "").trim().toLowerCase();
+      const idKey = (item.id || "").trim().toLowerCase();
+      const primaryKey = nameKey || idKey;
+
+      if (!primaryKey) continue;
+
+      if (!uniqueMap.has(primaryKey)) {
+        uniqueMap.set(primaryKey, { ...item });
+      } else {
+        const existing = uniqueMap.get(primaryKey);
+        // Merge attributes to keep the best data (sub_categories, image, icon)
+        const mergedSub = Array.from(
+          new Set([...(existing.sub_categories || []), ...(item.sub_categories || [])])
+        );
+        uniqueMap.set(primaryKey, {
+          ...existing,
+          ...item,
+          icon: existing.icon || item.icon || '📱',
+          image_url: existing.image_url || item.image_url || existing.image || item.image,
+          sub_categories: mergedSub.length > 0 ? mergedSub : existing.sub_categories || [],
+        });
+      }
+    }
+
+    return Array.from(uniqueMap.values());
   },
 
   async getById(id: string) {
