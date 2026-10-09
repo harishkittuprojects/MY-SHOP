@@ -163,7 +163,7 @@ export default function ProductDetailPage({
         if (data) {
           setProduct(data);
           const initialImg = normalizeImageUrl(
-            (data.images && data.images[0]) || data.image_url || data.image
+            data.image_url || (data.images && data.images[0]) || data.image
           );
           setSelectedImage(initialImg);
 
@@ -176,9 +176,6 @@ export default function ProductDetailPage({
             const storage = firstInStock.storage_label || firstInStock.rom || (firstInStock.ram && firstInStock.rom ? `${firstInStock.ram} RAM + ${firstInStock.rom} ROM` : "Standard");
             setSelectedStorage(storage);
             setSelectedColor(firstInStock.color || "Standard");
-            if (firstInStock.image_url) {
-              setSelectedImage(normalizeImageUrl(firstInStock.image_url));
-            }
           } else if (data.unit) {
             const units = data.unit.split(",").map((u) => u.trim()).filter(Boolean);
             if (units.length > 0) {
@@ -309,6 +306,7 @@ export default function ProductDetailPage({
 
   // Universal Available Colors across ALL products & categories
   const availableColors = React.useMemo(() => {
+    const defaultProductImage = product?.image_url || (product?.images && product.images[0]) || product?.image || "/mobile-logo.png";
     // 1. If explicit variants exist for selected configuration
     if (colorsForSelectedConfiguration.length > 0) {
       return colorsForSelectedConfiguration.map((v) => ({
@@ -318,7 +316,7 @@ export default function ProductDetailPage({
         price: v.price || product?.price || 0,
         stock_quantity: v.stock_quantity,
         is_active: v.is_active,
-        image_url: v.image_url || product?.image_url || "/products/iphone-16-pro-max.png",
+        image_url: (v.image_url && v.image_url !== "/products/iphone-16-pro-max.png" && v.image_url.trim() !== "") ? v.image_url : defaultProductImage,
       }));
     }
 
@@ -336,7 +334,7 @@ export default function ProductDetailPage({
             price: v.price || product?.price || 0,
             stock_quantity: v.stock_quantity,
             is_active: v.is_active,
-            image_url: v.image_url || product?.image_url || "/products/iphone-16-pro-max.png",
+            image_url: (v.image_url && v.image_url !== "/products/iphone-16-pro-max.png" && v.image_url.trim() !== "") ? v.image_url : defaultProductImage,
           });
         }
       });
@@ -356,17 +354,17 @@ export default function ProductDetailPage({
           price: product?.price || 0,
           stock_quantity: product?.stock_quantity || 15,
           is_active: true,
-          image_url: typeof c === "object" && c.image_url ? c.image_url : (product?.image_url || "/products/iphone-16-pro-max.png"),
+          image_url: typeof c === "object" && c.image_url && c.image_url !== "/products/iphone-16-pro-max.png" ? c.image_url : defaultProductImage,
         };
       });
     }
 
     // 4. Default 4 popular colors
     return [
-      { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
-      { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
-      { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
-      { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: product?.image_url || "/products/iphone-16-pro-max.png" },
+      { id: "black", color: "Classic Black", color_code: "#18181b", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: defaultProductImage },
+      { id: "white", color: "Pure White", color_code: "#ffffff", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: defaultProductImage },
+      { id: "navy", color: "Navy Blue", color_code: "#1e3a8a", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: defaultProductImage },
+      { id: "crimson", color: "Crimson Red", color_code: "#dc2626", price: product?.price || 0, stock_quantity: product?.stock_quantity || 15, is_active: true, image_url: defaultProductImage },
     ];
   }, [colorsForSelectedConfiguration, productVariants, product]);
 
@@ -421,7 +419,11 @@ export default function ProductDetailPage({
       const storage = match.rom || match.storage_label || match.size || "Standard";
       setSelectedStorage(storage);
       setSelectedColor(match.color);
-      if (match.image_url) setSelectedImage(normalizeImageUrl(match.image_url));
+      if (match.image_url && match.image_url !== "/products/iphone-16-pro-max.png" && match.image_url.trim() !== "") {
+        setSelectedImage(normalizeImageUrl(match.image_url));
+      } else if (product?.image_url || product?.images?.[0]) {
+        setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+      }
     }
   };
 
@@ -440,12 +442,20 @@ export default function ProductDetailPage({
 
     if (sameColorMatch) {
       setSelectedColor(sameColorMatch.color);
-      if (sameColorMatch.image_url) setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
+      if (sameColorMatch.image_url && sameColorMatch.image_url !== "/products/iphone-16-pro-max.png" && sameColorMatch.image_url.trim() !== "") {
+        setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
+      } else if (product?.image_url || product?.images?.[0]) {
+        setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+      }
     } else {
       const firstInStock = variantsInStorage.find((c) => (c.stock_quantity || 0) > 0) || variantsInStorage[0];
       if (firstInStock) {
         setSelectedColor(firstInStock.color);
-        if (firstInStock.image_url) setSelectedImage(normalizeImageUrl(firstInStock.image_url));
+        if (firstInStock.image_url && firstInStock.image_url !== "/products/iphone-16-pro-max.png" && firstInStock.image_url.trim() !== "") {
+          setSelectedImage(normalizeImageUrl(firstInStock.image_url));
+        } else if (product?.image_url || product?.images?.[0]) {
+          setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+        }
       }
     }
   };
@@ -453,8 +463,10 @@ export default function ProductDetailPage({
   // Handle Color Select
   const handleColorSelect = (variant: any) => {
     setSelectedColor(variant.color);
-    if (variant.image_url) {
+    if (variant.image_url && variant.image_url !== "/products/iphone-16-pro-max.png" && variant.image_url.trim() !== "") {
       setSelectedImage(normalizeImageUrl(variant.image_url));
+    } else if (product?.image_url || product?.images?.[0]) {
+      setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
     }
   };
 
@@ -514,13 +526,13 @@ export default function ProductDetailPage({
   const allImages = Array.from(
     new Set(
       [
-        activeVariant?.image_url,
-        ...(product.images || []),
         product.image_url,
+        ...(product.images || []),
         product.image,
+        activeVariant?.image_url && activeVariant.image_url !== "/products/iphone-16-pro-max.png" ? activeVariant.image_url : null,
       ]
         .filter(Boolean)
-        .map((u) => normalizeImageUrl(u))
+        .map((u) => normalizeImageUrl(u as string))
     )
   );
 

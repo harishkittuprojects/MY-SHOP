@@ -822,8 +822,18 @@ export default function AdminProductsPage() {
     setSubmitting(true);
     try {
       const cat = categories.find((c) => c.id === formData.category_id);
+      const primaryImg = formData.image_url || (Array.isArray(formData.images) && formData.images[0]) || "";
+      const cleanedVariants = Array.isArray(formData.variants)
+        ? formData.variants.map((v: any) => ({
+            ...v,
+            image_url: (!v.image_url || v.image_url === "/products/iphone-16-pro-max.png") ? primaryImg : v.image_url,
+          }))
+        : [];
+
       const payload = {
         ...formData,
+        image_url: primaryImg,
+        variants: cleanedVariants,
         category_name: cat ? cat.name : formData.category_name,
         price: Number(formData.price),
         original_price: Number(formData.original_price) || Number(formData.price),
