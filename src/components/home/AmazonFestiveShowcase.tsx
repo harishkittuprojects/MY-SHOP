@@ -22,8 +22,19 @@ import {
   faCloudUploadAlt,
   faTimes,
   faChevronLeft,
-  faImage
+  faImage,
+  faArrowDownWideShort,
+  faArrowUpShortWide,
+  faIndianRupeeSign
 } from "@fortawesome/free-solid-svg-icons";
+
+function parsePrice(val: any): number {
+  if (typeof val === "number") return val;
+  if (!val) return 0;
+  const numStr = String(val).replace(/[^0-9.]/g, "");
+  const num = parseFloat(numStr);
+  return isNaN(num) ? 0 : num;
+}
 
 interface DealItem {
   id: string;
@@ -1356,6 +1367,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
   const [primeFilter, setPrimeFilter] = useState(false);
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
+  const [priceSort, setPriceSort] = useState<string | null>("low-to-high");
+  const [priceRange, setPriceRange] = useState<string | null>(searchParams.get("price") || null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
 
@@ -1463,9 +1476,9 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     }
   };
 
-  // Filter deals based on selectedBrand, primeFilter, deliveryFilter
+  // Filter and sort deals based on selectedBrand, primeFilter, priceRange, priceSort
   const displayedDeals = useMemo(() => {
-    let list = config.deals;
+    let list = [...config.deals];
     
     if (selectedBrand) {
       const q = selectedBrand.toLowerCase();
@@ -1484,8 +1497,25 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       list = list.filter(d => d.topTag.includes("★") || d.accentBadge.includes("Official") || d.accentBadge.includes("Flagship"));
     }
 
+    if (priceRange) {
+      list = list.filter(d => {
+        const p = parsePrice(d.startingPrice);
+        if (priceRange === "under-10k") return p < 10000;
+        if (priceRange === "10k-25k") return p >= 10000 && p <= 25000;
+        if (priceRange === "25k-50k") return p > 25000 && p <= 50000;
+        if (priceRange === "above-50k") return p > 50000;
+        return true;
+      });
+    }
+
+    if (priceSort === "low-to-high") {
+      list.sort((a, b) => parsePrice(a.startingPrice) - parsePrice(b.startingPrice));
+    } else if (priceSort === "high-to-low") {
+      list.sort((a, b) => parsePrice(b.startingPrice) - parsePrice(a.startingPrice));
+    }
+
     return list;
-  }, [config.deals, selectedBrand, primeFilter]);
+  }, [config.deals, selectedBrand, primeFilter, priceRange, priceSort]);
 
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
 
@@ -1507,21 +1537,19 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const matchedCatalogProducts = useMemo(() => {
     if (!catalogProducts || catalogProducts.length === 0) return [];
     
-    let list = catalogProducts;
+    let list = [...catalogProducts];
     
     // For You Mode: Match by recent searches and viewed products
     if (activeKey === "for-you") {
       if (selectedBrand) {
         const q = selectedBrand.toLowerCase();
-        return list.filter(p => {
+        list = list.filter(p => {
           const name = (p.name || "").toLowerCase();
           const cat = (p.category || p.category_name || "").toLowerCase();
           const sub = (p.sub_category || "").toLowerCase();
           return name.includes(q) || cat.includes(q) || sub.includes(q);
         });
-      }
-
-      if (recentSearches.length > 0 || recentViewedIds.length > 0) {
+      } else if (recentSearches.length > 0 || recentViewedIds.length > 0) {
         const matched = list.filter((p) => {
           const name = (p.name || "").toLowerCase();
           const cat = (p.category || p.category_name || "").toLowerCase();
@@ -1535,39 +1563,61 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         });
 
         if (matched.length > 0) {
-          return matched;
+          list = matched;
+        } else {
+          list = list.slice(0, 16);
         }
+      } else {
+        list = list.slice(0, 16);
+      }
+    } else {
+      // Standard category filter
+      if (categoryFilter) {
+        const catKey = categoryFilter.toLowerCase();
+        list = list.filter(p => {
+          const c = (p.category || p.category_name || "").toLowerCase();
+          const cid = (p.category_id || "").toLowerCase();
+          const sub = (p.sub_category || "").toLowerCase();
+          return c.includes(catKey) || cid.includes(catKey) || sub.includes(catKey) || catKey.includes(c);
+        });
       }
 
-      // Default recommendations if no history
-      return list.slice(0, 16);
+      // Filter by search query or brand
+      if (selectedBrand) {
+        const q = selectedBrand.toLowerCase();
+        list = list.filter(p => {
+          const name = (p.name || "").toLowerCase();
+          const cat = (p.category || p.category_name || "").toLowerCase();
+          const sub = (p.sub_category || "").toLowerCase();
+          const desc = (p.description || "").toLowerCase();
+          return name.includes(q) || cat.includes(q) || sub.includes(q) || desc.includes(q);
+        });
+      }
     }
 
-    // Standard category filter
-    if (categoryFilter) {
-      const catKey = categoryFilter.toLowerCase();
+    if (primeFilter) {
+      list = list.filter(p => (p.rating && p.rating >= 4) || (p.stock_quantity && p.stock_quantity > 5));
+    }
+
+    if (priceRange) {
       list = list.filter(p => {
-        const c = (p.category || p.category_name || "").toLowerCase();
-        const cid = (p.category_id || "").toLowerCase();
-        const sub = (p.sub_category || "").toLowerCase();
-        return c.includes(catKey) || cid.includes(catKey) || sub.includes(catKey) || catKey.includes(c);
+        const pVal = parsePrice(p.price);
+        if (priceRange === "under-10k") return pVal < 10000;
+        if (priceRange === "10k-25k") return pVal >= 10000 && pVal <= 25000;
+        if (priceRange === "25k-50k") return pVal > 25000 && pVal <= 50000;
+        if (priceRange === "above-50k") return pVal > 50000;
+        return true;
       });
     }
 
-    // Filter by search query or brand
-    if (selectedBrand) {
-      const q = selectedBrand.toLowerCase();
-      list = list.filter(p => {
-        const name = (p.name || "").toLowerCase();
-        const cat = (p.category || p.category_name || "").toLowerCase();
-        const sub = (p.sub_category || "").toLowerCase();
-        const desc = (p.description || "").toLowerCase();
-        return name.includes(q) || cat.includes(q) || sub.includes(q) || desc.includes(q);
-      });
+    if (priceSort === "low-to-high") {
+      list.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+    } else if (priceSort === "high-to-low") {
+      list.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
     }
 
     return list;
-  }, [catalogProducts, categoryFilter, selectedBrand, activeKey, recentSearches, recentViewedIds]);
+  }, [catalogProducts, categoryFilter, selectedBrand, activeKey, recentSearches, recentViewedIds, primeFilter, priceRange, priceSort]);
 
   // Current active brand name
   const activeBrandObj = config.brands.find(b => selectedBrand && b.query.toLowerCase() === selectedBrand.toLowerCase());
@@ -1669,6 +1719,91 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               </div>
             </div>
 
+            {/* Price Sorting & Price Filter */}
+            <div className="pt-3 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-slate-900 text-[13px] flex items-center gap-1.5">
+                  <FontAwesomeIcon icon={faIndianRupeeSign} className="text-[#2E6F40] text-[11px]" />
+                  <span>Price</span>
+                </h3>
+                {(priceSort || priceRange) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPriceSort(null);
+                      setPriceRange(null);
+                    }}
+                    className="text-[10px] font-bold text-slate-400 hover:text-slate-800 underline cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Price Sort Order */}
+              <div className="space-y-1 text-slate-700">
+                <label 
+                  className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    priceSort === "low-to-high" ? "bg-emerald-50 text-[#2E6F40] font-bold border border-emerald-200" : "hover:bg-slate-50 text-slate-700"
+                  }`}
+                  onClick={() => setPriceSort(priceSort === "low-to-high" ? null : "low-to-high")}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={priceSort === "low-to-high"} 
+                    onChange={() => {}} 
+                    className="rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
+                  />
+                  <span className="text-xs">Price: Low to High</span>
+                </label>
+
+                <label 
+                  className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    priceSort === "high-to-low" ? "bg-emerald-50 text-[#2E6F40] font-bold border border-emerald-200" : "hover:bg-slate-50 text-slate-700"
+                  }`}
+                  onClick={() => setPriceSort(priceSort === "high-to-low" ? null : "high-to-low")}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={priceSort === "high-to-low"} 
+                    onChange={() => {}} 
+                    className="rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
+                  />
+                  <span className="text-xs">Price: High to Low</span>
+                </label>
+              </div>
+
+              {/* Price Range */}
+              <div className="mt-2.5 pt-2 border-t border-dashed border-slate-200 space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Price Range</span>
+                {[
+                  { label: "Under ₹10,000", value: "under-10k" },
+                  { label: "₹10,000 - ₹25,000", value: "10k-25k" },
+                  { label: "₹25,000 - ₹50,000", value: "25k-50k" },
+                  { label: "Above ₹50,000", value: "above-50k" },
+                ].map((range) => {
+                  const isActive = priceRange === range.value;
+                  return (
+                    <label
+                      key={range.value}
+                      className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                        isActive ? "bg-emerald-50 text-[#2E6F40] font-bold border border-emerald-200" : "hover:bg-slate-50 text-slate-700"
+                      }`}
+                      onClick={() => setPriceRange(isActive ? null : range.value)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={() => {}}
+                        className="rounded text-[#2E6F40] focus:ring-[#2E6F40] accent-[#2E6F40] cursor-pointer"
+                      />
+                      <span className="text-xs">{range.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Brands Filter */}
             <div className="pt-3 border-t border-slate-200">
               <div className="flex items-center justify-between mb-2">
@@ -1741,26 +1876,41 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 BRAND SELECTION BAR (Quick 1-Tap Brand Filtering for Mobile & Desktop)
             ========================================================================= */}
             <div className="bg-white p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center justify-between mb-2 px-0.5">
+              <div className="flex items-center justify-between mb-2 px-0.5 flex-wrap gap-2">
                 <span className="text-[11px] sm:text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
                   <FontAwesomeIcon icon={faTag} className="text-[#2E6F40] text-xs" />
                   <span>Shop by Brand</span>
                 </span>
-                {selectedBrand && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const targetUrl = categoryFilter 
-                        ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                        : `/products`;
-                      router.push(targetUrl);
-                    }}
-                    className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
+                
+                {/* Quick Sort Selector for Mobile & Desktop */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                  <select
+                    value={priceSort || "featured"}
+                    onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
+                    className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
                   >
-                    <span>Clear Filter ({selectedBrand})</span>
-                    <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
-                  </button>
-                )}
+                    <option value="low-to-high">Price: Low to High</option>
+                    <option value="high-to-low">Price: High to Low</option>
+                    <option value="featured">Featured / Default</option>
+                  </select>
+                  
+                  {selectedBrand && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetUrl = categoryFilter 
+                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                          : `/products`;
+                        router.push(targetUrl);
+                      }}
+                      className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1 ml-1"
+                    >
+                      <span>Clear ({selectedBrand})</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Scrollable Brand Selector Pills */}
