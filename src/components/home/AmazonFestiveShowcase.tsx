@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/common/ProductCard";
 import { getRecentSearches, getRecentlyViewedProductIds, clearRecentHistory } from "@/lib/recentHistory";
+import { products as defaultProducts } from "@/lib/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar,
@@ -1564,22 +1565,42 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     return list;
   }, [config.deals, selectedBrand, primeFilter, priceRange, priceSort]);
 
-  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>(defaultProducts || []);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         const res = await fetch("/api/productList");
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setCatalogProducts(data);
+        } else {
+          setCatalogProducts(defaultProducts);
         }
       } catch (err) {
         console.error("Failed to load catalog products:", err);
+        setCatalogProducts(defaultProducts);
       }
     }
     fetchProducts();
   }, []);
+
+  // Brand keyword mapping for accurate matching
+  const BRAND_ALIAS_MAP: Record<string, string[]> = {
+    samsung: ["samsung", "galaxy", "z fold", "z flip"],
+    apple: ["apple", "iphone"],
+    oneplus: ["oneplus", "nord"],
+    pixel: ["google pixel", "pixel"],
+    google: ["google pixel", "pixel"],
+    vivo: ["vivo"],
+    motorola: ["motorola", "moto", "razr"],
+    moto: ["motorola", "moto", "razr"],
+    realme: ["realme", "narzo"],
+    redmi: ["redmi", "xiaomi", "mi "],
+    xiaomi: ["redmi", "xiaomi", "mi "],
+    nothing: ["nothing", "cmf"],
+    iqoo: ["iqoo"],
+  };
 
   const matchedCatalogProducts = useMemo(() => {
     if (!catalogProducts || catalogProducts.length === 0) return [];
@@ -1589,12 +1610,17 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     // For You Mode: Match by recent searches and viewed products
     if (activeKey === "for-you") {
       if (selectedBrand) {
-        const q = selectedBrand.toLowerCase();
+        const q = selectedBrand.trim().toLowerCase();
+        const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
+        const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
+
         list = list.filter(p => {
           const name = (p.name || "").toLowerCase();
-          const cat = (p.category || p.category_name || "").toLowerCase();
+          const brand = (p.brand || "").toLowerCase();
           const sub = (p.sub_category || "").toLowerCase();
-          return name.includes(q) || cat.includes(q) || sub.includes(q);
+          return (brand && keywords.some(k => brand.includes(k))) ||
+                 keywords.some(k => name.includes(k)) ||
+                 keywords.some(k => sub.includes(k));
         });
       } else if (recentSearches.length > 0 || recentViewedIds.length > 0) {
         const matched = list.filter((p) => {
@@ -1629,15 +1655,27 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         });
       }
 
-      // Filter by search query or brand
+      // Filter by search query or selected brand strictly
       if (selectedBrand) {
-        const q = selectedBrand.toLowerCase();
+        const q = selectedBrand.trim().toLowerCase();
+        const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
+        const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
+
         list = list.filter(p => {
           const name = (p.name || "").toLowerCase();
-          const cat = (p.category || p.category_name || "").toLowerCase();
+          const brand = (p.brand || "").toLowerCase();
           const sub = (p.sub_category || "").toLowerCase();
-          const desc = (p.description || "").toLowerCase();
-          return name.includes(q) || cat.includes(q) || sub.includes(q) || desc.includes(q);
+
+          // 1. Match product brand attribute
+          if (brand && keywords.some(k => brand.includes(k))) return true;
+
+          // 2. Match product name
+          if (keywords.some(k => name.includes(k))) return true;
+
+          // 3. Match sub-category if specifically named after the brand
+          if (keywords.some(k => sub.includes(k))) return true;
+
+          return false;
         });
       }
     }
@@ -2194,6 +2232,33 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <ProductCard key={product.id} product={product} viewMode="grid" />
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Empty state when selected brand has no products */}
+            {matchedCatalogProducts.length === 0 && selectedBrand && (
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-3">
+                <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
+                  <FontAwesomeIcon icon={faTag} />
+                </div>
+                <h3 className="text-base font-bold text-slate-800">
+                  No products found for "{selectedBrand}"
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  We are updating inventory for {selectedBrand}. Please check out our other flagship smartphone collections.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetUrl = categoryFilter 
+                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                      : `/products`;
+                    router.push(targetUrl);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                >
+                  View All Mobile Brands
+                </button>
               </div>
             )}
 

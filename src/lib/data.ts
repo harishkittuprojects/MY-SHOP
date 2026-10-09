@@ -899,6 +899,318 @@ export const products = [
       }
     ]
   },
+  {
+    id: "google-pixel-9-5g",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "Google Pixel",
+    sub_category: "Flagship Phones",
+    name: "Google Pixel 9 5G (Peony Pink, 12GB RAM, 256GB Storage) with Gemini AI",
+    unit: "12GB RAM | 256GB ROM • Google Tensor G4 • 50MP Dual Camera",
+    price: 79999,
+    original_price: 89999,
+    stock_quantity: 28,
+    cashback_amount: 2500,
+    warranty_period: "1 Year Official Google Warranty",
+    condition: "Brand New Sealed",
+    image_url: "/products/google-pixel-9.png",
+    images: [
+      "/products/google-pixel-9.png",
+      "/products/google-pixel-9-pro-xl.png"
+    ],
+    is_available: true,
+    is_popular: true,
+    is_featured: true,
+    rating: 4.8,
+    reviews_count: 540,
+    description: "Google Pixel 9 5G powered by the custom Google Tensor G4 processor with built-in Gemini Advanced AI assistant, 6.3-inch Actua 120Hz OLED display, and 50MP advanced camera system with Best Take and Magic Editor.",
+    variants: [
+      {
+        id: "px9_12_256_peony",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Peony Pink",
+        color_code: "#e89ca4",
+        price: 79999,
+        original_price: 89999,
+        stock_quantity: 14,
+        sku: "PX9-12-256-PEONY",
+        image_url: "/products/google-pixel-9.png",
+        is_active: true
+      },
+      {
+        id: "px9_12_256_obsidian",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Obsidian Black",
+        color_code: "#2b2d30",
+        price: 79999,
+        original_price: 89999,
+        stock_quantity: 14,
+        sku: "PX9-12-256-OBSIDIAN",
+        image_url: "/products/google-pixel-9.png",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "motorola-edge-50-ultra-5g",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "Motorola",
+    sub_category: "Flagship Phones",
+    name: "Motorola Edge 50 Ultra 5G (Nordic Wood, 16GB RAM, 512GB Storage) with Pantone Validated Camera",
+    unit: "16GB RAM | 512GB ROM • Snapdragon 8s Gen 3 • 125W TurboPower",
+    price: 54999,
+    original_price: 64999,
+    stock_quantity: 22,
+    cashback_amount: 1500,
+    warranty_period: "1 Year Official Motorola Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.7,
+    reviews_count: 490,
+    description: "Motorola Edge 50 Ultra featuring real Nordic Wood back finish, 144Hz 1.5K pOLED curved display, 50MP triple Pantone validated camera system with 100x AI zoom, Snapdragon 8s Gen 3, and 125W TurboPower charging.",
+    variants: [
+      {
+        id: "moto_50u_16_512_wood",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Nordic Wood",
+        color_code: "#a3704c",
+        price: 54999,
+        original_price: 64999,
+        stock_quantity: 12,
+        sku: "MOTO-50U-16-512-WOOD",
+        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      },
+      {
+        id: "moto_50u_16_512_peach",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Peach Fuzz",
+        color_code: "#ffbe98",
+        price: 54999,
+        original_price: 64999,
+        stock_quantity: 10,
+        sku: "MOTO-50U-16-512-PEACH",
+        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "realme-gt-7-pro-5g",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "Realme",
+    sub_category: "Flagship Phones",
+    name: "Realme GT 7 Pro 5G (Mars Orange, 16GB RAM, 512GB Storage) | Snapdragon 8 Elite | 6500mAh Titan Battery",
+    unit: "16GB RAM | 512GB ROM • Snapdragon 8 Elite • Underwater 50MP Camera",
+    price: 59999,
+    original_price: 69999,
+    stock_quantity: 35,
+    cashback_amount: 2000,
+    warranty_period: "1 Year Official Realme Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.8,
+    reviews_count: 720,
+    description: "Realme GT 7 Pro with flagship Snapdragon 8 Elite, Eco² OLED Plus display with 6000 nits peak brightness, 6500mAh Titan battery with 120W SuperVOOC, IP69 underwater photography mode, and Sony IMX882 periscope telephoto lens.",
+    variants: [
+      {
+        id: "realme_gt7_16_512_orange",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Mars Orange",
+        color_code: "#e65100",
+        price: 59999,
+        original_price: 69999,
+        stock_quantity: 20,
+        sku: "RME-GT7-16-512-ORG",
+        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      },
+      {
+        id: "realme_gt7_16_512_grey",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Galaxy Grey",
+        color_code: "#424242",
+        price: 59999,
+        original_price: 69999,
+        stock_quantity: 15,
+        sku: "RME-GT7-16-512-GRY",
+        image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "redmi-note-14-pro-plus-5g",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "Xiaomi / Redmi",
+    sub_category: "5G Phones",
+    name: "Redmi Note 14 Pro+ 5G (Spectre Blue, 12GB RAM, 512GB Storage) with 200MP OIS Camera",
+    unit: "12GB RAM | 512GB ROM • Snapdragon 7s Gen 3 • 6200mAh 90W HyperCharge",
+    price: 30999,
+    original_price: 36999,
+    stock_quantity: 40,
+    cashback_amount: 1000,
+    warranty_period: "1 Year Official Xiaomi Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.8,
+    reviews_count: 1560,
+    description: "Redmi Note 14 Pro+ 5G equipped with ultra-clear 200MP OIS camera, 6200mAh Silicon-Carbon battery with 90W HyperCharge, IP68 waterproof rating, and 1.5K 120Hz curved AMOLED display.",
+    variants: [
+      {
+        id: "redmi_14pp_12_512_blue",
+        ram: "12GB",
+        rom: "512GB",
+        storage_label: "12GB RAM + 512GB ROM",
+        color: "Spectre Blue",
+        color_code: "#1e3a8a",
+        price: 30999,
+        original_price: 36999,
+        stock_quantity: 25,
+        sku: "REDMI-14PP-12-512-BLU",
+        image_url: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "nothing-phone-2a-plus",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "Nothing",
+    sub_category: "5G Phones",
+    name: "Nothing Phone (2a) Plus 5G (Metallic Grey, 12GB RAM, 256GB Storage) with Glyph Interface",
+    unit: "12GB RAM | 256GB ROM • Dimensity 7350 Pro • 50MP Front & Rear",
+    price: 27999,
+    original_price: 33999,
+    stock_quantity: 32,
+    cashback_amount: 1000,
+    warranty_period: "1 Year Official Nothing Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.7,
+    reviews_count: 890,
+    description: "Nothing Phone (2a) Plus with iconic Glyph Interface lights, custom MediaTek Dimensity 7350 Pro 5G processor, 50MP selfie camera + 50MP dual rear camera system, 5000mAh battery with 50W fast charging.",
+    variants: [
+      {
+        id: "np_2ap_12_256_grey",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Metallic Grey",
+        color_code: "#4a5568",
+        price: 27999,
+        original_price: 33999,
+        stock_quantity: 18,
+        sku: "NP-2AP-12-256-GRY",
+        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      },
+      {
+        id: "np_2ap_12_256_black",
+        ram: "12GB",
+        rom: "256GB",
+        storage_label: "12GB RAM + 256GB ROM",
+        color: "Black",
+        color_code: "#18181b",
+        price: 27999,
+        original_price: 33999,
+        stock_quantity: 14,
+        sku: "NP-2AP-12-256-BLK",
+        image_url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      }
+    ]
+  },
+  {
+    id: "iqoo-13-5g-legend",
+    category: "Mobiles",
+    category_id: "mobiles-accessories",
+    brand: "iQOO",
+    sub_category: "Flagship Phones",
+    name: "iQOO 13 5G (Legend White BMW M Motorsport Edition, 16GB RAM, 512GB Storage) | Snapdragon 8 Elite",
+    unit: "16GB RAM | 512GB ROM • Snapdragon 8 Elite • 2K 144Hz Q10 Display • 120W FlashCharge",
+    price: 54999,
+    original_price: 62999,
+    stock_quantity: 26,
+    cashback_amount: 2000,
+    warranty_period: "1 Year Official iQOO Warranty",
+    condition: "Brand New Sealed",
+    image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=600"
+    ],
+    is_available: true,
+    is_popular: true,
+    rating: 4.9,
+    reviews_count: 610,
+    description: "iQOO 13 5G flagship performance powerhouse featuring Qualcomm Snapdragon 8 Elite, Supercomputing chip Q2, 2K 144Hz BOE Q10 LTPO display, Halo LED breathing light, and 6150mAh BlueVolt battery with 120W ultra-fast FlashCharge.",
+    variants: [
+      {
+        id: "iqoo13_16_512_legend",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Legend White (BMW M)",
+        color_code: "#f8fafc",
+        price: 54999,
+        original_price: 62999,
+        stock_quantity: 16,
+        sku: "IQOO13-16-512-LEG",
+        image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      },
+      {
+        id: "iqoo13_16_512_nardo",
+        ram: "16GB",
+        rom: "512GB",
+        storage_label: "16GB RAM + 512GB ROM",
+        color: "Nardo Grey",
+        color_code: "#4b5563",
+        price: 54999,
+        original_price: 62999,
+        stock_quantity: 10,
+        sku: "IQOO13-16-512-GRY",
+        image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=600",
+        is_active: true
+      }
+    ]
+  },
 
   // ==================== 2. OLD / REFURBISHED MOBILES ====================
   {
