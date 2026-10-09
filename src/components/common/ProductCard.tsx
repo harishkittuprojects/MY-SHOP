@@ -163,7 +163,7 @@ export default function ProductCard({
                 src={imgSrc} 
                 alt={product.name} 
                 fill 
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" 
+                className="object-contain w-full h-full p-2 group-hover:scale-105 transition-transform duration-300" 
                 onError={() => setImgSrc("/placeholder.png")}
                 unoptimized
               />
@@ -274,13 +274,13 @@ export default function ProductCard({
                 </button>
               </div>
 
-              {/* Full-Bleed Product Image (Occupies 65% of the Card) */}
+              {/* Product Image */}
               {imgSrc ? (
                 <Image 
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out" 
+                  className="object-contain w-full h-full p-2.5 sm:p-3 group-hover:scale-105 transition-transform duration-500 ease-out" 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />

@@ -173,13 +173,33 @@ export default function ProductDetailPage({
             // Find first in-stock variant or first variant
             const firstInStock = variants.find(v => (v.stock_quantity || 0) > 0 && v.is_active !== false) || variants[0];
             setSelectedRam(firstInStock.ram || "");
-            const storage = firstInStock.storage_label || firstInStock.rom || (firstInStock.ram && firstInStock.rom ? `${firstInStock.ram} RAM + ${firstInStock.rom} ROM` : "Standard");
-            setSelectedStorage(storage);
+            const rawStorage = firstInStock.rom || firstInStock.storage_label || (firstInStock.ram && firstInStock.rom ? `${firstInStock.rom}` : "Standard");
+            let cleanInitial = rawStorage.trim();
+            if (cleanInitial.includes("•")) cleanInitial = cleanInitial.split("•")[0].trim();
+            if (cleanInitial.includes("|")) {
+              const parts = cleanInitial.split("|");
+              const romPart = parts.find(p => /ROM|Storage/i.test(p)) || parts[1] || parts[0];
+              cleanInitial = romPart.trim();
+            }
+            cleanInitial = cleanInitial.replace(/\bRAM\b/gi, "").replace(/\bROM\b/gi, "").replace(/\bStorage\b/gi, "").trim();
+            if (/^\d+$/.test(cleanInitial)) cleanInitial = `${cleanInitial}GB`;
+            cleanInitial = cleanInitial.replace(/^(\d+)\s*(GB|TB|MB)$/i, (_, num, unit) => `${num}${unit.toUpperCase()}`);
+            setSelectedStorage(cleanInitial || "Standard");
             setSelectedColor(firstInStock.color || "Standard");
           } else if (data.unit) {
             const units = data.unit.split(",").map((u) => u.trim()).filter(Boolean);
             if (units.length > 0) {
-              setSelectedStorage(units[0]);
+              let cleanUnit = units[0];
+              if (cleanUnit.includes("•")) cleanUnit = cleanUnit.split("•")[0].trim();
+              if (cleanUnit.includes("|")) {
+                const parts = cleanUnit.split("|");
+                const romPart = parts.find(p => /ROM|Storage/i.test(p)) || parts[1] || parts[0];
+                cleanUnit = romPart.trim();
+              }
+              cleanUnit = cleanUnit.replace(/\bRAM\b/gi, "").replace(/\bROM\b/gi, "").replace(/\bStorage\b/gi, "").trim();
+              if (/^\d+$/.test(cleanUnit)) cleanUnit = `${cleanUnit}GB`;
+              cleanUnit = cleanUnit.replace(/^(\d+)\s*(GB|TB|MB)$/i, (_, num, unit) => `${num}${unit.toUpperCase()}`);
+              setSelectedStorage(cleanUnit || units[0]);
             }
           }
 
@@ -209,6 +229,43 @@ export default function ProductDetailPage({
       fetchProduct();
     }
   }, [productId]);
+
+  // Helper to extract clean storage size (e.g., "256GB", "512GB", "1TB")
+  const cleanStorageLabel = (str?: string): string => {
+    if (!str) return "Standard";
+    let clean = str.trim();
+    
+    // If it contains bullet '•' or marketing features, take only the first spec part
+    if (clean.includes("•")) {
+      clean = clean.split("•")[0].trim();
+    }
+    
+    // If it contains pipe '|' (e.g. '12GB RAM | 256GB ROM'), take the ROM / storage part
+    if (clean.includes("|")) {
+      const parts = clean.split("|");
+      const romPart = parts.find((p) => /ROM|Storage/i.test(p)) || parts[1] || parts[0];
+      clean = romPart.trim();
+    }
+    
+    // If it contains '+', take the storage part
+    if (clean.includes("+")) {
+      const parts = clean.split("+");
+      clean = (parts[1] || parts[0]).trim();
+    }
+
+    // Strip words like 'ROM', 'Storage', 'RAM'
+    clean = clean.replace(/\bRAM\b/gi, "").replace(/\bROM\b/gi, "").replace(/\bStorage\b/gi, "").trim();
+
+    // If pure number like "256" or "512" or "128", append GB
+    if (/^\d+$/.test(clean)) {
+      clean = `${clean}GB`;
+    }
+
+    // Normalize spacing like "256 GB" -> "256GB"
+    clean = clean.replace(/^(\d+)\s*(GB|TB|MB)$/i, (_, num, unit) => `${num}${unit.toUpperCase()}`);
+
+    return clean || "Standard";
+  };
 
   // Derived Variant Configurations
   const productVariants = React.useMemo(() => {
@@ -266,40 +323,42 @@ export default function ProductDetailPage({
     return filtered.length > 0 ? filtered : productVariants;
   }, [productVariants, selectedRam, availableRams]);
 
-  // Distinct Available Storages / Sizes for current RAM
+  // Distinct Available Storages / Sizes for current RAM (Cleaned and Deduplicated)
   const availableStorages = React.useMemo(() => {
     if (variantsForSelectedRam.length === 0) {
-      return product?.unit ? product.unit.split(",").map((u) => u.trim()).filter(Boolean) : [];
+      if (!product?.unit) return [];
+      const rawUnits = product.unit.split(",").map((u) => u.trim()).filter(Boolean);
+      const cleaned = Array.from(new Set(rawUnits.map(u => cleanStorageLabel(u))));
+      return cleaned;
     }
     const map = new Map<string, { label: string; minPrice: number; hasStock: boolean }>();
     variantsForSelectedRam.forEach((v) => {
-      let label = v.rom || v.storage_label || v.size || "Standard";
-      if (selectedRam && label.includes("+")) {
-        const parts = label.split("+");
-        if (parts[1]) label = parts[1].trim();
-      }
+      const raw = v.rom || v.storage_label || v.size || "Standard";
+      const label = cleanStorageLabel(raw);
       const current = map.get(label);
       const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
+      const priceVal = v.price || product?.price || 0;
       if (!current) {
-        map.set(label, { label, minPrice: v.price, hasStock: isInstock });
+        map.set(label, { label, minPrice: priceVal, hasStock: isInstock });
       } else {
         map.set(label, {
           label,
-          minPrice: Math.min(current.minPrice, v.price),
+          minPrice: Math.min(current.minPrice || priceVal, priceVal || current.minPrice),
           hasStock: current.hasStock || isInstock,
         });
       }
     });
     return Array.from(map.values());
-  }, [variantsForSelectedRam, product, selectedRam]);
+  }, [variantsForSelectedRam, product]);
 
   // Available Colors for the currently selected RAM + Storage
   const colorsForSelectedConfiguration = React.useMemo(() => {
     if (variantsForSelectedRam.length === 0) return [];
+    const target = cleanStorageLabel(selectedStorage).toLowerCase();
     const matchedVariants = variantsForSelectedRam.filter((v) => {
-      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
-      const sTarget = selectedStorage.toLowerCase();
-      return label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      return cleaned === target || raw.toLowerCase().includes(target) || target.includes(cleaned);
     });
     return matchedVariants.length > 0 ? matchedVariants : variantsForSelectedRam;
   }, [variantsForSelectedRam, selectedStorage]);
@@ -371,14 +430,15 @@ export default function ProductDetailPage({
   // Active Selected Variant Object
   const activeVariant = React.useMemo(() => {
     if (productVariants.length === 0) return null;
+    const targetStorage = cleanStorageLabel(selectedStorage).toLowerCase();
 
     // 1. Exact match for (RAM + Storage + Color)
     const exact = productVariants.find((v) => {
       const matchColor = !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase();
       const matchRam = !selectedRam || (v.ram && v.ram.toLowerCase() === selectedRam.toLowerCase()) || (v.storage_label && v.storage_label.toLowerCase().includes(selectedRam.toLowerCase()));
-      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
-      const sTarget = selectedStorage.toLowerCase();
-      const matchStorage = !selectedStorage || label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      const matchStorage = !selectedStorage || cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
       return matchColor && matchRam && matchStorage;
     });
     if (exact) return exact;
@@ -386,9 +446,9 @@ export default function ProductDetailPage({
     // 2. Match for (Storage + Color)
     const storageColor = productVariants.find((v) => {
       const matchColor = !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase();
-      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
-      const sTarget = selectedStorage.toLowerCase();
-      const matchStorage = !selectedStorage || label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      const matchStorage = !selectedStorage || cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
       return matchColor && matchStorage;
     });
     if (storageColor) return storageColor;
@@ -409,15 +469,17 @@ export default function ProductDetailPage({
       return label.includes(newRam.toLowerCase());
     });
 
-    const match = variantsInRam.find(
-      (v) => (v.rom?.toLowerCase() === selectedStorage.toLowerCase() || v.storage_label?.toLowerCase().includes(selectedStorage.toLowerCase())) &&
-             v.color.toLowerCase() === selectedColor.toLowerCase() &&
-             (v.stock_quantity || 0) > 0
-    ) || variantsInRam[0];
+    const targetStorage = cleanStorageLabel(selectedStorage).toLowerCase();
+    const match = variantsInRam.find((v) => {
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      const matchStor = cleaned === targetStorage || raw.toLowerCase().includes(targetStorage);
+      return matchStor && v.color.toLowerCase() === selectedColor.toLowerCase() && (v.stock_quantity || 0) > 0;
+    }) || variantsInRam[0];
 
     if (match) {
-      const storage = match.rom || match.storage_label || match.size || "Standard";
-      setSelectedStorage(storage);
+      const rawStor = match.rom || match.storage_label || match.size || "Standard";
+      setSelectedStorage(cleanStorageLabel(rawStor));
       setSelectedColor(match.color);
       if (match.image_url && match.image_url !== "/products/iphone-16-pro-max.png" && match.image_url.trim() !== "") {
         setSelectedImage(normalizeImageUrl(match.image_url));
@@ -430,10 +492,11 @@ export default function ProductDetailPage({
   // Handle Storage Change
   const handleStorageSelect = (newStorage: string) => {
     setSelectedStorage(newStorage);
+    const targetStorage = cleanStorageLabel(newStorage).toLowerCase();
     const variantsInStorage = variantsForSelectedRam.filter((v) => {
-      const label = (v.rom || v.storage_label || v.size || "").toLowerCase();
-      const sTarget = newStorage.toLowerCase();
-      return label === sTarget || label.includes(sTarget) || (v.storage_label && v.storage_label.toLowerCase() === sTarget);
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      return cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
     });
 
     const sameColorMatch = variantsInStorage.find(
@@ -664,8 +727,8 @@ export default function ProductDetailPage({
           
           {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Large & High Impact) ======================= */}
           <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start">
-            {/* Main Image Viewer (Full Screen Edge-to-Edge Cover) */}
-            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-slate-100 border border-slate-200/90 rounded-2xl sm:rounded-3xl p-0 shadow-xs flex items-center justify-center group overflow-hidden">
+            {/* Main Image Viewer */}
+            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs flex items-center justify-center group overflow-hidden">
               {/* Top Action Buttons */}
               <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
                 <button
@@ -688,14 +751,14 @@ export default function ProductDetailPage({
                 </button>
               </div>
 
-              {/* Main Product Image (Full Total Cover Edge-to-Edge) */}
-              <div className="relative w-full h-full overflow-hidden">
+              {/* Main Product Image (Clean Contain View Without Cropping) */}
+              <div className="relative w-full h-full flex items-center justify-center">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
+                    className="object-contain w-full h-full p-2 sm:p-4 transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
                     priority
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
                     unoptimized
@@ -731,7 +794,7 @@ export default function ProductDetailPage({
                     src={img}
                     alt={`${product.name} thumbnail ${idx + 1}`}
                     fill
-                    className="object-cover w-full h-full"
+                    className="object-contain w-full h-full p-1"
                     unoptimized
                   />
                 </button>
@@ -862,7 +925,7 @@ export default function ProductDetailPage({
                     RAM: <strong className="text-slate-950 font-black">{selectedRam || availableRams[0]}</strong>
                   </span>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-row items-center gap-2 overflow-x-auto no-scrollbar py-1">
                   {availableRams.map((ramOption, idx) => {
                     const isSelected = (selectedRam || availableRams[0]).toLowerCase() === ramOption.toLowerCase();
                     return (
@@ -870,7 +933,7 @@ export default function ProductDetailPage({
                         key={idx}
                         type="button"
                         onClick={() => handleRamSelect(ramOption)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer shrink-0 ${
                           isSelected
                             ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
                             : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
@@ -884,7 +947,7 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Storage / Configuration Selector with dynamic rates */}
+            {/* Storage / Configuration Selector with dynamic rates placed side-by-side */}
             {availableStorages.length > 0 && (
               <div className="space-y-2 border-b border-slate-200 pb-3.5">
                 <div className="flex items-center justify-between">
@@ -892,7 +955,7 @@ export default function ProductDetailPage({
                     Storage / Size: <strong className="text-slate-950 font-black">{selectedStorage}</strong>
                   </span>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-row items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
                   {availableStorages.map((item, idx) => {
                     const label = typeof item === 'string' ? item : item.label;
                     const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
@@ -902,13 +965,13 @@ export default function ProductDetailPage({
                         key={idx}
                         type="button"
                         onClick={() => handleStorageSelect(label)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-start gap-0.5 ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-center justify-center text-center shrink-0 min-w-[90px] ${
                           isSelected
                             ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
                             : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                         }`}
                       >
-                        <span>{label}</span>
+                        <span className="whitespace-nowrap">{label}</span>
                         {minPrice && minPrice > 0 ? (
                           <span className={`text-[10px] ${isSelected ? "text-orange-700 font-black" : "text-slate-500 font-semibold"}`}>
                             ₹{Number(minPrice).toLocaleString("en-IN")}
