@@ -96,7 +96,10 @@ export default function AdminCategoriesPage() {
       });
 
       const base64Data = await base64Promise;
+      // Immediately set the base64 preview so the image shows right away
+      setFormData((prev) => ({ ...prev, image_url: base64Data }));
 
+      // Upload to Cloudinary / storage for CDN optimization
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,14 +110,17 @@ export default function AdminCategoriesPage() {
         }),
       });
 
-      const data = await res.json();
-      if (data.url) {
-        setFormData((prev) => ({ ...prev, image_url: data.url }));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url || data.secure_url) {
+          setFormData((prev) => ({ ...prev, image_url: data.url || data.secure_url }));
+        }
       }
     } catch (err) {
-      alert("Failed to upload image to Cloudinary");
+      console.warn("Category cloud upload warning (retaining base64):", err);
     } finally {
       setUploadingImage(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -361,23 +367,30 @@ export default function AdminCategoriesPage() {
                 </div>
               </div>
 
-              {/* Banner Image Upload */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              {/* Banner Image Upload & URL */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                   Category Banner Image
                 </label>
                 <div className="flex items-center gap-3">
                   {formData.image_url && (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden relative border border-slate-200 shrink-0">
-                      <Image src={formData.image_url} alt="Category" fill className="object-cover" />
+                    <div className="w-14 h-14 rounded-xl overflow-hidden relative border border-slate-200 shrink-0 bg-slate-100">
+                      <img src={formData.image_url} alt="Category" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <label className="flex-1 border border-dashed border-emerald-300 hover:border-emerald-500 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer bg-emerald-50/40 transition-colors text-xs font-bold text-slate-700">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="text-emerald-600" />
-                    <span>{uploadingImage ? "Uploading image..." : "Choose Image"}</span>
+                    <span>{uploadingImage ? "Uploading image..." : "Choose Image File"}</span>
                     <input type="file" accept="image/*" onChange={handleImageFileUpload} disabled={uploadingImage} className="hidden" />
                   </label>
                 </div>
+                <input
+                  type="text"
+                  value={formData.image_url || ""}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="Or paste category image URL (e.g. /categories/mobiles.png or https://...)"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:bg-white focus:border-emerald-600 font-mono"
+                />
               </div>
 
               {/* Sub-categories Builder */}

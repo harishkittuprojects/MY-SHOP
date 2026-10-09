@@ -74,6 +74,7 @@ export default function AdminProductsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [customSizeInput, setCustomSizeInput] = useState("");
   const [selectedVariantPresetCategory, setSelectedVariantPresetCategory] = useState<string>("auto");
+  const [imageUrlInput, setImageUrlInput] = useState("");
 
   // Common subcategories helper
   const getSuggestedSubcategories = (catId?: string, catName?: string): string[] => {
@@ -580,19 +581,42 @@ export default function AdminProductsPage() {
     setSelectedVariantPresetCategory("auto");
     setCustomSizeInput("");
     setCustomColorName("");
+    setImageUrlInput("");
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (product: Product) => {
     setIsEditing(true);
+    const productImages = Array.isArray(product.images) && product.images.length > 0 
+      ? product.images.filter(Boolean) 
+      : (product.image_url ? [product.image_url] : []);
     setFormData({
       ...product,
-      images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image_url],
+      images: productImages,
+      image_url: product.image_url || (productImages.length > 0 ? productImages[0] : ""),
     });
     setSelectedVariantPresetCategory("auto");
     setCustomSizeInput("");
     setCustomColorName("");
+    setImageUrlInput("");
     setIsModalOpen(true);
+  };
+
+  const handleAddImageUrl = (urlToAdd?: string) => {
+    const targetUrl = (urlToAdd || imageUrlInput).trim();
+    if (!targetUrl) return;
+
+    setFormData((prev) => {
+      const currentImages = (prev.images || []).filter(Boolean);
+      if (currentImages.includes(targetUrl)) return prev;
+      const newImages = [...currentImages, targetUrl];
+      return {
+        ...prev,
+        images: newImages,
+        image_url: prev.image_url || targetUrl,
+      };
+    });
+    setImageUrlInput("");
   };
 
   const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -613,33 +637,54 @@ export default function AdminProductsPage() {
 
         const base64Data = await base64Promise;
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: base64Data,
-            folder: "myshop/products",
-            alt_text: formData.name || "Product Image",
-          }),
+        // Immediately show the image in thumbnails
+        setFormData((prev) => {
+          const currentImages = (prev.images || []).filter(Boolean);
+          const newImages = [...currentImages, base64Data];
+          return {
+            ...prev,
+            images: newImages,
+            image_url: prev.image_url || base64Data,
+          };
         });
 
-        const data = await res.json();
-        if (data.url) {
-          setFormData((prev) => {
-            const currentImages = prev.images || [];
-            const newImages = [...currentImages, data.url];
-            return {
-              ...prev,
-              images: newImages,
-              image_url: prev.image_url || data.url,
-            };
+        // Upload to Cloudinary / CDN asynchronously
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              image: base64Data,
+              folder: "myshop/products",
+              alt_text: formData.name || "Product Image",
+            }),
           });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url && data.url !== base64Data) {
+              setFormData((prev) => {
+                const updatedImages = (prev.images || []).map((img) =>
+                  img === base64Data ? data.url : img
+                );
+                return {
+                  ...prev,
+                  images: updatedImages,
+                  image_url: prev.image_url === base64Data ? data.url : prev.image_url,
+                };
+              });
+            }
+          }
+        } catch (uploadErr) {
+          console.warn("Cloud CDN upload warning (retaining image locally):", uploadErr);
         }
       }
     } catch (err) {
-      alert("Failed to upload image to Cloudinary.");
+      console.error("Image file read error:", err);
+      alert("Failed to read image file.");
     } finally {
       setUploadingImage(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -649,7 +694,7 @@ export default function AdminProductsPage() {
       return {
         ...prev,
         images: updated,
-        image_url: updated.length > 0 ? updated[0] : "",
+        image_url: updated.length > 0 ? (prev.image_url === prev.images?.[indexToRemove] ? updated[0] : (prev.image_url || updated[0])) : "",
       };
     });
   };
@@ -1090,27 +1135,27 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Multiple Images Upload */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
+              {/* Multiple Images Upload & URL Input */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Product Images
+                    Product Images *
                   </label>
                   <span className="text-[11px] text-emerald-700 font-semibold">
-                    {uploadingImage ? "Uploading images..." : "Click below to upload"}
+                    {uploadingImage ? "Uploading & Processing..." : `${formData.images?.length || 0} images added`}
                   </span>
                 </div>
 
-                {/* Upload Button */}
-                <label className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer bg-emerald-50/40 hover:bg-emerald-50 transition-all text-center group">
+                {/* Direct File Upload Zone */}
+                <label className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-5 flex flex-col items-center justify-center gap-1.5 cursor-pointer bg-emerald-50/40 hover:bg-emerald-50 transition-all text-center group">
                   <FontAwesomeIcon
                     icon={faCloudUploadAlt}
                     className="text-2xl text-emerald-600 group-hover:scale-110 transition-transform"
                   />
                   <div className="text-xs font-bold text-slate-800">
-                    {uploadingImage ? "Uploading files..." : "Upload Images"}
+                    {uploadingImage ? "Uploading & Processing..." : "Click to Browse or Drag & Drop Images"}
                   </div>
-                  <div className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP, GIF</div>
+                  <div className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP, GIF, SVG (Multiple files supported)</div>
                   <input
                     type="file"
                     multiple
@@ -1121,45 +1166,77 @@ export default function AdminProductsPage() {
                   />
                 </label>
 
-                {/* Image Thumbnails List */}
+                {/* Or Add Image via URL / Link */}
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddImageUrl();
+                      }
+                    }}
+                    placeholder="Or paste image URL (e.g. https://... or /products/phone.png) and click Add"
+                    className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:bg-white focus:border-emerald-600 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddImageUrl()}
+                    disabled={!imageUrlInput.trim()}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                  >
+                    + Add URL
+                  </button>
+                </div>
+
+                {/* Image Thumbnails List with Cover Selection */}
                 {formData.images && formData.images.length > 0 && (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
-                    {formData.images.map((imgUrl, idx) => {
-                      const isPrimary = formData.image_url === imgUrl;
-                      return (
-                        <div
-                          key={idx}
-                          className={`relative aspect-square rounded-xl overflow-hidden border-2 bg-slate-50 group ${
-                            isPrimary ? "border-emerald-600 shadow-md" : "border-slate-200"
-                          }`}
-                        >
-                          <Image src={imgUrl} alt="Preview" fill className="object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleSetPrimaryImage(imgUrl)}
-                              title="Set as Main Cover"
-                              className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(idx)}
-                              title="Remove image"
-                              className="w-6 h-6 rounded-full bg-rose-500 text-white text-xs flex items-center justify-center font-bold"
-                            >
-                              ✕
-                            </button>
+                  <div className="space-y-1.5 pt-1">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      Product Images (Hover to set Main Cover or Delete):
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                      {formData.images.map((imgUrl, idx) => {
+                        const isPrimary = formData.image_url === imgUrl;
+                        return (
+                          <div
+                            key={idx}
+                            className={`relative aspect-square rounded-xl overflow-hidden border-2 bg-white group transition-all ${
+                              isPrimary ? "border-emerald-600 ring-2 ring-emerald-600/30 shadow-md" : "border-slate-200 hover:border-slate-400"
+                            }`}
+                          >
+                            <img src={imgUrl} alt="Preview" className="w-full h-full object-contain p-1" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                              <button
+                                type="button"
+                                onClick={() => handleSetPrimaryImage(imgUrl)}
+                                title="Set as Main Cover"
+                                className={`w-7 h-7 rounded-full text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer ${
+                                  isPrimary ? "bg-emerald-600 ring-2 ring-white" : "bg-slate-700 hover:bg-emerald-600"
+                                }`}
+                              >
+                                ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                title="Remove image"
+                                className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs flex items-center justify-center font-bold transition-all cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            {isPrimary && (
+                              <span className="absolute bottom-1 left-1 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs">
+                                COVER
+                              </span>
+                            )}
                           </div>
-                          {isPrimary && (
-                            <span className="absolute bottom-1 left-1 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded">
-                              COVER
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
