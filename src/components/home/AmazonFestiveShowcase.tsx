@@ -1448,9 +1448,31 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
   const [priceSort, setPriceSort] = useState<string | null>("low-to-high");
   const [priceRange, setPriceRange] = useState<string | null>(searchParams.get("price") || null);
-  const [exploreMode, setExploreMode] = useState<"category" | "brand">(categoryFilter ? "brand" : "category");
+  const [showCategoryGrid, setShowCategoryGrid] = useState<boolean>(true);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
+
+  // Smooth scroll down to the product catalog
+  const scrollToCatalog = () => {
+    if (typeof window === "undefined") return;
+    const targetEl = document.getElementById("brand-products-section");
+    if (targetEl) {
+      const yOffset = -75;
+      const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    if (categoryFilter) {
+      const t1 = setTimeout(scrollToCatalog, 60);
+      const t2 = setTimeout(scrollToCatalog, 250);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [categoryFilter]);
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());
@@ -2317,7 +2339,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* ON / OFF Toggle Switch */}
                   <div 
-                    onClick={() => setExploreMode(prev => prev === "category" ? "brand" : "category")}
+                    onClick={() => setShowCategoryGrid(prev => !prev)}
                     className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-2.5 py-1 rounded-xl shadow-2xs transition-all cursor-pointer select-none"
                     title="Toggle Shop by Category grid"
                   >
@@ -2328,23 +2350,23 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <button
                       type="button"
                       role="switch"
-                      aria-checked={exploreMode === "category"}
+                      aria-checked={showCategoryGrid}
                       className={`relative inline-flex h-4.5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        exploreMode === "category" ? "bg-[#2E6F40]" : "bg-slate-300"
+                        showCategoryGrid ? "bg-[#2E6F40]" : "bg-slate-300"
                       }`}
                     >
                       <span className="sr-only">Toggle Shop by Category grid</span>
                       <span
                         className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                          exploreMode === "category" ? "translate-x-4.5" : "translate-x-0"
+                          showCategoryGrid ? "translate-x-4.5" : "translate-x-0"
                         }`}
                       />
                     </button>
 
                     <span className={`text-[10px] font-black uppercase tracking-wider ${
-                      exploreMode === "category" ? "text-[#2E6F40]" : "text-slate-400"
+                      showCategoryGrid ? "text-[#2E6F40]" : "text-slate-400"
                     }`}>
-                      {exploreMode === "category" ? "ON" : "OFF"}
+                      {showCategoryGrid ? "ON" : "OFF"}
                     </span>
                   </div>
 
@@ -2370,6 +2392,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           ? `/products?category=${encodeURIComponent(categoryFilter)}` 
                           : `/products`;
                         router.push(targetUrl, { scroll: false });
+                        scrollToCatalog();
                       }}
                       className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
                     >
@@ -2381,34 +2404,78 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               </div>
 
               {/* CATEGORY CARDS GRID (Visible when ON) */}
-              {exploreMode === "category" && (
+              {showCategoryGrid && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
-                  {SHOWCASE_CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={cat.url}
-                      className="group bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#2E6F40] transition-all overflow-hidden flex flex-col cursor-pointer"
-                    >
-                      <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
-                        <Image
-                          src={cat.image}
-                          alt={cat.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                          unoptimized
-                        />
+                  {SHOWCASE_CATEGORIES.map((cat) => {
+                    const isSelected = 
+                      (activeKey === "mobiles" && cat.id === "mobiles") ||
+                      (activeKey === "laptops" && cat.id === "computers-tablets") ||
+                      (activeKey === "tv" && cat.id === "tv-audio") ||
+                      (activeKey === "appliances" && cat.id === "kitchen-appliances") ||
+                      (activeKey === "electronics" && cat.id === "smart-technology") ||
+                      (activeKey === "fashion" && cat.id === "fashion") ||
+                      (activeKey === "jewellery" && cat.id === "jewellery") ||
+                      (activeKey === "ev" && cat.id === "ev-vehicles") ||
+                      (activeKey === "refurbished" && cat.id === "refurbished-mobiles") ||
+                      (activeKey === "accessories" && cat.id === "mobile-accessories");
+
+                    return (
+                      <div
+                        key={cat.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          router.push(cat.url, { scroll: false });
+                          scrollToCatalog();
+                          setTimeout(scrollToCatalog, 50);
+                          setTimeout(scrollToCatalog, 200);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(cat.url, { scroll: false });
+                            scrollToCatalog();
+                          }
+                        }}
+                        className={`group bg-white rounded-2xl border transition-all overflow-hidden flex flex-col cursor-pointer active:scale-95 select-none relative ${
+                          isSelected 
+                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40] shadow-md bg-emerald-50/10" 
+                            : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#2E6F40]"
+                        }`}
+                      >
+                        {/* Selected Active Tag */}
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 z-10 bg-[#2E6F40] text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                            <FontAwesomeIcon icon={faCheck} className="text-[9px]" />
+                            <span>Active</span>
+                          </div>
+                        )}
+
+                        <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                            unoptimized
+                          />
+                        </div>
+                        <div className="p-3 sm:p-4 flex flex-col items-center justify-center text-center bg-white flex-1">
+                          <h3 className={`text-xs sm:text-sm md:text-base font-black transition-colors line-clamp-1 ${
+                            isSelected ? "text-[#2E6F40]" : "text-slate-900 group-hover:text-[#2E6F40]"
+                          }`}>
+                            {cat.name}
+                          </h3>
+                          <span className={`text-[11px] sm:text-xs font-bold flex items-center gap-1 mt-1 transition-colors ${
+                            isSelected ? "text-[#2E6F40]" : "text-slate-500 group-hover:text-[#2E6F40]"
+                          }`}>
+                            {cat.subtitle}
+                          </span>
+                        </div>
                       </div>
-                      <div className="p-3 sm:p-4 flex flex-col items-center justify-center text-center bg-white flex-1">
-                        <h3 className="text-xs sm:text-sm md:text-base font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1">
-                          {cat.name}
-                        </h3>
-                        <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#2E6F40] flex items-center gap-1 mt-1 transition-colors">
-                          {cat.subtitle}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -2416,129 +2483,127 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             {/* =========================================================================
                 3. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
             ========================================================================= */}
-            {matchedCatalogProducts.length > 0 && (
-              <div 
-                id="brand-products-section" 
-                className={`bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border transition-all space-y-2.5 sm:space-y-3.5 md:space-y-4 ${
-                  selectedBrand 
-                    ? "border-emerald-300 ring-2 ring-[#2E6F40]/20 bg-emerald-50/10" 
-                    : "border-slate-200/90"
-                }`}
-              >
-                <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
-                  <div>
-                    <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
-                      <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
-                      <span>
-                        {selectedBrand 
-                          ? `Showing "${selectedBrand}" ${
-                              activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
-                                ? "Refurbished Mobiles"
-                                : activeKey === "mobiles"
-                                ? "Smartphones"
-                                : activeKey === "laptops"
-                                ? "Laptops & Tablets"
-                                : activeKey === "fashion"
-                                ? "Fashion & Lifestyle"
-                                : activeKey === "electronics"
-                                ? "Smartwatches & Wearables"
-                                : activeKey === "jewellery"
-                                ? "Jewellery Collections"
-                                : activeKey === "accessories"
-                                ? "Accessories"
-                                : activeKey === "ev"
-                                ? "Electric Vehicles"
-                                : "Products"
-                            } (${matchedCatalogProducts.length})` 
-                          : `${config.categoryHeading} (${matchedCatalogProducts.length})`}
-                      </span>
-                    </h2>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* Quick Sort dropdown */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
-                      <select
-                        value={priceSort || "featured"}
-                        onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
-                        className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
-                      >
-                        <option value="low-to-high">Price: Low to High</option>
-                        <option value="high-to-low">Price: High to Low</option>
-                        <option value="featured">Featured / Default</option>
-                      </select>
-                    </div>
-
-                    {selectedBrand && (
-                      <button
-                        type="button"
-                        onClick={() => handleBrandClick("")}
-                        className="text-[11px] font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 px-3 py-1 rounded-full flex items-center gap-1.5 cursor-pointer transition-colors"
-                      >
-                        <span>Show All Brands</span>
-                        <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
-                      </button>
-                    )}
-                  </div>
+            <div 
+              id="brand-products-section" 
+              className={`bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xs border transition-all space-y-2.5 sm:space-y-3.5 md:space-y-4 ${
+                selectedBrand 
+                  ? "border-emerald-300 ring-2 ring-[#2E6F40]/20 bg-emerald-50/10" 
+                  : "border-slate-200/90"
+              }`}
+            >
+              <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-slate-100 flex-wrap gap-1.5 sm:gap-2">
+                <div>
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2">
+                    <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
+                    <span>
+                      {selectedBrand 
+                        ? `Showing "${selectedBrand}" ${
+                            activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                              ? "Refurbished Mobiles"
+                              : activeKey === "mobiles"
+                              ? "Smartphones"
+                              : activeKey === "laptops"
+                              ? "Laptops & Tablets"
+                              : activeKey === "fashion"
+                              ? "Fashion & Lifestyle"
+                              : activeKey === "electronics"
+                              ? "Smartwatches & Wearables"
+                              : activeKey === "jewellery"
+                              ? "Jewellery Collections"
+                              : activeKey === "accessories"
+                              ? "Accessories"
+                              : activeKey === "ev"
+                              ? "Electric Vehicles"
+                              : "Products"
+                          } (${matchedCatalogProducts.length})` 
+                        : `${config.categoryHeading} (${matchedCatalogProducts.length})`}
+                    </span>
+                  </h2>
                 </div>
 
-                {/* Recent Searches Pills when in For You mode */}
-                {activeKey === "for-you" && recentSearches.length > 0 && (
-                  <div className="flex items-center gap-1.5 flex-wrap p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100">
-                    <span className="text-[11px] sm:text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
-                      <FontAwesomeIcon icon={faClockRotateLeft} className="text-[10px] sm:text-xs text-blue-600" />
-                      <span>Recent:</span>
-                    </span>
-                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-                      {recentSearches.map((term, sIdx) => (
-                        <button
-                          key={sIdx}
-                          type="button"
-                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`, { scroll: false })}
-                          className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
-                        >
-                          {term}
-                        </button>
-                      ))}
-                    </div>
+                <div className="flex items-center gap-2">
+                  {/* Quick Sort dropdown */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                    <select
+                      value={priceSort || "featured"}
+                      onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
+                      className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
+                    >
+                      <option value="low-to-high">Price: Low to High</option>
+                      <option value="high-to-low">Price: High to Low</option>
+                      <option value="featured">Featured / Default</option>
+                    </select>
                   </div>
-                )}
 
+                  {selectedBrand && (
+                    <button
+                      type="button"
+                      onClick={() => handleBrandClick("")}
+                      className="text-[11px] font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 px-3 py-1 rounded-full flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <span>Show All Brands</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Searches Pills when in For You mode */}
+              {activeKey === "for-you" && recentSearches.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100">
+                  <span className="text-[11px] sm:text-xs font-black text-blue-900 flex items-center gap-1.5 shrink-0">
+                    <FontAwesomeIcon icon={faClockRotateLeft} className="text-[10px] sm:text-xs text-blue-600" />
+                    <span>Recent:</span>
+                  </span>
+                  <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                    {recentSearches.map((term, sIdx) => (
+                      <button
+                        key={sIdx}
+                        type="button"
+                        onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`, { scroll: false })}
+                        className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {matchedCatalogProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                   {matchedCatalogProducts.map((product) => (
                     <ProductCard key={product.id} product={product} viewMode="grid" />
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Empty state when selected brand has no products */}
-            {matchedCatalogProducts.length === 0 && selectedBrand && (
-              <div id="brand-products-section" className="bg-white p-8 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-3">
-                <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
-                  <FontAwesomeIcon icon={faTag} />
+              ) : (
+                <div className="p-8 text-center space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
+                    <FontAwesomeIcon icon={faTag} />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">
+                    {selectedBrand ? `No products found for "${selectedBrand}"` : "No products found in this category"}
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    {selectedBrand 
+                      ? `We are updating inventory for ${selectedBrand}. Please check out our other collections.`
+                      : "We are updating products for this catalog department. Please check out our other flagship categories."
+                    }
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.push("/products", { scroll: false });
+                      scrollToCatalog();
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                  >
+                    View All Products
+                  </button>
                 </div>
-                <h3 className="text-base font-bold text-slate-800">
-                  No products found for "{selectedBrand}"
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  We are updating inventory for {selectedBrand}. Please check out our other flagship smartphone collections.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const targetUrl = categoryFilter 
-                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                      : `/products`;
-                    router.push(targetUrl, { scroll: false });
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
-                >
-                  View All Mobile Brands
-                </button>
-              </div>
-            )}
+              )}
+            </div>
 
           </div>
         </div>
