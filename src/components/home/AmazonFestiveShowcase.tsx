@@ -1970,29 +1970,29 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             {/* =========================================================================
                 BRAND SHOWCASE CARDS (Product-Style Brand Cards Grid with Logos)
             ========================================================================= */}
-            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <div>
-                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span className="w-2.5 h-5 bg-[#2E6F40] rounded-full" />
-                    <span>{activeKey === "mobiles" ? "Explore Mobile Brands" : "Shop by Brand"}</span>
-                    <span className="text-xs font-bold text-slate-400 font-mono">
-                      ({brandList.length})
-                    </span>
+            {/* =========================================================================
+                BRAND NAVIGATION RAIL (Sleek Horizontal Strip - Products directly visible)
+            ========================================================================= */}
+            <div className="bg-white p-2.5 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-4.5 bg-[#2E6F40] rounded-full" />
+                  <h2 className="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight">
+                    {activeKey === "mobiles" ? "Select Brand" : "Shop by Brand"}
                   </h2>
-                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                    Select a brand to view authentic smartphones with official warranty &amp; offers
-                  </p>
+                  <span className="text-[11px] font-bold text-slate-400 font-mono">
+                    ({brandList.length})
+                  </span>
                 </div>
                 
                 {/* Quick Sort & Clear Filter */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 hidden xs:inline">Sort:</span>
                     <select
                       value={priceSort || "featured"}
                       onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
-                      className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
+                      className="text-[10px] sm:text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-0.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
                     >
                       <option value="low-to-high">Price: Low to High</option>
                       <option value="high-to-low">Price: High to Low</option>
@@ -2003,49 +2003,41 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   {selectedBrand && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const targetUrl = categoryFilter 
-                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                          : `/products`;
-                        router.push(targetUrl, { scroll: false });
-                      }}
-                      className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
+                      onClick={() => handleBrandClick("")}
+                      className="text-[10px] sm:text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
                     >
-                      <span>Clear ({selectedBrand})</span>
-                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                      <span>All Brands</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[9px]" />
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Product-Style Brand Cards Grid (2-column on mobile, up to 6-column on desktop) */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-2.5">
-                {/* All Brands Option Card */}
+              {/* Horizontal Scrollable Brand Rail */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
+                {/* All Brands Pill Card */}
                 <div
                   onClick={() => handleBrandClick("")}
-                  className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+                  className={`shrink-0 w-[74px] sm:w-[86px] bg-white rounded-xl border transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer select-none ${
                     !selectedBrand 
-                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
-                      : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs bg-emerald-50/25 scale-[1.02]" 
+                      : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:bg-slate-50"
                   }`}
                 >
-                  <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-emerald-50/60 to-white flex items-center justify-center p-3 border-b border-slate-100">
+                  <div className="w-full h-10 sm:h-11 bg-gradient-to-b from-emerald-50/60 to-white flex items-center justify-center p-1 border-b border-slate-100 relative">
                     {!selectedBrand && (
-                      <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
+                      <span className="absolute top-0.5 right-0.5 bg-[#2E6F40] text-white text-[7px] font-black uppercase px-1 py-0.2 rounded-full">
                         Active
                       </span>
                     )}
-                    <div className="w-11 h-11 rounded-xl bg-[#2E6F40]/10 text-[#2E6F40] flex items-center justify-center font-black text-xs border border-emerald-200 shadow-2xs group-hover:scale-105 transition-transform">
+                    <div className="w-7 h-7 rounded-lg bg-[#2E6F40]/10 text-[#2E6F40] flex items-center justify-center font-black text-[10px] border border-emerald-200">
                       ★ ALL
                     </div>
                   </div>
-                  <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
-                    <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
+                  <div className="py-1 px-1 text-center">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate block">
                       All Brands
-                    </h3>
-                    <p className="text-[10px] text-slate-400 font-semibold line-clamp-1 mt-0.5">
-                      Full Catalog
-                    </p>
+                    </span>
                   </div>
                 </div>
 
@@ -2056,45 +2048,42 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <div
                       key={b.id || i}
                       onClick={() => handleBrandClick(b.query)}
-                      className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+                      className={`shrink-0 w-[74px] sm:w-[86px] bg-white rounded-xl border transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer select-none ${
                         isSelected 
-                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
-                          : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs bg-emerald-50/25 scale-[1.02]" 
+                          : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:bg-slate-50"
                       }`}
                     >
                       {/* Brand Logo Canvas */}
-                      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-2.5 sm:p-3 overflow-hidden border-b border-slate-100">
+                      <div className="w-full h-10 sm:h-11 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-1 border-b border-slate-100 relative">
                         {isSelected && (
-                          <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
+                          <span className="absolute top-0.5 right-0.5 bg-[#2E6F40] text-white text-[7px] font-black uppercase px-1 py-0.2 rounded-full">
                             Active
                           </span>
                         )}
                         
                         {b.logo_url ? (
-                          <div className="relative w-full h-full flex items-center justify-center">
+                          <div className="relative w-full h-full">
                             <Image 
                               src={b.logo_url} 
                               alt={b.name} 
                               fill 
-                              className="object-contain p-1.5 group-hover:scale-105 transition-transform duration-200" 
+                              className="object-contain p-0.5" 
                               unoptimized 
                             />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shadow-inner">
+                          <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-black text-[10px] flex items-center justify-center">
                             {b.name.slice(0, 2).toUpperCase()}
                           </div>
                         )}
                       </div>
 
-                      {/* Brand Card Details */}
-                      <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
-                        <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
+                      {/* Brand Card Label */}
+                      <div className="py-1 px-1 text-center">
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate block">
                           {b.name}
-                        </h3>
-                        <p className="text-[10px] text-slate-400 font-semibold line-clamp-1 mt-0.5">
-                          Official Store
-                        </p>
+                        </span>
                       </div>
                     </div>
                   );
