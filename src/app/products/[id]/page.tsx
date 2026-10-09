@@ -565,52 +565,10 @@ export default function ProductDetailPage({
       <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
-          {/* ======================= COLUMN 1 (4 cols): Gallery & Thumbnails ======================= */}
-          <div className="lg:col-span-4 flex gap-3 sticky top-20">
-            {/* Left Vertical Thumbnail Strip (Matching Image 3) */}
-            <div className="flex flex-col gap-2 shrink-0 max-h-[500px] overflow-y-auto scrollbar-none py-1">
-              {allImages.slice(0, 6).map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  onMouseEnter={() => setSelectedImage(img)}
-                  className={`relative w-12 h-14 sm:w-14 sm:h-16 rounded-lg bg-white border p-1 transition-all cursor-pointer overflow-hidden ${
-                    selectedImage === img
-                      ? "border-orange-500 shadow-md ring-2 ring-orange-400/40"
-                      : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100"
-                  }`}
-                >
-                  <Image
-                    src={img}
-                    alt={`${product.name} thumbnail ${idx + 1}`}
-                    fill
-                    className="object-contain p-0.5"
-                    unoptimized
-                  />
-                </button>
-              ))}
-
-              {/* Video Badge Thumbnail */}
-              <button 
-                type="button"
-                className="w-12 h-14 sm:w-14 sm:h-16 rounded-lg bg-slate-900 text-white flex flex-col items-center justify-center text-center p-1 border border-slate-700 hover:bg-slate-800 transition-colors shadow-xs"
-                title="5 Videos Available"
-              >
-                <span className="text-xs text-orange-400">▶</span>
-                <span className="text-[9px] font-black uppercase leading-tight mt-0.5">5 VIDEOS</span>
-              </button>
-
-              {/* 8+ Images Badge */}
-              <button 
-                type="button"
-                className="w-12 h-10 sm:w-14 sm:h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-center font-black text-xs border border-slate-200 hover:bg-slate-200"
-              >
-                8+
-              </button>
-            </div>
-
+          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails ======================= */}
+          <div className="lg:col-span-5 w-full flex flex-col gap-3">
             {/* Main Image Viewer */}
-            <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden shadow-2xs flex items-center justify-center min-h-[380px] sm:min-h-[460px]">
+            <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden shadow-2xs flex items-center justify-center min-h-[340px] sm:min-h-[420px]">
               {/* Top Action Buttons */}
               <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
                 <button
@@ -634,13 +592,13 @@ export default function ProductDetailPage({
               </div>
 
               {/* Main Image */}
-              <div className="relative w-full h-80 sm:h-96 flex items-center justify-center">
+              <div className="relative w-full h-64 sm:h-80 md:h-96 flex items-center justify-center">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-contain p-2 transition-transform duration-300 hover:scale-110 cursor-zoom-in"
+                    className="object-contain p-2 transition-transform duration-300 hover:scale-105 cursor-zoom-in"
                     priority
                     unoptimized
                   />
@@ -657,10 +615,34 @@ export default function ProductDetailPage({
                 )}
               </div>
             </div>
+
+            {/* Horizontal Thumbnail Strip Below Main Image */}
+            <div className="w-full flex items-center justify-start gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-0.5">
+              {allImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImage(img)}
+                  onMouseEnter={() => setSelectedImage(img)}
+                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
+                    selectedImage === img
+                      ? "border-orange-500 shadow-md ring-2 ring-orange-400/50 scale-105"
+                      : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100"
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`${product.name} thumbnail ${idx + 1}`}
+                    fill
+                    className="object-contain p-0.5"
+                    unoptimized
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* ======================= COLUMN 2 (5 cols): Center Product Details ======================= */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* ======================= COLUMN 2 (4 cols): Center Product Details ======================= */}
+          <div className="lg:col-span-4 w-full space-y-4">
             
             {/* Title & Brand Store Link */}
             <div className="space-y-1.5 border-b border-slate-200 pb-3">
@@ -716,79 +698,7 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* 3 Horizontal Amazon Offers Cards (Screenshot 3 Exact) */}
-            <div className="space-y-2 border-b border-slate-200 pb-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                <span className="text-orange-500 text-sm">🏷️</span>
-                <span>Offers</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                {/* Offer 1: No Cost EMI */}
-                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
-                  <span className="font-bold text-slate-900 block">No Cost EMI</span>
-                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
-                    Upto ₹15,103.27 EMI interest savings on select Credit Cards...
-                  </p>
-                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
-                    3 offers &gt;
-                  </span>
-                </div>
-
-                {/* Offer 2: Cashback */}
-                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
-                  <span className="font-bold text-slate-900 block">Cashback</span>
-                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
-                    Upto ₹{Number(product.cashback_amount || 5249).toLocaleString("en-IN")} cashback as Store Pay Balance...
-                  </p>
-                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
-                    1 offer &gt;
-                  </span>
-                </div>
-
-                {/* Offer 3: Partner Offers */}
-                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
-                  <span className="font-bold text-slate-900 block">Partner Offers</span>
-                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
-                    Get GST invoice and save up to 18% on business purchases...
-                  </p>
-                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
-                    1 offer &gt;
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Storage / Configuration Selector */}
-            {availableStorages.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-3">
-                <span className="text-xs text-slate-600 font-bold">
-                  Size / Storage: <strong className="text-slate-900">{selectedStorage}</strong>
-                </span>
-                <div className="flex gap-2 flex-wrap">
-                  {availableStorages.map((item, idx) => {
-                    const label = typeof item === 'string' ? item : item.label;
-                    const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleStorageSelect(label)}
-                        className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                          isSelected
-                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Colour Swatches with Color-Specific Rates */}
+            {/* Colour Swatches with Color-Specific Rates (Directly below Price) */}
             {availableColors.length > 0 && (
               <div className="space-y-2.5 border-b border-slate-200 pb-3.5">
                 <div className="flex items-center justify-between">
@@ -834,6 +744,78 @@ export default function ProductDetailPage({
                 </div>
               </div>
             )}
+
+            {/* Storage / Configuration Selector */}
+            {availableStorages.length > 0 && (
+              <div className="space-y-2 border-b border-slate-200 pb-3">
+                <span className="text-xs text-slate-600 font-bold">
+                  Size / Storage: <strong className="text-slate-900">{selectedStorage}</strong>
+                </span>
+                <div className="flex gap-2 flex-wrap">
+                  {availableStorages.map((item, idx) => {
+                    const label = typeof item === 'string' ? item : item.label;
+                    const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleStorageSelect(label)}
+                        className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                          isSelected
+                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500"
+                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 3 Horizontal Amazon Offers Cards */}
+            <div className="space-y-2 border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                <span className="text-orange-500 text-sm">🏷️</span>
+                <span>Offers</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                {/* Offer 1: No Cost EMI */}
+                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
+                  <span className="font-bold text-slate-900 block">No Cost EMI</span>
+                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
+                    Upto ₹15,103.27 EMI interest savings on select Credit Cards...
+                  </p>
+                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
+                    3 offers &gt;
+                  </span>
+                </div>
+
+                {/* Offer 2: Cashback */}
+                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
+                  <span className="font-bold text-slate-900 block">Cashback</span>
+                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
+                    Upto ₹{Number(product.cashback_amount || 5249).toLocaleString("en-IN")} cashback as Store Pay Balance...
+                  </p>
+                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
+                    1 offer &gt;
+                  </span>
+                </div>
+
+                {/* Offer 3: Partner Offers */}
+                <div className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-2xs space-y-1">
+                  <span className="font-bold text-slate-900 block">Partner Offers</span>
+                  <p className="text-[11px] text-slate-600 leading-tight line-clamp-2">
+                    Get GST invoice and save up to 18% on business purchases...
+                  </p>
+                  <span className="text-blue-600 font-bold text-[11px] hover:underline block pt-1">
+                    1 offer &gt;
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* Specs Table */}
             <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 text-xs">

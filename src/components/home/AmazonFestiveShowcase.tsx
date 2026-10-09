@@ -198,26 +198,82 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     spotlightTitle: "Spotlight Smartphone Deals",
     deals: [
       {
-        id: "samsung-galaxy-z-fold7",
-        name: "Samsung Galaxy Z Fold7 5G",
-        subName: "12GB RAM • 256GB Storage",
-        monthlyEmi: "At ₹10,833/mo",
-        topTag: "★ Up to 12 Months No Cost EMI • Free 1-Year Screen Protection",
-        startingPrice: "₹1,29,999",
-        mrp: "₹2,04,999",
-        discount: "36% OFF",
-        features: ["Galaxy AI Engine", "200MP Quad Pro", "Snapdragon 8 Elite"],
+        id: "vivo-t5-pro-5g",
+        name: "vivo T5 Pro 5G",
+        subName: "8GB RAM • 256GB Storage",
+        monthlyEmi: "At ₹2,583/mo",
+        topTag: "★ Flat ₹24,000 Off • Sony OIS Camera",
+        startingPrice: "₹30,999*",
+        mrp: "₹55,999",
+        discount: "45% OFF",
+        features: ["Sony OIS Camera", "5500mAh Battery", "120Hz 3D Curved AMOLED"],
         image: "/products/samsung-galaxy-s26-ultra.jpg",
-        link: "/products/samsung-galaxy-z-fold7",
-        accentBadge: "Samsung Foldable"
+        link: "/products?category=Mobiles&search=Vivo",
+        accentBadge: "Vivo Festive Deal"
+      },
+      {
+        id: "note-15-se-5g",
+        name: "Note 15 SE 5G",
+        subName: "8GB RAM • 128GB Storage",
+        monthlyEmi: "At ₹1,916/mo",
+        topTag: "★ Best Seller Deal • 200MP OIS",
+        startingPrice: "₹22,999*",
+        mrp: "₹34,999",
+        discount: "34% OFF",
+        features: ["200MP OIS Camera", "120W HyperCharge", "1.5K AMOLED"],
+        image: "/products/samsung-galaxy-s25-ultra.png",
+        link: "/products?category=Mobiles&search=Redmi",
+        accentBadge: "Redmi Note Deal"
+      },
+      {
+        id: "phone-4b",
+        name: "Phone (4b)",
+        subName: "8GB RAM • 256GB Glyph Edition",
+        monthlyEmi: "At ₹2,166/mo",
+        topTag: "★ Glyph Interface 2.0 • 50MP Dual",
+        startingPrice: "₹25,999*",
+        mrp: "₹54,999",
+        discount: "52% OFF",
+        features: ["Glyph Interface", "Dimensity 7350 Pro", "Nothing OS 3.0"],
+        image: "/products/google-pixel-9-pro-xl.png",
+        link: "/products?category=Mobiles&search=Nothing",
+        accentBadge: "Nothing Deal"
+      },
+      {
+        id: "motorola-signature",
+        name: "motorola Signature",
+        subName: "16GB RAM • 512GB Pantone Edition",
+        monthlyEmi: "At ₹4,791/mo",
+        topTag: "★ Snapdragon 8s Gen 3 • 125W Turbo",
+        startingPrice: "₹57,499*",
+        mrp: "₹74,999",
+        discount: "23% OFF",
+        features: ["Pantone Colors", "125W TurboPower", "144Hz pOLED"],
+        image: "/products/samsung-galaxy-s26-ultra.jpg",
+        link: "/products?category=Mobiles&search=Motorola",
+        accentBadge: "Motorola Signature"
+      },
+      {
+        id: "realme-p4x-5g",
+        name: "realme P4x 5G",
+        subName: "8GB RAM • 128GB Phoenix Design",
+        monthlyEmi: "At ₹1,833/mo",
+        topTag: "★ Dimensity 7050 • 120Hz Ultra Smooth",
+        startingPrice: "₹21,999*",
+        mrp: "₹38,999",
+        discount: "43% OFF",
+        features: ["50MP Sony LYT", "45W SUPERVOOC", "Rainwater Smart Touch"],
+        image: "/products/iphone-16-pro-max.png",
+        link: "/products?category=Mobiles&search=realme",
+        accentBadge: "Realme P-Series"
       },
       {
         id: "iphone-16-pro-max",
         name: "Apple iPhone 16 Pro Max",
         subName: "256GB • Natural Titanium",
         monthlyEmi: "At ₹11,241/mo",
-        topTag: "★ Instant ₹5,000 HDFC/ICICI Card Discount",
-        startingPrice: "₹1,34,900",
+        topTag: "★ Instant ₹5,000 Bank Card Discount",
+        startingPrice: "₹1,34,900*",
         mrp: "₹1,44,900",
         discount: "7% OFF",
         features: ["A18 Pro Chip", "48MP Fusion Camera", "Camera Control Button"],
@@ -229,9 +285,9 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         id: "samsung-s26-ultra",
         name: "Samsung Galaxy S26 Ultra 5G",
         subName: "16GB RAM • 512GB Storage",
-        monthlyEmi: "At ₹11,666/mo",
-        topTag: "★ Flat ₹10,000 Instant Exchange Bonus + Free Buds",
-        startingPrice: "₹1,29,999",
+        monthlyEmi: "At ₹10,833/mo",
+        topTag: "★ Flat ₹10,000 Exchange Bonus + Free Buds",
+        startingPrice: "₹1,29,999*",
         mrp: "₹1,49,999",
         discount: "13% OFF",
         features: ["200MP AI Pro Zoom", "S-Pen Built-in", "Grade 5 Titanium"],
@@ -240,88 +296,18 @@ const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         accentBadge: "Samsung Flagship"
       },
       {
-        id: "oneplus-ce6-lite",
-        name: "OnePlus Nord CE6 Lite 5G",
-        subName: "8GB RAM • 128GB Storage",
-        monthlyEmi: "At ₹4,583/mo",
-        topTag: "★ Instant ₹3,000 Bank Cashback • 6 Months No Cost EMI",
-        startingPrice: "₹26,999",
-        mrp: "₹33,999",
-        discount: "21% OFF",
-        features: ["7000mAh Battery", "OxygenOS 15", "50MP Sony LYT OIS"],
-        image: "/products/google-pixel-9-pro-xl.png",
-        link: "/products/oneplus-ce6-lite",
-        accentBadge: "OnePlus 5G"
-      },
-      {
-        id: "google-pixel-9-pro-xl",
-        name: "Google Pixel 9 Pro XL 5G",
-        subName: "16GB RAM • 256GB Storage",
-        monthlyEmi: "At ₹10,416/mo",
-        topTag: "★ Google Tensor G4 • 7 Years OS Updates",
-        startingPrice: "₹1,24,999",
-        mrp: "₹1,39,999",
-        discount: "11% OFF",
-        features: ["Gemini AI Built-in", "50MP Triple Pro Camera", "Super Actua OLED"],
-        image: "/products/google-pixel-9-pro-xl.png",
-        link: "/products/google-pixel-9-pro-xl",
-        accentBadge: "Google Pixel AI"
-      },
-      {
-        id: "vivo-x200-pro",
-        name: "Vivo X200 Pro 5G (ZEISS Optics)",
-        subName: "16GB RAM • 512GB Storage",
-        monthlyEmi: "At ₹7,916/mo",
-        topTag: "★ 200MP ZEISS APO Telephoto • Dimensity 9400",
-        startingPrice: "₹94,999",
-        mrp: "₹1,09,999",
-        discount: "14% OFF",
-        features: ["200MP ZEISS Camera", "6000mAh BlueVolt", "1.5K 120Hz LTPO"],
-        image: "/products/samsung-galaxy-s26-ultra.jpg",
-        link: "/products?category=Mobiles&search=Vivo",
-        accentBadge: "Vivo ZEISS Flagship"
-      },
-      {
-        id: "motorola-edge-50-ultra",
-        name: "Motorola Edge 50 Ultra 5G",
-        subName: "16GB RAM • 512GB (Nordic Wood)",
+        id: "oneplus-12-flagship",
+        name: "OnePlus 12 5G Flagship",
+        subName: "16GB RAM • 512GB Silky Black",
         monthlyEmi: "At ₹4,999/mo",
-        topTag: "★ Pantone Validated Camera & Display • 125W TurboPower",
-        startingPrice: "₹59,999",
+        topTag: "★ Snapdragon 8 Gen 3 • 100W SuperVOOC",
+        startingPrice: "₹59,999*",
         mrp: "₹69,999",
         discount: "14% OFF",
-        features: ["Real Wood Back", "125W Fast Charge", "144Hz 1.5K pOLED"],
+        features: ["Snapdragon 8 Gen 3", "Hasselblad Camera", "100W SuperVOOC"],
         image: "/products/google-pixel-9-pro-xl.png",
-        link: "/products?category=Mobiles&search=Motorola",
-        accentBadge: "Motorola Flagship"
-      },
-      {
-        id: "realme-gt-7-pro",
-        name: "Realme GT 7 Pro 5G",
-        subName: "16GB RAM • 512GB Mars Orange",
-        monthlyEmi: "At ₹4,999/mo",
-        topTag: "★ Snapdragon 8 Elite • 6500mAh Huge Battery",
-        startingPrice: "₹59,999",
-        mrp: "₹69,999",
-        discount: "14% OFF",
-        features: ["Snapdragon 8 Elite", "120W SuperVOOC", "Eco2 OLED Plus"],
-        image: "/products/samsung-galaxy-s25-ultra.png",
-        link: "/products?category=Mobiles&search=realme",
-        accentBadge: "Realme Performance"
-      },
-      {
-        id: "xiaomi-15-pro",
-        name: "Xiaomi 15 Pro 5G (Leica Summilux)",
-        subName: "16GB RAM • 512GB Storage",
-        monthlyEmi: "At ₹6,666/mo",
-        topTag: "★ Leica Triple 50MP Cameras • Snapdragon 8 Elite",
-        startingPrice: "₹79,999",
-        mrp: "₹92,999",
-        discount: "14% OFF",
-        features: ["Leica Quad 50MP", "6100mAh Battery", "2K Micro-Curved OLED"],
-        image: "/products/iphone-16-pro-max.png",
-        link: "/products?category=Mobiles&search=Redmi",
-        accentBadge: "Xiaomi Leica"
+        link: "/products?category=Mobiles&search=OnePlus",
+        accentBadge: "OnePlus Flagship"
       }
     ]
   },
@@ -1439,6 +1425,24 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
   const { config, key: activeKey } = useMemo(() => getCategoryConfig(categoryFilter), [categoryFilter]);
 
+  // Brand list for quick brand selection
+  const brandList = useMemo(() => {
+    if (config.brands && config.brands.length > 0) {
+      return config.brands;
+    }
+    return [
+      { name: "Samsung Galaxy", query: "Samsung" },
+      { name: "Apple iPhone", query: "Apple" },
+      { name: "OnePlus", query: "OnePlus" },
+      { name: "Google Pixel", query: "Pixel" },
+      { name: "Anker", query: "Anker" },
+      { name: "Noise", query: "Noise" },
+      { name: "Spigen", query: "Spigen" },
+      { name: "Nike", query: "Nike" },
+      { name: "Tanishq", query: "Tanishq" }
+    ];
+  }, [config.brands]);
+
   // Sync selectedBrand with URL query param
   const selectedBrand = brandSearch || null;
 
@@ -1733,6 +1737,71 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           {/* ======================= CENTER: FESTIVE BANNER & HORIZONTAL SPOTLIGHT CARDS ======================= */}
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
+            {/* =========================================================================
+                BRAND SELECTION BAR (Quick 1-Tap Brand Filtering for Mobile & Desktop)
+            ========================================================================= */}
+            <div className="bg-white p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
+              <div className="flex items-center justify-between mb-2 px-0.5">
+                <span className="text-[11px] sm:text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+                  <FontAwesomeIcon icon={faTag} className="text-[#2E6F40] text-xs" />
+                  <span>Shop by Brand</span>
+                </span>
+                {selectedBrand && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const targetUrl = categoryFilter 
+                        ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                        : `/products`;
+                      router.push(targetUrl);
+                    }}
+                    className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Clear Filter ({selectedBrand})</span>
+                    <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                  </button>
+                )}
+              </div>
+
+              {/* Scrollable Brand Selector Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetUrl = categoryFilter 
+                      ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                      : `/products`;
+                    router.push(targetUrl);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                    !selectedBrand 
+                      ? "bg-[#2E6F40] text-white shadow-xs" 
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80"
+                  }`}
+                >
+                  All Brands
+                </button>
+                {brandList.map((b, i) => {
+                  const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleBrandClick(b.query)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isSelected 
+                          ? "bg-[#2E6F40] text-white shadow-xs ring-2 ring-[#2E6F40]/30 font-black" 
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:border-slate-300"
+                      }`}
+                    >
+                      <span>{b.name}</span>
+                      {isSelected && <FontAwesomeIcon icon={faCheck} className="text-[10px]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* ======================= DYNAMIC BANNER SLIDER WITH ADD BANNER OPTION ======================= */}
             <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
               
@@ -1860,85 +1929,140 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </div>
               </div>
 
-              {/* Horizontal Cards Grid (2 Columns on Medium/Large Screens, Compact on Mobile) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                {displayedDeals.map((deal) => (
-                  <Link
-                    key={deal.id}
-                    href={deal.link}
-                    className="group relative flex flex-row items-center bg-gradient-to-r from-slate-50 via-white to-emerald-50/40 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-3.5 border border-slate-200 hover:border-[#2E6F40] shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer overflow-hidden gap-2.5 sm:gap-3.5"
-                  >
-                    {/* Left: Device / Product Image on Emerald Lit Podium with EMI Ribbon */}
-                    <div className="relative w-20 h-22 sm:w-28 sm:h-30 md:w-32 md:h-32 shrink-0 bg-gradient-to-b from-emerald-900/10 via-slate-900/5 to-emerald-950/20 rounded-lg sm:rounded-xl p-1.5 flex items-center justify-center overflow-hidden border border-slate-200/80">
-                      
-                      {/* Ribbon EMI Badge */}
-                      <div className="absolute top-1.5 left-0 z-20 bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-r-md shadow-xs">
-                        {deal.monthlyEmi}
+              {/* Responsive Cards Grid: Festive Amber Poster Card Layout for Mobiles, Horizontal Deal Cards for other categories */}
+              {activeKey === "mobiles" ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-4.5">
+                  {displayedDeals.map((deal) => (
+                    <Link
+                      key={deal.id}
+                      href={deal.link}
+                      className="group relative flex flex-col bg-white rounded-2xl sm:rounded-3xl p-2 sm:p-3 border border-slate-200/90 hover:border-amber-400 shadow-xs hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden"
+                    >
+                      {/* Top Amber Rounded Banner Card with Floating Phone & Festive Gift Box */}
+                      <div className="relative w-full aspect-4/3 sm:aspect-4/3 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#ffbe18] via-[#fdb813] to-[#f59e0b] p-2 flex items-center justify-center overflow-hidden shadow-inner">
+                        {/* Festive Warm Glow Radial Background */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-200/60 via-transparent to-black/10 pointer-events-none" />
+                        
+                        {/* Device / Product Image */}
+                        <div className="relative w-full h-full z-10 flex items-center justify-center">
+                          <Image
+                            src={deal.image}
+                            alt={deal.name}
+                            fill
+                            className="object-contain p-1 drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+                            unoptimized
+                          />
+                        </div>
+
+                        {/* Festive 3D Gift Box in Bottom Right Corner */}
+                        <div className="absolute -bottom-1 -right-1 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 drop-shadow-md flex items-center justify-center select-none pointer-events-none">
+                          <span className="text-xl sm:text-2xl md:text-3xl filter drop-shadow">🎁</span>
+                        </div>
                       </div>
 
-                      {/* Product Graphic */}
-                      <div className="relative w-full h-full">
-                        <Image
-                          src={deal.image}
-                          alt={deal.name}
-                          fill
-                          className="object-contain p-1 drop-shadow-md group-hover:scale-105 transition-transform duration-300"
-                          unoptimized
-                        />
+                      {/* Brand & Model Name */}
+                      <div className="pt-2 sm:pt-2.5 pb-1 px-1 text-center">
+                        <h3 className="text-xs sm:text-sm md:text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 tracking-tight">
+                          {deal.name}
+                        </h3>
                       </div>
 
-                      {/* Lit Stage Circle */}
-                      <div className="absolute bottom-1 w-16 h-2 rounded-full bg-emerald-400/40 blur-[2px]" />
-                    </div>
+                      {/* Royal Blue Price Badge Pill */}
+                      <div className="mt-auto pt-1">
+                        <div className="w-full bg-[#4849f5] group-hover:bg-[#3b3ce2] text-white py-1.5 sm:py-2 px-2 rounded-xl sm:rounded-2xl flex items-center justify-center gap-1.5 sm:gap-2 shadow-md transition-all">
+                          {deal.mrp && (
+                            <span className="text-[10px] sm:text-xs text-white/70 line-through font-medium tracking-tight">
+                              {deal.mrp}
+                            </span>
+                          )}
+                          <span className="text-xs sm:text-sm md:text-base font-black text-white tracking-tight">
+                            {deal.startingPrice.includes("*") ? deal.startingPrice : `${deal.startingPrice}*`}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                  {displayedDeals.map((deal) => (
+                    <Link
+                      key={deal.id}
+                      href={deal.link}
+                      className="group relative flex flex-row items-center bg-gradient-to-r from-slate-50 via-white to-emerald-50/40 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-3.5 border border-slate-200 hover:border-[#2E6F40] shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer overflow-hidden gap-2.5 sm:gap-3.5"
+                    >
+                      {/* Left: Device / Product Image on Emerald Lit Podium with EMI Ribbon */}
+                      <div className="relative w-20 h-22 sm:w-28 sm:h-30 md:w-32 md:h-32 shrink-0 bg-gradient-to-b from-emerald-900/10 via-slate-900/5 to-emerald-950/20 rounded-lg sm:rounded-xl p-1.5 flex items-center justify-center overflow-hidden border border-slate-200/80">
+                        
+                        {/* Ribbon EMI Badge */}
+                        <div className="absolute top-1.5 left-0 z-20 bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-r-md shadow-xs">
+                          {deal.monthlyEmi}
+                        </div>
 
-                    {/* Right: Details, Specs, Pricing & CTA */}
-                    <div className="flex-1 min-w-0 space-y-1">
-                      
-                      {/* Top Accent Badge */}
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-[9px] sm:text-[10px] font-black uppercase text-[#2E6F40] bg-emerald-100/80 px-1.5 py-0.2 rounded truncate max-w-[120px]">
-                          {deal.accentBadge}
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded shrink-0">
-                          {deal.discount}
-                        </span>
+                        {/* Product Graphic */}
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={deal.image}
+                            alt={deal.name}
+                            fill
+                            className="object-contain p-1 drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            unoptimized
+                          />
+                        </div>
+
+                        {/* Lit Stage Circle */}
+                        <div className="absolute bottom-1 w-16 h-2 rounded-full bg-emerald-400/40 blur-[2px]" />
                       </div>
 
-                      {/* Title */}
-                      <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-tight">
-                        {deal.name}
-                      </h3>
-                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate">
-                        {deal.subName}
-                      </p>
+                      {/* Right: Details, Specs, Pricing & CTA */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        
+                        {/* Top Accent Badge */}
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-[9px] sm:text-[10px] font-black uppercase text-[#2E6F40] bg-emerald-100/80 px-1.5 py-0.2 rounded truncate max-w-[120px]">
+                            {deal.accentBadge}
+                          </span>
+                          <span className="text-[9px] sm:text-[10px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded shrink-0">
+                            {deal.discount}
+                          </span>
+                        </div>
 
-                      {/* Pricing Tag */}
-                      <div className="flex items-baseline gap-1.5 pt-0.5">
-                        <span className="text-sm sm:text-base md:text-lg font-black text-slate-950 tracking-tight">
-                          {deal.startingPrice}
-                        </span>
-                        <span className="text-[10px] sm:text-xs text-slate-400 line-through font-bold">
-                          {deal.mrp}
-                        </span>
+                        {/* Title */}
+                        <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-tight">
+                          {deal.name}
+                        </h3>
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate">
+                          {deal.subName}
+                        </p>
+
+                        {/* Pricing Tag */}
+                        <div className="flex items-baseline gap-1.5 pt-0.5">
+                          <span className="text-sm sm:text-base md:text-lg font-black text-slate-950 tracking-tight">
+                            {deal.startingPrice}
+                          </span>
+                          <span className="text-[10px] sm:text-xs text-slate-400 line-through font-bold">
+                            {deal.mrp}
+                          </span>
+                        </div>
+
+                        {/* Offer Note */}
+                        <p className="text-[9px] sm:text-[10px] text-emerald-800 font-bold truncate">
+                          {deal.topTag}
+                        </p>
+
+                        {/* Action CTA Link */}
+                        <div className="pt-0.5 flex items-center justify-between text-[10px] sm:text-[11px] font-black text-[#2E6F40] group-hover:text-emerald-800">
+                          <span>View Deal &amp; Offers</span>
+                          <FontAwesomeIcon icon={faArrowRight} className="text-[10px] group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
 
-                      {/* Offer Note */}
-                      <p className="text-[9px] sm:text-[10px] text-emerald-800 font-bold truncate">
-                        {deal.topTag}
-                      </p>
-
-                      {/* Action CTA Link */}
-                      <div className="pt-0.5 flex items-center justify-between text-[10px] sm:text-[11px] font-black text-[#2E6F40] group-hover:text-emerald-800">
-                        <span>View Deal &amp; Offers</span>
-                        <FontAwesomeIcon icon={faArrowRight} className="text-[10px] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Subtle Hover Ring */}
-                    <div className="absolute inset-0 rounded-xl sm:rounded-2xl ring-2 ring-[#2E6F40]/0 group-hover:ring-[#2E6F40]/30 transition-all pointer-events-none" />
-                  </Link>
-                ))}
-              </div>
+                      {/* Subtle Hover Ring */}
+                      <div className="absolute inset-0 rounded-xl sm:rounded-2xl ring-2 ring-[#2E6F40]/0 group-hover:ring-[#2E6F40]/30 transition-all pointer-events-none" />
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* =========================================================================

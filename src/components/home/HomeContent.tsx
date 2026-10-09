@@ -613,40 +613,6 @@ export default function HomeContent() {
           </div>
         </div>
       </section>
-
-      {/* 6. Verified Customer Reviews */}
-      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4 py-1 sm:py-2">
-        <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <h2 className="text-sm sm:text-base md:text-lg font-black flex items-center gap-2 text-slate-900">
-            <span className="w-1.5 h-3.5 bg-[#2E6F40] rounded-full"></span>
-            Verified Buyer Reviews
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
-          {reviews.slice(0, 2).map((review) => (
-            <div key={review.id} className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/90 shadow-2xs relative overflow-hidden group hover:shadow-xs transition-all">
-              <div className="flex gap-1 mb-1">
-                {[...Array(5)].map((_, i) => (
-                  <FontAwesomeIcon key={i} icon={faStar} className={i < review.rating ? "text-amber-400 text-[10px]" : "text-slate-200 text-[10px]"} />
-                ))}
-              </div>
-              <p className="text-slate-800 text-xs sm:text-sm font-bold italic leading-snug mb-2">
-                "{review.comment}"
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[#2E6F40] font-black text-[10px]">
-                  {review.customer_name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-black text-slate-900 text-xs">{review.customer_name}</p>
-                  <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-wider">✓ Verified Buyer</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
