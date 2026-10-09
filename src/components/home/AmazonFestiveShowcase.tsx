@@ -1510,44 +1510,19 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const handleBrandClick = (bQuery: string) => {
     const isCurrentlySelected = selectedBrand?.toLowerCase() === bQuery.toLowerCase();
     if (isCurrentlySelected) {
-      // Unselect brand -> return to main category
+      // Unselect brand -> return to main category directly without scroll jumping
       const targetUrl = categoryFilter 
         ? `/products?category=${encodeURIComponent(categoryFilter)}` 
         : `/products`;
-      router.push(targetUrl);
+      router.push(targetUrl, { scroll: false });
     } else {
-      // Select brand
+      // Select brand directly in place without scrolling up or down
       const targetUrl = categoryFilter 
         ? `/products?category=${encodeURIComponent(categoryFilter)}&search=${encodeURIComponent(bQuery)}`
         : `/products?search=${encodeURIComponent(bQuery)}`;
-      router.push(targetUrl);
-
-      // Smoothly scroll down directly to the brand products
-      setTimeout(() => {
-        const el = document.getElementById("brand-products-section");
-        if (el) {
-          const yOffset = -90;
-          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-        }
-      }, 100);
+      router.push(targetUrl, { scroll: false });
     }
   };
-
-  // Auto-scroll when selectedBrand is active in URL
-  useEffect(() => {
-    if (selectedBrand) {
-      const timer = setTimeout(() => {
-        const el = document.getElementById("brand-products-section");
-        if (el) {
-          const yOffset = -90;
-          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-        }
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedBrand]);
 
   // Filter and sort deals based on selectedBrand, primeFilter, priceRange, priceSort
   const displayedDeals = useMemo(() => {
@@ -2033,7 +2008,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         const targetUrl = categoryFilter 
                           ? `/products?category=${encodeURIComponent(categoryFilter)}` 
                           : `/products`;
-                        router.push(targetUrl);
+                        router.push(targetUrl, { scroll: false });
                       }}
                       className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
                     >
@@ -2158,7 +2133,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         const targetUrl = categoryFilter 
                           ? `/products?category=${encodeURIComponent(categoryFilter)}` 
                           : `/products`;
-                        router.push(targetUrl);
+                        router.push(targetUrl, { scroll: false });
                       }}
                       className="text-[11px] font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 px-3 py-1 rounded-full flex items-center gap-1.5 cursor-pointer transition-colors"
                     >
@@ -2180,7 +2155,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         <button
                           key={sIdx}
                           type="button"
-                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`)}
+                          onClick={() => router.push(`/products?search=${encodeURIComponent(term)}`, { scroll: false })}
                           className="px-2 py-0.5 rounded-full bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-800 text-[10px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                         >
                           {term}
@@ -2216,7 +2191,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     const targetUrl = categoryFilter 
                       ? `/products?category=${encodeURIComponent(categoryFilter)}` 
                       : `/products`;
-                    router.push(targetUrl);
+                    router.push(targetUrl, { scroll: false });
                   }}
                   className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
                 >
