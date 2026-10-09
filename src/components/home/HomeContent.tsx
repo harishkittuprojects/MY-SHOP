@@ -5,7 +5,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faArrowRight, 
   faPaperPlane, 
-  faStar
+  faStar,
+  faLayerGroup,
+  faTags
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "@/components/common/ProductCard";
 import Link from "next/link";
@@ -156,11 +158,116 @@ const FLIPKART_APP_CATEGORIES = [
   },
 ];
 
+// 1. Featured Category Cards for the "Shop by Category" Grid matching the design
+const HOME_FEATURED_CATEGORIES = [
+  {
+    id: "mobiles",
+    name: "Mobiles & Accessories",
+    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Mobiles",
+    subtitle: "View Catalog →",
+    tag: "Flagships & More"
+  },
+  {
+    id: "computers-tablets",
+    name: "Computers & Tablets",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Computers%20%26%20Tablets",
+    subtitle: "View Catalog →",
+    tag: "Laptops & Desktops"
+  },
+  {
+    id: "tv-audio",
+    name: "TV & Audio",
+    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=TV%20%26%20Audio",
+    subtitle: "View Catalog →",
+    tag: "4K TVs & Soundbars"
+  },
+  {
+    id: "kitchen-appliances",
+    name: "Kitchen Appliances",
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Kitchen%20Appliances",
+    subtitle: "View Catalog →",
+    tag: "Home & Kitchen"
+  },
+  {
+    id: "smart-technology",
+    name: "Smart Watches & Wearables",
+    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Smart%20Technology",
+    subtitle: "View Catalog →",
+    tag: "AMOLED & Fitness"
+  },
+  {
+    id: "fashion",
+    name: "Fashion & Lifestyle",
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Fashion",
+    subtitle: "View Catalog →",
+    tag: "Trends & Apparel"
+  },
+  {
+    id: "jewellery",
+    name: "Precious Jewellery",
+    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Jewellery",
+    subtitle: "View Catalog →",
+    tag: "100% BIS Hallmarked"
+  },
+  {
+    id: "ev-vehicles",
+    name: "Electric Vehicles",
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=EV%20Vehicles",
+    subtitle: "View Catalog →",
+    tag: "Green Mobility"
+  },
+  {
+    id: "refurbished-mobiles",
+    name: "Certified Refurbished Mobiles",
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles",
+    subtitle: "View Catalog →",
+    tag: "32-Point Quality Tested"
+  },
+  {
+    id: "mobile-accessories",
+    name: "Fast Mobile Accessories",
+    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Mobile%20Accessories",
+    subtitle: "View Catalog →",
+    tag: "GaN Chargers & Cables"
+  }
+];
+
+// 2. Featured Brand Cards for the "Shop by Brand" Grid
+const HOME_FEATURED_BRANDS = [
+  { name: "Apple", query: "Apple", logo: "/brands/apple.png", desc: "iPhones & MacBooks", count: "Flagships", url: "/products?category=Mobiles&brand=Apple" },
+  { name: "Samsung", query: "Samsung", logo: "/brands/samsung.png", desc: "Galaxy S26 & Fold", count: "Top Rated", url: "/products?category=Mobiles&brand=Samsung" },
+  { name: "OnePlus", query: "OnePlus", logo: "/brands/oneplus.png", desc: "Never Settle Tech", count: "OxygenOS", url: "/products?category=Mobiles&brand=OnePlus" },
+  { name: "Google Pixel", query: "Pixel", logo: "/brands/google.png", desc: "Google Tensor AI", count: "Pixel Pro", url: "/products?category=Mobiles&brand=Pixel" },
+  { name: "HP", query: "HP", logo: "https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_630x630.png", desc: "Spectre & Pavilion", count: "Laptops", url: "/products?category=Computers%20%26%20Tablets&brand=HP" },
+  { name: "Dell", query: "Dell", logo: "https://upload.wikimedia.org/wikipedia/commons/1/18/Dell_logo_2016.svg", desc: "XPS & Inspiron", count: "Computers", url: "/products?category=Computers%20%26%20Tablets&brand=Dell" },
+  { name: "Lenovo", query: "Lenovo", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Lenovo_logo_2015.svg", desc: "ThinkPad & Legion", count: "High Speed", url: "/products?category=Computers%20%26%20Tablets&brand=Lenovo" },
+  { name: "Asus", query: "Asus", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2e/ASUS_Logo.svg", desc: "ROG & ZenBook", count: "Gaming", url: "/products?category=Computers%20%26%20Tablets&brand=Asus" },
+  { name: "Noise", query: "Noise", logo: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200", desc: "ColorFit Smartwatches", count: "Wearables", url: "/products?category=Smart%20Technology&brand=Noise" },
+  { name: "Fire-Boltt", query: "Fire-Boltt", logo: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=200", desc: "AMOLED Calling Watches", count: "Smart Tech", url: "/products?category=Smart%20Technology&brand=Fire-Boltt" },
+  { name: "Titan", query: "Titan", logo: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=200", desc: "Smart & Luxury Watches", count: "Heritage", url: "/products?category=Smart%20Technology&brand=Titan" },
+  { name: "Tanishq", query: "Tanishq", logo: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=200", desc: "100% BIS Hallmarked Gold", count: "Fine Jewellery", url: "/products?category=Jewellery&brand=Tanishq" },
+  { name: "Ather", query: "Ather", logo: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200", desc: "Smart Electric 450X", count: "EV Scooters", url: "/products?category=EV%20Vehicles&brand=Ather" },
+  { name: "Ola Electric", query: "Ola", logo: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200", desc: "S1 Pro Gen 2 Mobility", count: "Electric", url: "/products?category=EV%20Vehicles&brand=Ola" },
+  { name: "Anker", query: "Anker", logo: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=200", desc: "GaN Fast Power & Cables", count: "Fast Charging", url: "/products?category=Mobile%20Accessories&brand=Anker" },
+  { name: "Sony", query: "Sony", logo: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg", desc: "Bravia & Audio Tech", count: "TV & Audio", url: "/products?category=TV%20%26%20Audio&brand=Sony" }
+];
+
 export default function HomeContent() {
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>(defaultProducts || []);
   const [mobileBrands, setMobileBrands] = useState<any[]>([]);
   const [selectedMobileBrand, setSelectedMobileBrand] = useState<string>("all");
+  const [homeExploreMode, setHomeExploreMode] = useState<"category" | "brand">("category");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
@@ -468,6 +575,139 @@ export default function HomeContent() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 2.5. SHOP BY CATEGORY / SHOP BY BRAND SWITCHABLE SHOWCASE */}
+      <section className="w-full max-w-[1440px] mx-auto px-1.5 sm:px-3 md:px-4">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-5 shadow-2xs space-y-4">
+          
+          {/* Header with Green Accent, Mode Switcher & View All */}
+          <div className="flex items-center justify-between flex-wrap gap-2.5 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
+              <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                {homeExploreMode === "category" ? "Shop by Category" : "Shop by Brand"}
+              </h2>
+            </div>
+
+            {/* Switch Toggle: [ 📂 Shop by Category | 🏷️ Shop by Brand ] */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setHomeExploreMode("category")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                    homeExploreMode === "category"
+                      ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faLayerGroup} className="text-[11px]" />
+                  <span>Shop by Category</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHomeExploreMode("brand")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                    homeExploreMode === "brand"
+                      ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faTags} className="text-[11px]" />
+                  <span>Shop by Brand</span>
+                </button>
+              </div>
+
+              {/* View All link */}
+              <Link
+                href="/products"
+                className="text-xs sm:text-sm font-bold text-[#2E6F40] hover:text-emerald-700 hover:underline flex items-center gap-1 transition-colors"
+              >
+                <span>View All</span>
+                <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+              </Link>
+            </div>
+          </div>
+
+          {/* MODE 1: SHOP BY CATEGORY GRID (Matching screenshot cards) */}
+          {homeExploreMode === "category" && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {HOME_FEATURED_CATEGORIES.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={cat.url}
+                  className="group bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#2E6F40] transition-all overflow-hidden flex flex-col cursor-pointer"
+                >
+                  {/* Category Image */}
+                  <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                      unoptimized
+                    />
+                  </div>
+
+                  {/* Category Details */}
+                  <div className="p-3 sm:p-4 flex flex-col items-center justify-center text-center bg-white flex-1">
+                    <h3 className="text-xs sm:text-sm md:text-base font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1">
+                      {cat.name}
+                    </h3>
+                    <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#2E6F40] flex items-center gap-1 mt-1 transition-colors">
+                      {cat.subtitle}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* MODE 2: SHOP BY BRAND GRID */}
+          {homeExploreMode === "brand" && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+              {HOME_FEATURED_BRANDS.map((b) => (
+                <Link
+                  key={b.name}
+                  href={b.url}
+                  className="group bg-white rounded-2xl border border-slate-200/90 hover:border-[#2E6F40] shadow-2xs hover:shadow-md transition-all duration-200 flex items-center justify-between p-3 sm:p-3.5 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                      {b.logo ? (
+                        <Image
+                          src={b.logo}
+                          alt={b.name}
+                          fill
+                          className="object-contain p-1"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-700 font-black text-xs">
+                          {b.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
+                        {b.name}
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
+                        {b.desc}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[#2E6F40] group-hover:translate-x-0.5 transition-transform shrink-0 ml-1">
+                    <FontAwesomeIcon icon={faArrowRight} className="text-[11px]" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
         </div>
       </section>
 

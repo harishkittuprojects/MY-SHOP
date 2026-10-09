@@ -26,8 +26,84 @@ import {
   faImage,
   faArrowDownWideShort,
   faArrowUpShortWide,
-  faIndianRupeeSign
+  faIndianRupeeSign,
+  faLayerGroup,
+  faTags
 } from "@fortawesome/free-solid-svg-icons";
+
+// Categories data for switchable Shop by Category grid
+const SHOWCASE_CATEGORIES = [
+  {
+    id: "mobiles",
+    name: "Mobiles & Accessories",
+    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Mobiles",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "computers-tablets",
+    name: "Computers & Tablets",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Computers%20%26%20Tablets",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "tv-audio",
+    name: "TV & Audio",
+    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=TV%20%26%20Audio",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "kitchen-appliances",
+    name: "Kitchen Appliances",
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Kitchen%20Appliances",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "smart-technology",
+    name: "Smart Watches & Wearables",
+    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Smart%20Technology",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "fashion",
+    name: "Fashion & Lifestyle",
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Fashion",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "jewellery",
+    name: "Precious Jewellery",
+    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Jewellery",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "ev-vehicles",
+    name: "Electric Vehicles",
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=EV%20Vehicles",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "refurbished-mobiles",
+    name: "Certified Refurbished Mobiles",
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles",
+    subtitle: "View Catalog →",
+  },
+  {
+    id: "mobile-accessories",
+    name: "Fast Mobile Accessories",
+    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=800",
+    url: "/products?category=Mobile%20Accessories",
+    subtitle: "View Catalog →",
+  }
+];
 
 function parsePrice(val: any): number {
   if (typeof val === "number") return val;
@@ -1362,115 +1438,17 @@ function getCategoryConfig(categoryParam?: string | null): { key: string; config
   return { key: "default", config: CATEGORY_CONFIGS.default };
 }
 
-interface ShowcaseCategory {
-  id: string;
-  name: string;
-  queryParam: string;
-  image: string;
-  subtext?: string;
-}
-
-const SHOWCASE_CATEGORIES: ShowcaseCategory[] = [
-  {
-    id: "mobiles",
-    name: "Mobiles & Accessories",
-    queryParam: "Mobiles",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600",
-    subtext: "Smartphones & Flagships"
-  },
-  {
-    id: "computers",
-    name: "Computers & Tablets",
-    queryParam: "Computers & Tablets",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600",
-    subtext: "Laptops, MacBooks & iPads"
-  },
-  {
-    id: "tv-audio",
-    name: "TV & Audio",
-    queryParam: "TV & Audio",
-    image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=600",
-    subtext: "Smart TVs, Soundbars & Audio"
-  },
-  {
-    id: "kitchen",
-    name: "Kitchen Appliances",
-    queryParam: "Kitchen Appliances",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=600",
-    subtext: "Microwaves, Cookware & Mixers"
-  },
-  {
-    id: "home",
-    name: "Home Appliances",
-    queryParam: "Home Appliances",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600",
-    subtext: "ACs, Refrigerators & Washers"
-  },
-  {
-    id: "smart-tech",
-    name: "Smart Technology",
-    queryParam: "Smart Technology",
-    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=600",
-    subtext: "Smartwatches, Bands & Gadgets"
-  },
-  {
-    id: "refurbished",
-    name: "Certified Refurbished",
-    queryParam: "Old / Refurbished Mobiles",
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=600",
-    subtext: "Grade A+ 32-Point Inspected"
-  },
-  {
-    id: "accessories",
-    name: "Mobile Accessories",
-    queryParam: "Mobile Accessories",
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=600",
-    subtext: "GaN Fast Chargers & 9H Glass"
-  },
-  {
-    id: "fashion",
-    name: "Fashion & Lifestyle",
-    queryParam: "Fashion",
-    image: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=600",
-    subtext: "Apparel, Footwear & Accessories"
-  },
-  {
-    id: "jewellery",
-    name: "Precious Jewellery",
-    queryParam: "Jewellery",
-    image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=600",
-    subtext: "100% BIS Hallmarked Gold"
-  },
-  {
-    id: "ev",
-    name: "Electric Vehicles",
-    queryParam: "EV Vehicles",
-    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600",
-    subtext: "Smart Electric Scooters"
-  }
-];
-
 export default function AmazonFestiveShowcase({ category }: { category?: string | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryFilter = category || searchParams.get("category");
   const brandSearch = searchParams.get("search") || "";
 
-  // View Mode: 'categories' | 'brands' | 'all'
-  const [viewMode, setViewMode] = useState<"categories" | "brands" | "all">(
-    brandSearch ? "brands" : "categories"
-  );
-
-  useEffect(() => {
-    if (brandSearch) {
-      setViewMode("brands");
-    }
-  }, [brandSearch]);
-
   const [primeFilter, setPrimeFilter] = useState(false);
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
   const [priceSort, setPriceSort] = useState<string | null>("low-to-high");
   const [priceRange, setPriceRange] = useState<string | null>(searchParams.get("price") || null);
+  const [exploreMode, setExploreMode] = useState<"category" | "brand">(categoryFilter ? "brand" : "category");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
 
@@ -2313,129 +2291,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             </div>
 
             {/* =========================================================================
-                2. VIEW SWITCHER TAB BAR (Seamless 1-Click Switch between Views)
+                2. SWITCHABLE EXPLORE SHOWCASE (Shop by Category <-> Shop by Brand)
             ========================================================================= */}
-            <div className="bg-white p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto w-full sm:w-auto pb-0.5 sm:pb-0">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("categories")}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                    viewMode === "categories"
-                      ? "bg-[#2E6F40] text-white shadow-xs"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  <span>📂</span>
-                  <span>Shop by Category</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("brands")}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                    viewMode === "brands"
-                      ? "bg-[#2E6F40] text-white shadow-xs"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  <span>🏷️</span>
-                  <span>Shop by Brand</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("all")}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                    viewMode === "all"
-                      ? "bg-[#2E6F40] text-white shadow-xs"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  <span>🛍️</span>
-                  <span>All Products</span>
-                </button>
-              </div>
-
-              {categoryFilter && (
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 hidden md:flex items-center gap-1.5 ml-auto">
-                  <span>Category:</span>
-                  <span className="font-bold text-[#2E6F40] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                    {categoryFilter}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* =========================================================================
-                3. OPTIONAL VIEW A: SHOP BY CATEGORY (Visual Image Cards Grid)
-            ========================================================================= */}
-            {viewMode === "categories" && (
-              <div className="bg-white p-3 sm:p-4 md:p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5 sm:space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
-                    <h2 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                      Shop by Category
-                    </h2>
-                  </div>
-                  <Link 
-                    href="/products" 
-                    className="text-xs sm:text-sm font-bold text-[#2E6F40] hover:text-[#235832] flex items-center gap-1.5 hover:underline transition-colors"
-                  >
-                    <span>View All</span>
-                    <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
-                  {SHOWCASE_CATEGORIES.map((cat) => {
-                    const isActive = categoryFilter?.toLowerCase() === cat.queryParam.toLowerCase();
-                    return (
-                      <Link
-                        key={cat.id}
-                        href={`/products?category=${encodeURIComponent(cat.queryParam)}`}
-                        className={`group bg-white rounded-2xl sm:rounded-3xl border overflow-hidden transition-all duration-300 hover:shadow-lg flex flex-col ${
-                          isActive 
-                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md scale-[1.01]" 
-                            : "border-slate-200/90 hover:border-emerald-300 shadow-2xs"
-                        }`}
-                      >
-                        <div className="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
-                          <Image
-                            src={cat.image}
-                            alt={cat.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            unoptimized
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                        <div className="p-3 sm:p-4 text-center flex flex-col items-center justify-center flex-1 bg-white">
-                          <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors leading-tight">
-                            {cat.name}
-                          </h3>
-                          <span className="text-[10px] sm:text-xs font-semibold text-slate-500 group-hover:text-[#2E6F40] mt-1 flex items-center gap-1 transition-colors">
-                            <span>View Catalog</span>
-                            <span>&rarr;</span>
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* =========================================================================
-                4. OPTIONAL VIEW B: BRAND SHOWCASE CARDS (Shop by Brand Grid)
-            ========================================================================= */}
-            {viewMode === "brands" && (
-              <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
                   <div>
                     <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                      <span className="w-2.5 h-5 bg-[#2E6F40] rounded-full" />
                       <span>
-                        {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                        {exploreMode === "category"
+                          ? "Shop by Category"
+                          : activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
                           ? "Explore Refurbished Mobile Brands"
                           : activeKey === "mobiles"
                           ? "Explore Mobile Brands"
@@ -2454,11 +2321,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           : "Shop by Brand"}
                       </span>
                       <span className="text-xs font-bold text-slate-400 font-mono">
-                        ({brandList.length})
+                        ({exploreMode === "category" ? SHOWCASE_CATEGORIES.length : brandList.length})
                       </span>
                     </h2>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                      {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                      {exploreMode === "category"
+                        ? "Browse our complete catalog organized by top product departments"
+                        : activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
                         ? "Select a brand to view 32-point tested Grade A+ refurbished smartphones with 6-month warranty"
                         : activeKey === "laptops"
                         ? "Select a brand to view high-performance laptops, MacBooks & gaming rigs with official warranty"
@@ -2475,41 +2344,102 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         : "Select a brand to view authentic products with official warranty & offers"}
                     </p>
                   </div>
-                  
-                  {/* Quick Sort & Clear Filter */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
-                      <select
-                        value={priceSort || "featured"}
-                        onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
-                        className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
-                      >
-                        <option value="low-to-high">Price: Low to High</option>
-                        <option value="high-to-low">Price: High to Low</option>
-                        <option value="featured">Featured / Default</option>
-                      </select>
-                    </div>
-
-                    {selectedBrand && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const targetUrl = categoryFilter 
-                            ? `/products?category=${encodeURIComponent(categoryFilter)}` 
-                            : `/products`;
-                          router.push(targetUrl, { scroll: false });
-                        }}
-                        className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <span>Clear ({selectedBrand})</span>
-                        <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
-                      </button>
-                    )}
-                  </div>
                 </div>
+                
+                {/* Switch Button & Sort & Filters */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Toggle Switch */}
+                  <div className="inline-flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => setExploreMode("category")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                        exploreMode === "category"
+                          ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <FontAwesomeIcon icon={faLayerGroup} className="text-[11px]" />
+                      <span>Shop by Category</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExploreMode("brand")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                        exploreMode === "brand"
+                          ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <FontAwesomeIcon icon={faTags} className="text-[11px]" />
+                      <span>Shop by Brand</span>
+                    </button>
+                  </div>
 
-                {/* Brand Cards (Placed in Grid) */}
+                  {/* Quick Sort */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
+                    <select
+                      value={priceSort || "featured"}
+                      onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
+                      className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
+                    >
+                      <option value="low-to-high">Price: Low to High</option>
+                      <option value="high-to-low">Price: High to Low</option>
+                      <option value="featured">Featured / Default</option>
+                    </select>
+                  </div>
+
+                  {selectedBrand && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetUrl = categoryFilter 
+                          ? `/products?category=${encodeURIComponent(categoryFilter)}` 
+                          : `/products`;
+                        router.push(targetUrl, { scroll: false });
+                      }}
+                      className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <span>Clear ({selectedBrand})</span>
+                      <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* VIEW 1: CATEGORY CARDS (When exploreMode === 'category') */}
+              {exploreMode === "category" ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
+                  {SHOWCASE_CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={cat.url}
+                      className="group bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#2E6F40] transition-all overflow-hidden flex flex-col cursor-pointer"
+                    >
+                      <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
+                        <Image
+                          src={cat.image}
+                          alt={cat.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="p-3 sm:p-4 flex flex-col items-center justify-center text-center bg-white flex-1">
+                        <h3 className="text-xs sm:text-sm md:text-base font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1">
+                          {cat.name}
+                        </h3>
+                        <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#2E6F40] flex items-center gap-1 mt-1 transition-colors">
+                          {cat.subtitle}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                /* VIEW 2: BRAND CARDS (When exploreMode === 'brand') */
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 w-full">
                   {/* All Brands Option Card */}
                   <div
@@ -2587,8 +2517,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     );
                   })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* =========================================================================
                 3. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
