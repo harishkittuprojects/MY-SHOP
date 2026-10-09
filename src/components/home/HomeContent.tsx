@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Hero from "@/components/home/Hero";
 import { useRouter } from "next/navigation";
+import { products as defaultProducts } from "@/lib/data";
 
 // Category configurations with meta details, icons, and highlights
 interface CategoryConfig {
@@ -157,8 +158,8 @@ const FLIPKART_APP_CATEGORIES = [
 
 export default function HomeContent() {
   const [categories, setCategories] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>(defaultProducts || []);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -186,7 +187,6 @@ export default function HomeContent() {
     const controller = new AbortController();
     
     async function fetchData() {
-      setIsLoading(true);
       try {
         const [catRes, prodRes] = await Promise.all([
           fetch("/api/categoryList", { signal: controller.signal, cache: "no-store", headers: { "Accept": "application/json" } }),
@@ -196,12 +196,19 @@ export default function HomeContent() {
         const catData = catRes.ok ? await catRes.json() : [];
         const prodData = prodRes.ok ? await prodRes.json() : [];
         
-        setCategories(Array.isArray(catData) ? catData : []);
-        setProducts(Array.isArray(prodData) ? prodData : []);
+        if (Array.isArray(catData) && catData.length > 0) {
+          setCategories(catData);
+        }
+        if (Array.isArray(prodData) && prodData.length > 0) {
+          setProducts(prodData);
+        } else {
+          setProducts(defaultProducts);
+        }
       } catch (err: any) {
         if (err.name !== 'AbortError') {
           console.error("Failed to fetch data:", err);
         }
+        setProducts(defaultProducts);
       } finally {
         setIsLoading(false);
       }
@@ -366,7 +373,8 @@ export default function HomeContent() {
 
   // Compute populated category sections dynamically (compact 2-4 items per category for fast mobile browsing)
   const populatedCategorySections = useMemo(() => {
-    if (!products || products.length === 0) return [];
+    const prodsToUse = (products && products.length > 0) ? products : (defaultProducts || []);
+    if (!prodsToUse || prodsToUse.length === 0) return [];
     
     const sections: {
       config: CategoryConfig;
@@ -376,7 +384,7 @@ export default function HomeContent() {
 
     // Prioritize configured categories that contain matching products
     PREDEFINED_CATEGORIES.forEach(config => {
-      const matched = filterProductsForCategory(config.id, products);
+      const matched = filterProductsForCategory(config.id, prodsToUse);
       if (matched.length > 0) {
         sections.push({
           config,
@@ -385,6 +393,15 @@ export default function HomeContent() {
         });
       }
     });
+
+    // If no category matched specifically, provide fallback shelf
+    if (sections.length === 0 && prodsToUse.length > 0) {
+      sections.push({
+        config: PREDEFINED_CATEGORIES[0],
+        items: prodsToUse.slice(0, 6),
+        totalCount: prodsToUse.length
+      });
+    }
 
     return sections;
   }, [products]);
