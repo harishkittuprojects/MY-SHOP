@@ -567,8 +567,8 @@ export default function ProductDetailPage({
           
           {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Large & High Impact) ======================= */}
           <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start">
-            {/* Main Image Viewer (Big, Crisp, Beautiful Presentation) */}
-            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-xs flex items-center justify-center group overflow-hidden">
+            {/* Main Image Viewer (Full Screen Edge-to-Edge Cover) */}
+            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-slate-100 border border-slate-200/90 rounded-2xl sm:rounded-3xl p-0 shadow-xs flex items-center justify-center group overflow-hidden">
               {/* Top Action Buttons */}
               <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
                 <button
@@ -591,14 +591,14 @@ export default function ProductDetailPage({
                 </button>
               </div>
 
-              {/* Main Product Image (Expanded, Prominent & High Resolution) */}
-              <div className="relative w-full h-full flex items-center justify-center">
+              {/* Main Product Image (Full Total Cover Edge-to-Edge) */}
+              <div className="relative w-full h-full overflow-hidden">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-contain p-2 sm:p-3 transition-transform duration-300 group-hover:scale-105 cursor-zoom-in drop-shadow-md"
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
                     priority
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
                     unoptimized
@@ -634,7 +634,7 @@ export default function ProductDetailPage({
                     src={img}
                     alt={`${product.name} thumbnail ${idx + 1}`}
                     fill
-                    className="object-contain p-0.5"
+                    className="object-cover w-full h-full"
                     unoptimized
                   />
                 </button>
