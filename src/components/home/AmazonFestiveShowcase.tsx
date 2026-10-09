@@ -1668,13 +1668,85 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     } else {
       // Standard category filter
       if (categoryFilter) {
-        const catKey = categoryFilter.toLowerCase();
+        const catKey = categoryFilter.toLowerCase().trim();
+        const isRefurbishedMode = 
+          activeKey === "refurbished" || 
+          catKey.includes("refurbish") || 
+          catKey.includes("old / refurbished") || 
+          catKey.includes("old-refurbished");
+          
+        const isAccessoriesMode = 
+          activeKey === "accessories" || 
+          (catKey.includes("accessories") && !isRefurbishedMode);
+
+        const isNewMobilesMode = 
+          (activeKey === "mobiles" || catKey === "mobiles" || catKey === "mobile") && 
+          !isRefurbishedMode && 
+          !isAccessoriesMode;
+
         list = list.filter(p => {
           const c = (p.category || p.category_name || "").toLowerCase();
           const cid = (p.category_id || "").toLowerCase();
           const sub = (p.sub_category || "").toLowerCase();
-          return c.includes(catKey) || cid.includes(catKey) || sub.includes(catKey) || catKey.includes(c) ||
-                 (catKey.includes("mobile") && (c.includes("mobile") || cid.includes("mobile") || sub.includes("phone") || sub.includes("flagship")));
+          const pName = (p.name || "").toLowerCase();
+          const desc = (p.description || "").toLowerCase();
+
+          if (isRefurbishedMode) {
+            // Must strictly be a refurbished mobile
+            const isRefurbishedProduct = 
+              c.includes("refurbish") || c.includes("old") ||
+              cid.includes("refurbish") || cid.includes("old") ||
+              sub.includes("refurbish") || sub.includes("old") ||
+              pName.includes("refurbished") || pName.includes("like new") ||
+              pName.includes("pre-owned") || pName.includes("second hand") ||
+              desc.includes("refurbished") ||
+              Boolean(p.condition);
+
+            // Never include accessories/cables/adapters in refurbished mobiles shelf
+            const isAccessory = 
+              c.includes("accessories") || cid.includes("accessories") || 
+              sub.includes("accessories") || sub.includes("charger") || 
+              pName.includes("adapter") || pName.includes("cable") || 
+              pName.includes("power bank") || pName.includes("case") || 
+              pName.includes("screen guard");
+
+            return isRefurbishedProduct && !isAccessory;
+          }
+
+          if (isAccessoriesMode) {
+            return (
+              c.includes("accessories") || cid.includes("accessories") || 
+              sub.includes("accessories") || sub.includes("charger") || 
+              sub.includes("cable") || sub.includes("case") || 
+              sub.includes("cover") || pName.includes("adapter") || 
+              pName.includes("charger") || pName.includes("cable")
+            );
+          }
+
+          if (isNewMobilesMode) {
+            // Exclude refurbished and accessories from brand new mobiles
+            const isRefurbishedProduct = 
+              c.includes("refurbish") || c.includes("old") ||
+              cid.includes("refurbish") || cid.includes("old") ||
+              sub.includes("refurbish") || sub.includes("old") ||
+              pName.includes("refurbished") ||
+              Boolean(p.condition);
+
+            const isAccessory = 
+              c.includes("accessories") || cid.includes("accessories") || 
+              sub.includes("accessories") || pName.includes("adapter") || 
+              pName.includes("cable") || pName.includes("charger");
+
+            if (isRefurbishedProduct || isAccessory) return false;
+
+            return (
+              c.includes("mobile") || cid.includes("mobile") || 
+              sub.includes("mobile") || sub.includes("phone") || 
+              sub.includes("flagship") || c === "mobiles"
+            );
+          }
+
+          return c.includes(catKey) || cid.includes(catKey) || sub.includes(catKey) || catKey.includes(c);
         });
       }
 
@@ -1999,13 +2071,23 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 <div>
                   <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
                     <span className="w-2.5 h-5 bg-[#2E6F40] rounded-full" />
-                    <span>{activeKey === "mobiles" ? "Explore Mobile Brands" : "Shop by Brand"}</span>
+                    <span>
+                      {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                        ? "Explore Refurbished Mobile Brands"
+                        : activeKey === "mobiles"
+                        ? "Explore Mobile Brands"
+                        : activeKey === "accessories"
+                        ? "Explore Accessories Brands"
+                        : "Shop by Brand"}
+                    </span>
                     <span className="text-xs font-bold text-slate-400 font-mono">
                       ({brandList.length})
                     </span>
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                    Select a brand to view authentic smartphones with official warranty &amp; offers
+                    {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
+                      ? "Select a brand to view 32-point tested Grade A+ refurbished smartphones with 6-month warranty"
+                      : "Select a brand to view authentic smartphones with official warranty & offers"}
                   </p>
                 </div>
                 
@@ -2140,7 +2222,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       <span className="w-2 sm:w-2.5 h-4 sm:h-5 bg-[#2E6F40] rounded-full" />
                       <span>
                         {selectedBrand 
-                          ? `Showing "${selectedBrand}" Smartphones (${matchedCatalogProducts.length})` 
+                          ? `Showing "${selectedBrand}" ${activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished")) ? "Refurbished Mobiles" : activeKey === "accessories" ? "Accessories" : "Smartphones"} (${matchedCatalogProducts.length})` 
                           : `${config.categoryHeading} Catalog (${matchedCatalogProducts.length})`}
                       </span>
                     </h2>
