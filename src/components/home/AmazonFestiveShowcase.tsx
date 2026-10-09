@@ -2019,35 +2019,35 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </div>
               </div>
 
-              {/* Brand Cards (Placed Horizontally in Scrollable Rail) */}
-              <div className="flex flex-row items-stretch gap-2.5 overflow-x-auto no-scrollbar pb-2 scroll-smooth">
+              {/* Brand Cards (Placed in 2 Columns / Two Rows Grid) */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 w-full">
                 {/* All Brands Option Card */}
                 <div
                   onClick={() => handleBrandClick("")}
-                  className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer min-w-[110px] max-w-[130px] shrink-0 ${
+                  className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full ${
                     !selectedBrand 
-                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.02]" 
+                      ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
                       : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
                   }`}
                 >
-                  <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-emerald-50/60 to-white flex items-center justify-center p-2.5 border-b border-slate-100">
-                    {!selectedBrand && (
-                      <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
-                        Active
-                      </span>
-                    )}
-                    <div className="w-10 h-10 rounded-xl bg-[#2E6F40]/10 text-[#2E6F40] flex items-center justify-center font-black text-xs border border-emerald-200 shadow-2xs group-hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#2E6F40]/10 text-[#2E6F40] flex items-center justify-center font-black text-xs border border-emerald-200 shadow-2xs shrink-0 group-hover:scale-105 transition-transform">
                       ★ ALL
                     </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
+                        All Brands
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
+                        Full Catalog
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
-                    <h3 className="text-xs font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate w-full">
-                      All Brands
-                    </h3>
-                    <p className="text-[9px] text-slate-400 font-semibold truncate w-full mt-0.5">
-                      Full Catalog
-                    </p>
-                  </div>
+                  {!selectedBrand && (
+                    <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
+                      Active
+                    </span>
+                  )}
                 </div>
 
                 {/* Specific Brand Cards */}
@@ -2057,46 +2057,42 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <div
                       key={b.id || i}
                       onClick={() => handleBrandClick(b.query)}
-                      className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative cursor-pointer min-w-[110px] max-w-[130px] shrink-0 ${
+                      className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full ${
                         isSelected 
-                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.02]" 
+                          ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
                           : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
                       }`}
                     >
-                      {/* Brand Logo Canvas */}
-                      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-2.5 sm:p-3 overflow-hidden border-b border-slate-100">
-                        {isSelected && (
-                          <span className="absolute top-1.5 right-1.5 z-10 bg-[#2E6F40] text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
-                            Active
-                          </span>
-                        )}
-                        
-                        {b.logo_url ? (
-                          <div className="relative w-full h-full flex items-center justify-center">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1 overflow-hidden shrink-0">
+                          {b.logo_url ? (
                             <Image 
                               src={b.logo_url} 
                               alt={b.name} 
                               fill 
-                              className="object-contain p-1.5 group-hover:scale-105 transition-transform duration-200" 
+                              className="object-contain p-1 group-hover:scale-105 transition-transform duration-200" 
                               unoptimized 
                             />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shadow-inner">
-                            {b.name.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-700 font-black text-xs">
+                              {b.name.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
+                            {b.name}
+                          </h3>
+                          <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
+                            Official Store
+                          </p>
+                        </div>
                       </div>
-
-                      {/* Brand Card Details */}
-                      <div className="p-2 sm:p-2.5 text-center flex flex-col items-center justify-center">
-                        <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-1 leading-snug">
-                          {b.name}
-                        </h3>
-                        <p className="text-[10px] text-slate-400 font-semibold line-clamp-1 mt-0.5">
-                          Official Store
-                        </p>
-                      </div>
+                      {isSelected && (
+                        <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
+                          Active
+                        </span>
+                      )}
                     </div>
                   );
                 })}
