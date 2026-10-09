@@ -591,33 +591,38 @@ export default function HomeContent() {
               </h2>
             </div>
 
-            {/* Switch Toggle: [ 📂 Shop by Category | 🏷️ Shop by Brand ] */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 shadow-2xs">
+            {/* ON / OFF Toggle Switch & View All link */}
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+              <div 
+                onClick={() => setHomeExploreMode(prev => prev === "brand" ? "category" : "brand")}
+                className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs transition-all cursor-pointer select-none"
+                title="Toggle between Category and Brand view"
+              >
+                <span className="text-xs font-bold text-slate-700">
+                  {homeExploreMode === "brand" ? "Brands View" : "Category View"}
+                </span>
+
                 <button
                   type="button"
-                  onClick={() => setHomeExploreMode("category")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                    homeExploreMode === "category"
-                      ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
-                      : "text-slate-600 hover:text-slate-900"
+                  role="switch"
+                  aria-checked={homeExploreMode === "brand"}
+                  className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    homeExploreMode === "brand" ? "bg-[#2E6F40]" : "bg-slate-300"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faLayerGroup} className="text-[11px]" />
-                  <span>Shop by Category</span>
+                  <span className="sr-only">Toggle Category and Brand view</span>
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      homeExploreMode === "brand" ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setHomeExploreMode("brand")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                    homeExploreMode === "brand"
-                      ? "bg-white text-[#2E6F40] shadow-sm border border-slate-200/80 scale-[1.02]"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faTags} className="text-[11px]" />
-                  <span>Shop by Brand</span>
-                </button>
+
+                <span className={`text-[10px] font-black uppercase tracking-wider ${
+                  homeExploreMode === "brand" ? "text-[#2E6F40]" : "text-slate-400"
+                }`}>
+                  {homeExploreMode === "brand" ? "ON" : "OFF"}
+                </span>
               </div>
 
               {/* View All link */}
