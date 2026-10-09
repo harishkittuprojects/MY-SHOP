@@ -160,6 +160,7 @@ export default function HomeContent() {
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>(defaultProducts || []);
   const [mobileBrands, setMobileBrands] = useState<any[]>([]);
+  const [selectedMobileBrand, setSelectedMobileBrand] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
@@ -390,11 +391,24 @@ export default function HomeContent() {
 
     // Prioritize configured categories that contain matching products
     PREDEFINED_CATEGORIES.forEach(config => {
-      const matched = filterProductsForCategory(config.id, prodsToUse);
+      let matched = filterProductsForCategory(config.id, prodsToUse);
+      if (config.id === "mobiles" && selectedMobileBrand !== "all") {
+        const bTarget = selectedMobileBrand.toLowerCase();
+        const brandFiltered = matched.filter(p => {
+          const pName = (p.name || "").toLowerCase();
+          const pBrand = (p.brand || "").toLowerCase();
+          const pDesc = (p.description || "").toLowerCase();
+          return pName.includes(bTarget) || pBrand.includes(bTarget) || pDesc.includes(bTarget);
+        });
+        if (brandFiltered.length > 0) {
+          matched = brandFiltered;
+        }
+      }
+
       if (matched.length > 0) {
         sections.push({
           config,
-          items: matched.slice(0, 6), // 2 on mobile, up to 6 on desktop
+          items: matched.slice(0, 12),
           totalCount: matched.length
         });
       }
@@ -410,7 +424,7 @@ export default function HomeContent() {
     }
 
     return sections;
-  }, [products]);
+  }, [products, selectedMobileBrand]);
 
   return (
     <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 pb-8 md:pb-12 w-full max-w-full overflow-x-hidden bg-[#f1f3f6]">
@@ -521,6 +535,20 @@ export default function HomeContent() {
                   {config.id === "mobiles" && (
                     <div className="px-3 py-2 bg-slate-50/90 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
                       <span className="text-[10px] font-black uppercase text-slate-400 shrink-0 mr-0.5">Brands:</span>
+                      
+                      {/* All Brands Button */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMobileBrand("all")}
+                        className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-2xs shrink-0 active:scale-95 transition-all cursor-pointer ${
+                          selectedMobileBrand === "all"
+                            ? "bg-[#2E6F40] text-white border-[#2E6F40] shadow-sm font-black"
+                            : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200/90"
+                        }`}
+                      >
+                        All Brands
+                      </button>
+
                       {(mobileBrands.length > 0 ? mobileBrands : [
                         { name: "Samsung Galaxy", query: "Samsung" },
                         { name: "Apple iPhone", query: "Apple" },
@@ -532,26 +560,39 @@ export default function HomeContent() {
                         { name: "Xiaomi / Redmi", query: "Redmi" },
                         { name: "Nothing Phone", query: "Nothing" },
                         { name: "iQOO", query: "iQOO" }
-                      ]).map((b: any, bIdx: number) => (
-                        <Link
-                          key={b.id || bIdx}
-                          href={`/products?category=Mobiles&search=${encodeURIComponent(b.query || b.name)}`}
-                          className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-white hover:bg-[#2E6F40] text-slate-700 hover:text-white border border-slate-200/90 shadow-2xs shrink-0 active:scale-95 transition-all flex items-center gap-1.5"
-                        >
-                          {b.logo_url && (
-                            <div className="w-3.5 h-3.5 rounded-full bg-white overflow-hidden relative shrink-0 border border-slate-200">
-                              <Image
-                                src={b.logo_url}
-                                alt={b.name}
-                                fill
-                                className="object-contain p-0.5"
-                                unoptimized
-                              />
-                            </div>
-                          )}
-                          <span>{b.name}</span>
-                        </Link>
-                      ))}
+                      ]).map((b: any, bIdx: number) => {
+                        const bQuery = b.query || b.name;
+                        const isSelected = selectedMobileBrand.toLowerCase() === bQuery.toLowerCase() || 
+                                           selectedMobileBrand.toLowerCase() === b.name.toLowerCase();
+                        
+                        return (
+                          <button
+                            key={b.id || bIdx}
+                            type="button"
+                            onClick={() => {
+                              setSelectedMobileBrand(isSelected ? "all" : bQuery);
+                            }}
+                            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-2xs shrink-0 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer ${
+                              isSelected
+                                ? "bg-[#2E6F40] text-white border-[#2E6F40] shadow-sm font-black"
+                                : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200/90"
+                            }`}
+                          >
+                            {b.logo_url && (
+                              <div className="w-3.5 h-3.5 rounded-full bg-white overflow-hidden relative shrink-0 border border-slate-200">
+                                <Image
+                                  src={b.logo_url}
+                                  alt={b.name}
+                                  fill
+                                  className="object-contain p-0.5"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                            <span>{b.name}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
 
