@@ -217,7 +217,7 @@ export default function HomeContent() {
     setFormData({ name: "", phone: "", message: "" });
   };
 
-  // Helper to categorize products cleanly
+  // Helper to categorize products cleanly and robustly
   const filterProductsForCategory = (catKey: string, allProducts: any[]) => {
     const key = catKey.toLowerCase();
     
@@ -245,13 +245,22 @@ export default function HomeContent() {
                          (cond.includes("used") && !cond.includes("brand new"));
         if (isRefurb) return false;
 
-        // 3. Must be a mobile / smartphone
+        // 3. Must NOT be fashion, jewellery, EV, or laptop
+        const isOther = cat.includes("fashion") || cat.includes("jewel") || cat.includes("ev") || cat.includes("vehicle") || cat.includes("laptop") || cat.includes("computer");
+        if (isOther) return false;
+
+        // 4. Must be a mobile / smartphone or brand match
         return (
           cat === "mobiles" || catId === "mobiles" || catId === "mobiles-accessories" ||
           sub.includes("phone") || sub.includes("flagship") || sub.includes("mobile") ||
           name.includes("galaxy") || name.includes("iphone") || name.includes("oneplus") || 
-          name.includes("pixel") || name.includes("vivo") || name.includes("realme") || 
-          name.includes("redmi") || name.includes("poco") || name.includes("motorola")
+          name.includes("onplus") || name.includes("nord") || name.includes("fold") || 
+          name.includes("flip") || name.includes("ultra") || name.includes("pixel") || 
+          name.includes("vivo") || name.includes("realme") || name.includes("redmi") || 
+          name.includes("poco") || name.includes("motorola") || name.includes("moto") || 
+          name.includes("oppo") || name.includes("iqoo") || name.includes("nothing") || 
+          name.includes("5g") || name.includes("4g") || name.includes("pro max") || 
+          (!cat && !sub) // Default unclassified products to mobiles
         );
       });
     }
@@ -292,7 +301,9 @@ export default function HomeContent() {
     if (key === "smart-technology" || key === "smart technology") {
       return allProducts.filter(p => {
         const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
-        return cat.includes("smart");
+        const sub = (p.sub_category || "").toLowerCase();
+        const name = (p.name || "").toLowerCase();
+        return cat.includes("smart") || sub.includes("watch") || name.includes("watch") || name.includes("smart");
       });
     }
 
@@ -341,12 +352,16 @@ export default function HomeContent() {
     });
   };
 
-  // Top 4 core categories to feature on the homepage
+  // Top core categories to feature on the homepage
   const HOMEPAGE_FEATURED_CATEGORY_IDS = [
     "mobiles",
     "old-refurbished-mobiles",
     "mobile-accessories",
-    "smart-technology"
+    "smart-technology",
+    "fashion",
+    "jewellery",
+    "ev-vehicles",
+    "computers-tablets"
   ];
 
   // Compute populated category sections dynamically (compact 2-4 items per category for fast mobile browsing)
@@ -359,8 +374,8 @@ export default function HomeContent() {
       totalCount: number;
     }[] = [];
 
-    // Show only the top 4 core categories on homepage
-    PREDEFINED_CATEGORIES.filter(c => HOMEPAGE_FEATURED_CATEGORY_IDS.includes(c.id)).forEach(config => {
+    // Prioritize configured categories that contain matching products
+    PREDEFINED_CATEGORIES.forEach(config => {
       const matched = filterProductsForCategory(config.id, products);
       if (matched.length > 0) {
         sections.push({
@@ -467,14 +482,14 @@ export default function HomeContent() {
                       </div>
                     </div>
 
-                    {/* Right: "View All" Link */}
+                    {/* Right: "View All" Dark Pill Button matching screenshot */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Link 
                         href={categoryUrl} 
-                        className="bg-[#2E6F40] hover:bg-[#255a33] text-white font-black px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1.5"
+                        className="bg-slate-950 hover:bg-black text-white font-bold px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
                       >
                         <span>View All ({totalCount})</span>
-                        <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
+                        <FontAwesomeIcon icon={faArrowRight} className="text-[9px]" />
                       </Link>
                     </div>
                   </div>
