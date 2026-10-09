@@ -363,7 +363,11 @@ export default function AdminBrandsPage() {
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
+                        <div 
+                          onClick={() => handleOpenEditModal(brand)}
+                          className="w-11 h-11 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden relative p-1 cursor-pointer hover:border-[#2E6F40] transition-colors"
+                          title="Click to change logo"
+                        >
                           {brand.logo_url ? (
                             <Image
                               src={brand.logo_url}
@@ -373,9 +377,10 @@ export default function AdminBrandsPage() {
                               unoptimized
                             />
                           ) : (
-                            <span className="font-black text-[#2E6F40] text-sm">
-                              {brand.name.charAt(0)}
-                            </span>
+                            <div className="flex flex-col items-center justify-center text-slate-400 hover:text-[#2E6F40]">
+                              <FontAwesomeIcon icon={faCloudUploadAlt} className="text-xs" />
+                              <span className="text-[8px] font-bold mt-0.5">+Logo</span>
+                            </div>
                           )}
                         </div>
                         <div>
@@ -450,15 +455,100 @@ export default function AdminBrandsPage() {
                 {isEditing ? "Edit Mobile Brand" : "Add New Mobile Brand"}
               </span>
               <h2 className="text-xl font-black text-slate-900 mt-1">
-                {isEditing ? `Edit "${formData.name}"` : "Create Brand Filter"}
+                {isEditing ? `Edit "${formData.name}"` : "Create Brand"}
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                This brand will appear in the store&apos;s &quot;Popular Brands&quot; filter &amp; quick brand selection bar.
+                Upload official brand logo image to display across website filters &amp; brand cards.
               </p>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Brand Logo Upload & Live Preview Canvas */}
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
+                  Brand Logo Image <span className="text-emerald-700 font-bold">(Recommended)</span>
+                </label>
+
+                <div className="flex items-center gap-3">
+                  {/* Visual Logo Preview */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative shrink-0 shadow-2xs">
+                    {formData.logo_url ? (
+                      <Image
+                        src={formData.logo_url}
+                        alt="Logo preview"
+                        fill
+                        className="object-contain p-2"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="text-center p-1 text-slate-400">
+                        <FontAwesomeIcon icon={faCloudUploadAlt} className="text-lg mb-0.5" />
+                        <span className="text-[9px] font-bold block leading-none">No Logo</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Actions & Controls */}
+                  <div className="flex-1 space-y-1.5">
+                    <label className="w-full py-2 px-3 rounded-xl bg-[#2E6F40] hover:bg-[#255a33] text-white font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 text-center">
+                      <FontAwesomeIcon icon={faCloudUploadAlt} />
+                      <span>{uploadingImage ? "Uploading Image..." : "Upload Image from Device"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileUpload}
+                        className="hidden"
+                        disabled={uploadingImage}
+                      />
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Or paste image URL (https://...)"
+                      value={formData.logo_url || ""}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, logo_url: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick 1-Click Popular Brand Logo Presets */}
+                <div className="pt-2 border-t border-slate-200/80">
+                  <span className="text-[10px] font-bold text-slate-400 block mb-1">Quick Presets (1-Click Fill):</span>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    {[
+                      { name: "Samsung", url: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" },
+                      { name: "Apple", url: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+                      { name: "OnePlus", url: "https://upload.wikimedia.org/wikipedia/commons/f/f8/OP_LU_RGB_red_191211.svg" },
+                      { name: "Pixel", url: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" },
+                      { name: "Vivo", url: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Vivo_mobile_logo.png" },
+                      { name: "Motorola", url: "https://upload.wikimedia.org/wikipedia/commons/4/47/Motorola_new_logo.svg" },
+                      { name: "Realme", url: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Realme_logo.svg" },
+                      { name: "Redmi", url: "https://upload.wikimedia.org/wikipedia/commons/2/29/Xiaomi_logo.svg" },
+                      { name: "Nothing", url: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Nothing_Technology_Limited_logo.svg" },
+                      { name: "iQOO", url: "https://upload.wikimedia.org/wikipedia/commons/7/77/IQOO_logo.svg" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            logo_url: preset.url,
+                            name: prev.name || preset.name,
+                            query: prev.query || preset.name,
+                          }));
+                        }}
+                        className="px-2 py-0.5 bg-white hover:bg-emerald-50 text-slate-600 hover:text-[#2E6F40] border border-slate-200 hover:border-emerald-300 rounded-md text-[10px] font-bold shrink-0 transition-colors shadow-2xs"
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Brand Name */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -495,7 +585,7 @@ export default function AdminBrandsPage() {
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6F40]/30 focus:border-[#2E6F40]"
                 />
                 <span className="text-[10px] text-slate-400 font-medium mt-0.5 block">
-                  When a customer clicks this brand, products containing this keyword in their name or tags will be displayed.
+                  When a customer clicks this brand, products containing this keyword will be displayed.
                 </span>
               </div>
 
@@ -528,36 +618,11 @@ export default function AdminBrandsPage() {
                 </div>
               </div>
 
-              {/* Brand Logo / Image */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Brand Logo / Icon (Optional)</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="https://... or upload image"
-                    value={formData.logo_url || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, logo_url: e.target.value }))}
-                    className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6F40]/30 focus:border-[#2E6F40]"
-                  />
-                  <label className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-colors shrink-0 flex items-center gap-1.5 border border-slate-200">
-                    <FontAwesomeIcon icon={faCloudUploadAlt} />
-                    <span>{uploadingImage ? "Uploading..." : "Upload"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageFileUpload}
-                      className="hidden"
-                      disabled={uploadingImage}
-                    />
-                  </label>
-                </div>
-              </div>
-
               {/* Active Toggle */}
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
                   <span className="text-xs font-bold text-slate-800 block">Active Status</span>
-                  <span className="text-[10px] text-slate-400">Show this brand in live store filter lists</span>
+                  <span className="text-[10px] text-slate-400">Show this brand in live store brand cards</span>
                 </div>
                 <input
                   type="checkbox"
@@ -571,19 +636,21 @@ export default function AdminBrandsPage() {
               <div className="p-3 rounded-2xl bg-emerald-50/50 border border-emerald-200/80 space-y-1.5">
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#2E6F40] flex items-center gap-1">
                   <FontAwesomeIcon icon={faEye} />
-                  <span>Live Store Appearance Preview</span>
+                  <span>Live Storefront Card Preview</span>
                 </span>
-                <div className="flex items-center gap-2 pt-1">
-                  {/* Preview Pill */}
-                  <span className="px-3 py-1 rounded-full bg-[#2E6F40] text-white text-xs font-bold shadow-2xs flex items-center gap-1.5">
-                    <span>{formData.name || "Brand Name"}</span>
-                    <FontAwesomeIcon icon={faCheck} className="text-[9px]" />
-                  </span>
-                  {/* Preview Checkbox */}
-                  <span className="px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-xs font-bold text-[#2E6F40] flex items-center gap-1.5 shadow-2xs">
-                    <input type="checkbox" checked readOnly className="accent-[#2E6F40]" />
-                    <span>{formData.name || "Brand Name"}</span>
-                  </span>
+                <div className="flex items-center gap-3 pt-1">
+                  {/* Mini Product Card Preview */}
+                  <div className="w-28 bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col items-center">
+                    <div className="w-12 h-10 bg-slate-50 rounded-lg flex items-center justify-center relative overflow-hidden mb-1 p-1">
+                      {formData.logo_url ? (
+                        <Image src={formData.logo_url} alt="preview" fill className="object-contain" unoptimized />
+                      ) : (
+                        <span className="text-xs font-bold text-slate-400">Logo</span>
+                      )}
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-900 truncate w-full text-center">{formData.name || "Brand"}</span>
+                    <span className="text-[9px] font-bold bg-[#2E6F40] text-white px-2 py-0.5 rounded-full mt-1">Explore</span>
+                  </div>
                 </div>
               </div>
 
