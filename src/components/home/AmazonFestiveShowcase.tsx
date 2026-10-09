@@ -2127,7 +2127,94 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* =========================================================================
-                BRAND SHOWCASE CARDS (Product-Style Brand Cards Grid with Logos)
+                1. DYNAMIC BANNER SLIDER (Top Featured Hero Carousel)
+            ========================================================================= */}
+            <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
+              
+              {/* Banner Carousel Display (Compact & Proportionate on Mobile) */}
+              <div className="relative w-full h-[140px] xs:h-[160px] sm:h-[220px] md:h-[270px] lg:h-[300px] overflow-hidden">
+                {banners.length > 0 ? (
+                  banners.map((b, idx) => (
+                    <div 
+                      key={b.id || idx}
+                      className={`absolute inset-0 transition-opacity duration-700 ${idx === activeBannerIndex ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}
+                    >
+                      <Link href={b.link_url || b.link || "/products"} className="block relative w-full h-full">
+                        <Image 
+                          src={b.image_url} 
+                          alt={b.title || `Promotional Banner ${idx + 1}`}
+                          fill
+                          className="object-cover object-center w-full h-full"
+                          priority={idx === 0}
+                          unoptimized
+                        />
+                        {/* Gradient Overlay & Captions */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-end p-2.5 sm:p-4 md:p-6">
+                          {b.tag && (
+                            <span className="self-start text-[9px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 mb-1 sm:mb-2 shadow-xs">
+                              {b.tag}
+                            </span>
+                          )}
+                          {b.title && (
+                            <h2 className="text-sm sm:text-xl md:text-2xl font-black text-white leading-tight drop-shadow-md">
+                              {b.title}
+                            </h2>
+                          )}
+                          {b.subtitle && (
+                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-200 font-medium mt-0.5 sm:mt-1 line-clamp-1 sm:line-clamp-2 drop-shadow-sm max-w-xl">
+                              {b.subtitle}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white p-4">
+                    <p className="text-sm font-bold text-slate-300">Festive Season Deals Live Now</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Slider Dots & Navigation */}
+              {banners.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveBannerIndex(prev => (prev - 1 + banners.length) % banners.length)}
+                    className="absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
+                    aria-label="Previous Banner"
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveBannerIndex(prev => (prev + 1) % banners.length)}
+                    className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
+                    aria-label="Next Banner"
+                  >
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </button>
+
+                  <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 z-20 flex items-center gap-1 sm:gap-1.5">
+                    {banners.map((_, dotIdx) => (
+                      <button
+                        key={dotIdx}
+                        type="button"
+                        onClick={() => setActiveBannerIndex(dotIdx)}
+                        className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
+                          dotIdx === activeBannerIndex ? "w-5 sm:w-6 bg-emerald-400" : "w-1.5 sm:w-2 bg-white/60 hover:bg-white"
+                        }`}
+                        aria-label={`Go to slide ${dotIdx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* =========================================================================
+                2. BRAND SHOWCASE CARDS (Product-Style Brand Cards Grid with Logos)
             ========================================================================= */}
             <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
@@ -2290,7 +2377,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             </div>
 
             {/* =========================================================================
-                2. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
+                3. MATCHING PRODUCTS CATALOG SHELF (Positioned directly under Brands)
             ========================================================================= */}
             {matchedCatalogProducts.length > 0 && (
               <div 
@@ -2399,91 +2486,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </button>
               </div>
             )}
-
-            {/* ======================= 3. DYNAMIC BANNER SLIDER ======================= */}
-            <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
-              
-              {/* Banner Carousel Display (Compact & Proportionate on Mobile) */}
-              <div className="relative w-full h-[140px] xs:h-[160px] sm:h-[220px] md:h-[270px] lg:h-[300px] overflow-hidden">
-                {banners.length > 0 ? (
-                  banners.map((b, idx) => (
-                    <div 
-                      key={b.id || idx}
-                      className={`absolute inset-0 transition-opacity duration-700 ${idx === activeBannerIndex ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}
-                    >
-                      <Link href={b.link_url || b.link || "/products"} className="block relative w-full h-full">
-                        <Image 
-                          src={b.image_url} 
-                          alt={b.title || `Promotional Banner ${idx + 1}`}
-                          fill
-                          className="object-cover object-center w-full h-full"
-                          priority={idx === 0}
-                          unoptimized
-                        />
-                        {/* Gradient Overlay & Captions */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-end p-2.5 sm:p-4 md:p-6">
-                          {b.tag && (
-                            <span className="self-start text-[9px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 mb-1 sm:mb-2 shadow-xs">
-                              {b.tag}
-                            </span>
-                          )}
-                          {b.title && (
-                            <h2 className="text-sm sm:text-xl md:text-2xl font-black text-white leading-tight drop-shadow-md">
-                              {b.title}
-                            </h2>
-                          )}
-                          {b.subtitle && (
-                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-200 font-medium mt-0.5 sm:mt-1 line-clamp-1 sm:line-clamp-2 drop-shadow-sm max-w-xl">
-                              {b.subtitle}
-                            </p>
-                          )}
-                        </div>
-                      </Link>
-                    </div>
-                  ))
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white p-4">
-                    <p className="text-sm font-bold text-slate-300">Festive Season Deals Live Now</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Slider Dots & Navigation */}
-              {banners.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setActiveBannerIndex(prev => (prev - 1 + banners.length) % banners.length)}
-                    className="absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
-                    aria-label="Previous Banner"
-                  >
-                    <FontAwesomeIcon icon={faChevronLeft} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveBannerIndex(prev => (prev + 1) % banners.length)}
-                    className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-[10px] sm:text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-white/20"
-                    aria-label="Next Banner"
-                  >
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </button>
-
-                  <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 z-20 flex items-center gap-1 sm:gap-1.5">
-                    {banners.map((_, dotIdx) => (
-                      <button
-                        key={dotIdx}
-                        type="button"
-                        onClick={() => setActiveBannerIndex(dotIdx)}
-                        className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
-                          dotIdx === activeBannerIndex ? "w-5 sm:w-6 bg-emerald-400" : "w-1.5 sm:w-2 bg-white/60 hover:bg-white"
-                        }`}
-                        aria-label={`Go to slide ${dotIdx + 1}`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
 
           </div>
         </div>
