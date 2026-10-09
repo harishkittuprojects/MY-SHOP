@@ -434,7 +434,13 @@ export const ProductsDB = {
     }
 
     // Always update in-memory catalog cache so changes are immediately visible
-    const defIdx = defaultProducts.findIndex((p) => String(p.id).toLowerCase() === String(id).toLowerCase());
+    const cleanId = String(id).toLowerCase().trim();
+    const defIdx = defaultProducts.findIndex((p) => {
+      const pId = String(p.id).toLowerCase().trim();
+      if (pId === cleanId) return true;
+      const slug = (p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return slug === cleanId || cleanId.includes(pId) || pId.includes(cleanId);
+    });
     if (defIdx !== -1) {
       defaultProducts[defIdx] = { ...defaultProducts[defIdx], ...recordToUpsert };
     } else {

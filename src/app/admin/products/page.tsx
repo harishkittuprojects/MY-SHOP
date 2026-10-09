@@ -830,9 +830,14 @@ export default function AdminProductsPage() {
           }))
         : [];
 
+      const allImages = Array.isArray(formData.images) && formData.images.length > 0
+        ? formData.images.filter(Boolean)
+        : (primaryImg ? [primaryImg] : []);
+
       const payload = {
         ...formData,
         image_url: primaryImg,
+        images: allImages,
         variants: cleanedVariants,
         category_name: cat ? cat.name : formData.category_name,
         price: Number(formData.price),
