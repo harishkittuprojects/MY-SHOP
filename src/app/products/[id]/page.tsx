@@ -565,16 +565,16 @@ export default function ProductDetailPage({
       <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
-          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Flipkart Style) ======================= */}
-          <div className="lg:col-span-5 w-full flex flex-col gap-3">
-            {/* Main Image Viewer (Flipkart Clean Card - Full Uncropped Product) */}
-            <div className="relative w-full aspect-square min-h-[340px] sm:min-h-[440px] md:min-h-[480px] bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-5 shadow-2xs flex items-center justify-center group overflow-hidden">
+          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Large & High Impact) ======================= */}
+          <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start">
+            {/* Main Image Viewer (Big, Crisp, Beautiful Presentation) */}
+            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-xs flex items-center justify-center group overflow-hidden">
               {/* Top Action Buttons */}
-              <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+              <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowShareModal(true)}
-                  className="w-9 h-9 rounded-full bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90"
+                  className="w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 flex items-center justify-center shadow-md border border-slate-200/80 transition-all cursor-pointer backdrop-blur-xs active:scale-90 hover:text-emerald-700"
                   title="Share product"
                 >
                   <FontAwesomeIcon icon={faShareNodes} className="text-sm" />
@@ -582,8 +582,8 @@ export default function ProductDetailPage({
                 <button
                   type="button"
                   onClick={() => product && toggleWishlist(product as any)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer backdrop-blur-xs active:scale-90 ${
-                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md border border-slate-200/80 transition-all cursor-pointer backdrop-blur-xs active:scale-90 ${
+                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white/95 hover:bg-rose-50 text-slate-600 hover:text-rose-600"
                   }`}
                   title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
                 >
@@ -591,16 +591,16 @@ export default function ProductDetailPage({
                 </button>
               </div>
 
-              {/* Main Product Image (Centered, Full Proportion, Uncropped) */}
-              <div className="relative w-full h-full max-h-[440px] flex items-center justify-center">
+              {/* Main Product Image (Expanded, Prominent & High Resolution) */}
+              <div className="relative w-full h-full flex items-center justify-center">
                 {selectedImage ? (
                   <Image
                     src={selectedImage}
                     alt={product.name}
                     fill
-                    className="object-contain p-1 sm:p-2 transition-transform duration-300 group-hover:scale-105 cursor-zoom-in"
+                    className="object-contain p-2 sm:p-3 transition-transform duration-300 group-hover:scale-105 cursor-zoom-in drop-shadow-md"
                     priority
-                    sizes="(max-width: 768px) 100vw, 500px"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
                     unoptimized
                   />
                 ) : (
@@ -608,8 +608,8 @@ export default function ProductDetailPage({
                 )}
 
                 {isOutOfStock && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
-                    <span className="bg-red-600 text-white font-black px-4 py-1.5 rounded-lg text-sm uppercase tracking-wider shadow-lg">
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20">
+                    <span className="bg-red-600 text-white font-black px-4 py-2 rounded-xl text-sm uppercase tracking-wider shadow-lg">
                       Out of Stock
                     </span>
                   </div>
@@ -618,16 +618,16 @@ export default function ProductDetailPage({
             </div>
 
             {/* Horizontal Thumbnail Strip Below Main Image */}
-            <div className="w-full flex items-center justify-start gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-0.5">
+            <div className="w-full flex items-center justify-start gap-2.5 overflow-x-auto scrollbar-none py-1 px-0.5">
               {allImages.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   onMouseEnter={() => setSelectedImage(img)}
-                  className={`relative w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden p-1 ${
+                  className={`relative w-16 h-18 sm:w-20 sm:h-22 rounded-xl sm:rounded-2xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden p-1.5 ${
                     selectedImage === img
-                      ? "border-[#2E6F40] shadow-md ring-2 ring-[#2E6F40]/50 scale-105"
-                      : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100"
+                      ? "border-[#2E6F40] shadow-md ring-2 ring-[#2E6F40]/40 scale-105"
+                      : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100 shadow-2xs"
                   }`}
                 >
                   <Image
