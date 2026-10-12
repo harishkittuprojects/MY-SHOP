@@ -49,7 +49,7 @@ const slideVariants = {
 };
 
 const slideTransition = {
-  x: { type: "spring", stiffness: 300, damping: 30 },
+  x: { type: "spring" as const, stiffness: 300, damping: 30 },
   opacity: { duration: 0.2 },
 };
 
@@ -138,11 +138,11 @@ export default function ProductImageGallery({
         const nextIdx = (currentIndex + 1) % galleryImages.length;
         const prevIdx = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
         if (galleryImages[nextIdx]) {
-          const img1 = new Image();
+          const img1 = new window.Image();
           img1.src = galleryImages[nextIdx];
         }
         if (galleryImages[prevIdx]) {
-          const img2 = new Image();
+          const img2 = new window.Image();
           img2.src = galleryImages[prevIdx];
         }
       }
