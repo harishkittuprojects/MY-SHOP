@@ -428,7 +428,7 @@ export default function Navbar() {
           <Link href="/" className={`hover:text-gray-600 font-medium ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
           <Link href="/products" className={`hover:text-gray-600 font-medium ${pathname?.startsWith("/products") || pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""}`}>Products</Link>
           <Link href="/services/display-replacement" className={`hover:text-gray-600 font-medium flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}>
-            <FontAwesomeIcon icon={faWrench} className="text-xs text-secondary" />
+            <FontAwesomeIcon icon={faWrench} className="text-xs text-secondary w-3.5 h-3.5 shrink-0" />
             Screen Repair
           </Link>
           <Link href="/about" className={`hover:text-gray-600 font-medium ${pathname === "/about" ? "text-secondary font-bold" : ""}`}>About</Link>
@@ -443,7 +443,7 @@ export default function Navbar() {
               onSubmit={(e) => handleSearch(e)}
               className="flex items-center bg-white border border-slate-200/90 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#2E6F40]/30 focus-within:border-[#2E6F40] w-32 xs:w-44 sm:w-60 md:w-72 lg:w-80 xl:w-96 shadow-2xs"
             >
-              <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-2 flex-shrink-0" />
+              <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs sm:text-sm mr-2 flex-shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <input
                 type="text"
                 placeholder="Search brands, products, electronics..."
@@ -491,7 +491,7 @@ export default function Navbar() {
             aria-label="Wishlist"
             title="Wishlist"
           >
-            <FontAwesomeIcon icon={faHeart} className="text-xl sm:text-2xl" />
+            <FontAwesomeIcon icon={faHeart} className="text-xl sm:text-2xl w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
             {wishlistCount > 0 && (
               <span className="absolute 0 top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
                 {wishlistCount}
@@ -503,14 +503,14 @@ export default function Navbar() {
           {user ? (
             <Link href="/account" className="flex items-center gap-1.5 text-slate-800 hover:text-primary transition-colors flex-shrink-0 p-1">
               <div className="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
-                <FontAwesomeIcon icon={faUser} className="text-sm" />
+                <FontAwesomeIcon icon={faUser} className="text-sm w-3.5 h-3.5" />
               </div>
               <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Account</span>
             </Link>
           ) : (
             <Link href="/login" className="flex items-center gap-1.5 text-slate-800 hover:text-primary transition-colors flex-shrink-0 p-1">
               <div className="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-xs">
-                <FontAwesomeIcon icon={faUser} className="text-sm" />
+                <FontAwesomeIcon icon={faUser} className="text-sm w-3.5 h-3.5" />
               </div>
               <span className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-wider">Sign In</span>
             </Link>
@@ -522,7 +522,7 @@ export default function Navbar() {
             className="hidden md:flex relative p-2 transition-colors text-slate-800 hover:text-secondary items-center justify-center active:scale-95 flex-shrink-0"
             aria-label="View Cart"
           >
-            <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
+            <FontAwesomeIcon icon={faShoppingCart} className="text-xl w-5 h-5 shrink-0" />
             {cartCount > 0 && (
               <span className="absolute 0 top-0.5 right-0.5 bg-secondary text-secondary-foreground text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full shadow-sm">
                 {cartCount}
@@ -538,7 +538,7 @@ export default function Navbar() {
           onSubmit={(e) => handleSearch(e)}
           className="flex items-center bg-white border border-slate-200/90 rounded-xl px-3 py-2 transition-all focus-within:ring-2 focus-within:ring-[#2E6F40]/30 focus-within:border-[#2E6F40] w-full shadow-2xs"
         >
-          <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs mr-2 flex-shrink-0" />
+          <FontAwesomeIcon icon={faSearch} className="text-slate-400 text-xs mr-2 flex-shrink-0 w-3.5 h-3.5" />
           <input
             type="text"
             placeholder="Search brands, products, electronics..."

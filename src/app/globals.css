@@ -45,6 +45,15 @@ body {
   box-sizing: border-box;
 }
 
+/* Prevent FontAwesome icons from rendering oversized before CSS loads on refresh */
+svg.svg-inline--fa {
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  vertical-align: -0.125em;
+  overflow: visible;
+}
+
 .container {
   max-width: 1440px;
   width: 100%;
