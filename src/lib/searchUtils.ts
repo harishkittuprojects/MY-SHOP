@@ -99,9 +99,9 @@ export function matchProductSearch(product: any, rawQuery: string): boolean {
     // Direct token substring match
     if (fullText.includes(tok)) return true;
 
-    // Prefix/Suffix matching on words
+    // Prefix matching on words (e.g. searching "app" matches word "apple", or "iphone" matches "iphones")
     const words = fullText.split(/[\s,_\-+()|/]+/);
-    return words.some(w => (w.length >= 3 && tok.length >= 3 && (w.startsWith(tok) || tok.startsWith(w))));
+    return words.some(w => (w.length >= 3 && tok.length >= 3 && w.startsWith(tok)));
   });
 
   // If all tokens match

@@ -1367,6 +1367,75 @@ function getCategoryConfig(categoryParam?: string | null): { key: string; config
   return { key: "default", config: CATEGORY_CONFIGS.default };
 }
 
+// Brand keyword mapping for accurate matching across all categories
+const BRAND_ALIAS_MAP: Record<string, string[]> = {
+  // Mobiles
+  samsung: ["samsung", "galaxy", "z fold", "z flip"],
+  apple: ["apple", "iphone", "macbook", "ipad", "airpods", "apple watch"],
+  oneplus: ["oneplus", "nord"],
+  pixel: ["google pixel", "pixel", "google"],
+  google: ["google pixel", "pixel", "google"],
+  vivo: ["vivo", "iqoo"],
+  motorola: ["motorola", "moto", "razr"],
+  moto: ["motorola", "moto", "razr"],
+  realme: ["realme", "narzo"],
+  redmi: ["redmi", "xiaomi", "mi "],
+  xiaomi: ["redmi", "xiaomi", "mi "],
+  nothing: ["nothing", "cmf"],
+  iqoo: ["iqoo"],
+  
+  // Laptops & Computers
+  dell: ["dell", "inspiron", "xps", "alienware"],
+  hp: ["hp", "pavilion", "omen", "victus", "spectre", "envy"],
+  lenovo: ["lenovo", "thinkpad", "legion", "ideapad", "yoga"],
+  asus: ["asus", "rog", "tuf", "zenbook", "vivobook"],
+  acer: ["acer", "predator", "nitro", "aspire", "swift"],
+  msi: ["msi", "cyborg", "katana", "stealth"],
+  
+  // Fashion & Lifestyle
+  nike: ["nike", "air max", "jordan"],
+  puma: ["puma"],
+  zara: ["zara"],
+  levi: ["levi", "levi's", "levis"],
+  "allen solly": ["allen solly", "solly"],
+  tommy: ["tommy", "tommy hilfiger", "hilfiger"],
+  fossil: ["fossil"],
+  "ray-ban": ["ray-ban", "rayban", "aviator", "wayfarer"],
+  
+  // Watches & Smart Wearables
+  noise: ["noise", "colorfit"],
+  boat: ["boat", "storm", "wave", "airdopes", "rockerz"],
+  "fire-boltt": ["fire-boltt", "fireboltt", "boltt"],
+  amazfit: ["amazfit", "gtr", "gts", "bip"],
+  garmin: ["garmin", "forerunner", "fenix"],
+  
+  // Jewellery
+  tanishq: ["tanishq", "mia"],
+  kalyan: ["kalyan"],
+  malabar: ["malabar"],
+  giva: ["giva"],
+  caratlane: ["caratlane"],
+  joyalukkas: ["joyalukkas"],
+  senco: ["senco"],
+  
+  // Accessories
+  anker: ["anker", "ganprime", "soundcore"],
+  spigen: ["spigen", "ultra hybrid", "tough armor"],
+  belkin: ["belkin", "boostcharge"],
+  ambrane: ["ambrane"],
+  baseus: ["baseus"],
+  portronics: ["portronics"],
+  
+  // EV Vehicles
+  ather: ["ather", "450x", "450s", "rizta"],
+  ola: ["ola", "s1 pro", "s1 air", "s1x"],
+  tvs: ["tvs", "iqube"],
+  chetak: ["chetak", "bajaj"],
+  vida: ["vida", "hero vida"],
+  simple: ["simple energy", "simple one"],
+  revolt: ["revolt", "rv400"]
+};
+
 export default function AmazonFestiveShowcase({ category }: { category?: string | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1651,75 +1720,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     fetchProducts();
   }, []);
 
-  // Brand keyword mapping for accurate matching across all categories
-  const BRAND_ALIAS_MAP: Record<string, string[]> = {
-    // Mobiles
-    samsung: ["samsung", "galaxy", "z fold", "z flip"],
-    apple: ["apple", "iphone", "macbook", "ipad", "airpods", "apple watch"],
-    oneplus: ["oneplus", "nord"],
-    pixel: ["google pixel", "pixel", "google"],
-    google: ["google pixel", "pixel", "google"],
-    vivo: ["vivo", "iqoo"],
-    motorola: ["motorola", "moto", "razr"],
-    moto: ["motorola", "moto", "razr"],
-    realme: ["realme", "narzo"],
-    redmi: ["redmi", "xiaomi", "mi "],
-    xiaomi: ["redmi", "xiaomi", "mi "],
-    nothing: ["nothing", "cmf"],
-    iqoo: ["iqoo"],
-    
-    // Laptops & Computers
-    dell: ["dell", "inspiron", "xps", "alienware"],
-    hp: ["hp", "pavilion", "omen", "victus", "spectre", "envy"],
-    lenovo: ["lenovo", "thinkpad", "legion", "ideapad", "yoga"],
-    asus: ["asus", "rog", "tuf", "zenbook", "vivobook"],
-    acer: ["acer", "predator", "nitro", "aspire", "swift"],
-    msi: ["msi", "cyborg", "katana", "stealth"],
-    
-    // Fashion & Lifestyle
-    nike: ["nike", "air max", "jordan"],
-    puma: ["puma"],
-    zara: ["zara"],
-    levi: ["levi", "levi's", "levis"],
-    "allen solly": ["allen solly", "solly"],
-    tommy: ["tommy", "tommy hilfiger", "hilfiger"],
-    fossil: ["fossil"],
-    "ray-ban": ["ray-ban", "rayban", "aviator", "wayfarer"],
-    
-    // Watches & Smart Wearables
-    noise: ["noise", "colorfit"],
-    boat: ["boat", "storm", "wave", "airdopes", "rockerz"],
-    "fire-boltt": ["fire-boltt", "fireboltt", "boltt"],
-    amazfit: ["amazfit", "gtr", "gts", "bip"],
-    garmin: ["garmin", "forerunner", "fenix"],
-    
-    // Jewellery
-    tanishq: ["tanishq", "mia"],
-    kalyan: ["kalyan"],
-    malabar: ["malabar"],
-    giva: ["giva"],
-    caratlane: ["caratlane"],
-    joyalukkas: ["joyalukkas"],
-    senco: ["senco"],
-    
-    // Accessories
-    anker: ["anker", "ganprime", "soundcore"],
-    spigen: ["spigen", "ultra hybrid", "tough armor"],
-    belkin: ["belkin", "boostcharge"],
-    ambrane: ["ambrane"],
-    baseus: ["baseus"],
-    portronics: ["portronics"],
-    
-    // EV Vehicles
-    ather: ["ather", "450x", "450s", "rizta"],
-    ola: ["ola", "s1 pro", "s1 air", "s1x"],
-    tvs: ["tvs", "iqube"],
-    chetak: ["chetak", "bajaj"],
-    vida: ["vida", "hero vida"],
-    simple: ["simple energy", "simple one"],
-    revolt: ["revolt", "rv400"]
-  };
-
   const matchedCatalogProducts = useMemo(() => {
     if (!catalogProducts || catalogProducts.length === 0) return [];
     
@@ -1810,7 +1810,20 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               pName.includes("power bank") || pName.includes("case") ||
               pName.includes("cover") || pName.includes("screen guard");
 
-            if (isRefurbishedProduct || isAccessory) return false;
+            const isEvOrVehicle = 
+              c.includes("ev") || cid.includes("ev") || 
+              sub.includes("bike") || sub.includes("scooter") || 
+              pName.includes("motorcycle") || pName.includes("electric bike") || 
+              pName.includes("electric scooter") || pName.includes("vehicle");
+
+            const isComputerOrLaptop =
+              c.includes("laptop") || cid.includes("laptop") ||
+              c.includes("computer") || cid.includes("computer") ||
+              sub.includes("laptop") || sub.includes("macbook") ||
+              pName.includes("macbook") || pName.includes("thinkpad") ||
+              pName.includes("laptop");
+
+            if (isRefurbishedProduct || isAccessory || isEvOrVehicle || isComputerOrLaptop) return false;
 
             return (
               c.includes("mobile") || cid.includes("mobile") || 
@@ -1820,7 +1833,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               pName.includes("oneplus") || pName.includes("pixel") || 
               pName.includes("vivo") || pName.includes("realme") || 
               pName.includes("redmi") || pName.includes("poco") || 
-              pName.includes("motorola") || pName.includes("moto") || 
+              pName.includes("motorola") || /(^|[^a-zA-Z])moto([^a-zA-Z]|$)/i.test(pName) || 
               pName.includes("oppo") || pName.includes("iqoo") || 
               pName.includes("nothing") || pName.includes("5g") || 
               pName.includes("smartphone")
@@ -1831,38 +1844,62 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         });
       }
 
-      // Filter by search query or selected brand strictly (with smart typo and model number matching)
+      // Filter by search query or selected brand strictly (guaranteeing only matching brand products are returned)
       if (selectedBrand) {
         const q = selectedBrand.trim().toLowerCase();
         const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
         const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
 
         const matchedBySmartSearch = list.filter(p => {
-          // 1. Direct and smart typo/number match (e.g. "17", "ihpone 17", "16", "s26")
-          if (matchProductSearch(p, selectedBrand)) return true;
+          const pName = (p.name || "").toLowerCase();
+          const pBrand = (p.brand || "").toLowerCase();
+          const pSub = (p.sub_category || "").toLowerCase();
 
-          // 2. Brand keyword match
-          const name = (p.name || "").toLowerCase();
-          const brand = (p.brand || "").toLowerCase();
-          const sub = (p.sub_category || "").toLowerCase();
+          // 1. If product has an explicit brand property
+          if (pBrand) {
+            return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
+          }
 
-          if (brand && keywords.some(k => brand.includes(k))) return true;
-          if (keywords.some(k => name.includes(k))) return true;
-          if (keywords.some(k => sub.includes(k))) return true;
+          // 2. Name / Title match with brand keywords (e.g. "Apple iPhone", "Samsung Galaxy")
+          const nameMatches = keywords.some(k => {
+            const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
+            return regex.test(pName) || pName.includes(k);
+          });
 
-          return false;
+          if (!nameMatches) return false;
+
+          // 3. Negative check: ensure this product doesn't belong to another major manufacturer
+          const OTHER_MAJOR_BRANDS = [
+            "samsung", "apple", "iphone", "oneplus", "pixel", "vivo", "oppo", 
+            "realme", "redmi", "xiaomi", "motorola", "revolt", "ather", "ola", "tvs",
+            "lenovo", "dell", "hp", "asus", "acer", "boat", "noise", "tanishq"
+          ];
+          const foreignBrand = OTHER_MAJOR_BRANDS
+            .filter(ob => !keywords.some(k => k.includes(ob) || ob.includes(k)))
+            .some(ob => {
+              const regex = new RegExp(`(^|[^a-zA-Z0-9])${ob}([^a-zA-Z0-9]|$)`, "i");
+              return regex.test(pName);
+            });
+
+          return !foreignBrand;
         });
 
         if (matchedBySmartSearch.length > 0) {
           list = matchedBySmartSearch;
         } else {
           // Fallback to searching all catalog products across categories if category filter was overly restrictive
-          const globalMatches = catalogProducts.filter(p => matchProductSearch(p, selectedBrand));
-          if (globalMatches.length > 0) {
-            list = globalMatches;
-          } else {
-            list = [];
-          }
+          const globalMatches = catalogProducts.filter(p => {
+            const pName = (p.name || "").toLowerCase();
+            const pBrand = (p.brand || "").toLowerCase();
+            if (pBrand) {
+              return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
+            }
+            return keywords.some(k => {
+              const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
+              return regex.test(pName) || pName.includes(k);
+            });
+          });
+          list = globalMatches;
         }
       }
     }
