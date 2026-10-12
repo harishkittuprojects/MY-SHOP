@@ -808,7 +808,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* ======================= COLUMN 2 (4 cols): Center Product Details ======================= */}
-          <div className="lg:col-span-4 w-full space-y-4 min-w-0">
+          <div className="lg:col-span-4 w-full space-y-4 min-w-0 self-start lg:pt-2.5">
             
             {/* Title & Brand Store Link */}
             <div className="space-y-1.5 border-b border-slate-200 pb-3">
@@ -1049,7 +1049,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* ======================= COLUMN 3 (3 cols): Amazon Right Buy Box ======================= */}
-          <div className="lg:col-span-3 min-w-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 sticky top-20 text-xs select-none">
+          <div className="lg:col-span-3 min-w-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 lg:sticky lg:top-20 self-start text-xs select-none">
 
             {/* Radio 1: With Exchange */}
             <div 
