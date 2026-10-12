@@ -104,6 +104,19 @@ svg.svg-inline--fa {
   100% { transform: translateX(-50%); }
 }
 
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  18% { transform: scale(1.35) rotate(-6deg); }
+  36% { transform: scale(0.92) rotate(4deg); }
+  54% { transform: scale(1.22) rotate(-2deg); }
+  72% { transform: scale(0.98); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-heartbeat {
+  animation: heartBeat 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 /* Hide Next.js development indicator overlay */
 nextjs-portal,
 [data-nextjs-dev-tools-button],
