@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @ts-ignore
   allowedDevOrigins: [
     "*.lhr.life",
     "80bbdff0213262.lhr.life",

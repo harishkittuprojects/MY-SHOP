@@ -872,7 +872,7 @@ export default function AdminProductsPage() {
 
     setSubmitting(true);
     try {
-      let finalImages = [...(formData.images || [])].filter(Boolean);
+      const finalImages = [...(formData.images || [])].filter(Boolean);
       let finalPrimaryImg = formData.image_url || finalImages[0] || "";
 
       // Ensure all base64 images are uploaded to Cloudinary CDN before final save
