@@ -1615,15 +1615,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       ];
     }
 
-    if (isMobileOrRefurb) {
-      return rawList.filter((b) => {
-        const n = (b.name || "").toLowerCase();
-        const q = (b.query || "").toLowerCase();
-        return !EXCLUDED_FROM_MOBILES.some((ex) => n.includes(ex) || q.includes(ex));
-      });
-    }
+    const filtered = isMobileOrRefurb
+      ? rawList.filter((b) => {
+          const n = (b.name || "").toLowerCase();
+          const q = (b.query || "").toLowerCase();
+          return !EXCLUDED_FROM_MOBILES.some((ex) => n.includes(ex) || q.includes(ex));
+        })
+      : rawList;
 
-    return rawList;
+    // Keep alphabetical order (A to Z) by brand name
+    return [...filtered].sort((a, b) => 
+      (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" })
+    );
   }, [categoryFilter, dbBrands, config.brands, activeKey]);
 
   // Sync selectedBrand with URL query param
@@ -2346,23 +2349,9 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     </div>
                   </div>
                   
-                  {/* Sort & Filters */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {/* Quick Sort */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-500 hidden xs:inline">Sort:</span>
-                      <select
-                        value={priceSort || "featured"}
-                        onChange={(e) => setPriceSort(e.target.value === "featured" ? null : e.target.value)}
-                        className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#2E6F40] cursor-pointer"
-                      >
-                        <option value="low-to-high">Price: Low to High</option>
-                        <option value="high-to-low">Price: High to Low</option>
-                        <option value="featured">Featured / Default</option>
-                      </select>
-                    </div>
-
-                    {selectedBrand && (
+                  {/* Active Brand Filter Clear Button */}
+                  {selectedBrand && (
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => handleBrandClick("")}
@@ -2371,8 +2360,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         <span>Clear ({selectedBrand})</span>
                         <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* BRAND CARDS GRID */}
