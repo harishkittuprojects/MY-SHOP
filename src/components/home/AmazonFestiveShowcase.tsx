@@ -1550,7 +1550,18 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     async function loadDynamicBrands() {
       try {
         if (!categoryFilter) {
-          setDbBrands([]);
+          const resAll = await fetch(`/api/brands`, { cache: "no-store" });
+          const allData = await resAll.json();
+          if (Array.isArray(allData) && allData.length > 0) {
+            setDbBrands(allData.map((b: any) => ({
+              id: b.id,
+              name: b.name,
+              query: b.query || b.name,
+              logo_url: b.logo_url || ""
+            })));
+          } else {
+            setDbBrands([]);
+          }
           return;
         }
         const res = await fetch(`/api/brands?category=${encodeURIComponent(categoryFilter)}`, { cache: "no-store" });
@@ -1587,11 +1598,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     loadDynamicBrands();
   }, [categoryFilter, activeKey]);
 
-  // Brand list for quick brand selection (tailored per active category)
-  // Only show brands when a category is selected (e.g., Mobiles, Laptops, Fashion)
+  // Brand list for quick brand selection (tailored per active category or catalog)
   const brandList: BrandItem[] = useMemo(() => {
-    if (!categoryFilter) return [];
-
     const isMobileOrRefurb = activeKey === "mobiles" || activeKey === "refurbished";
     const EXCLUDED_FROM_MOBILES = ["anker", "boat", "spigen", "noise", "nike", "tanishq"];
 
@@ -1608,7 +1616,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         { name: "Google Pixel", query: "Pixel" },
         { name: "Vivo", query: "Vivo" },
         { name: "Motorola", query: "Motorola" },
-        { name: "Realme", query: "realme" },
+        { name: "realme", query: "realme" },
         { name: "Xiaomi / Redmi", query: "Redmi" },
         { name: "Nothing Phone", query: "Nothing" },
         { name: "iQOO", query: "iQOO" }
@@ -2287,9 +2295,9 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
 
             {/* =========================================================================
-                2. BRAND SHOWCASE (Explore Brands Tailored Per Category)
+                2. BRAND SHOWCASE (Explore Brands Tailored Per Category or Catalog)
             ========================================================================= */}
-            {Boolean(categoryFilter) && brandList && brandList.length > 0 && (
+            {brandList && brandList.length > 0 && (
               <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
