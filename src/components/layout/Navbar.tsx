@@ -68,26 +68,34 @@ export default function Navbar() {
     return () => window.removeEventListener("recent_history_updated", handleRecentUpdate);
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    
-    // Check active session via our API
-    async function checkSession() {
-      try {
-        const res = await fetch("/api/auth/session", { 
-          signal: controller.signal,
-          cache: "no-store",
-          headers: { "Accept": "application/json" }
-        });
-        if (!res.ok) throw new Error("Session failed");
-        const session = await res.json();
-        setUser(session?.user || null);
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          setUser(null);
-        }
+  // Check active session via our API
+  const checkSession = async (signal?: AbortSignal) => {
+    try {
+      const res = await fetch("/api/auth/session", { 
+        signal,
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+      if (!res.ok) throw new Error("Session failed");
+      const session = await res.json();
+      setUser(session?.user || null);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setUser(null);
       }
     }
+  };
+
+  useEffect(() => {
+    const handleSessionUpdate = () => {
+      checkSession();
+    };
+    window.addEventListener("user_session_updated", handleSessionUpdate);
+    return () => window.removeEventListener("user_session_updated", handleSessionUpdate);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
     
     async function fetchData() {
       try {
@@ -106,7 +114,7 @@ export default function Navbar() {
 
     setIsUserDropdownOpen(false);
     setIsProductsDropdownOpen(false);
-    checkSession();
+    checkSession(controller.signal);
     fetchData();
     
     return () => controller.abort();

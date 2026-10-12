@@ -158,3 +158,62 @@ export async function logoutAction() {
   cookieStore.delete("auth_token");
   return { success: true };
 }
+
+export async function updateProfileNameAction(newName: string) {
+  try {
+    const trimmedName = (newName || "").trim();
+    if (!trimmedName) {
+      return { success: false, error: "Name cannot be empty" };
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    if (!token) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return { success: false, error: "Invalid session token" };
+    }
+
+    // 1. Update in MySQL users table if exists
+    try {
+      const email = decoded.email;
+      const phone = decoded.phone;
+      const sub = decoded.sub;
+      await mysql.query(
+        "UPDATE users SET name = ? WHERE email = ? OR phone = ? OR id = ?",
+        [trimmedName, email || "", phone || "", sub || ""]
+      );
+    } catch (dbErr) {
+      console.warn("DB update users fallback:", dbErr);
+    }
+
+    // 2. Issue updated JWT token with the new name
+    const updatedPayload = {
+      ...decoded,
+      name: trimmedName,
+    };
+    delete updatedPayload.exp;
+    delete updatedPayload.iat;
+
+    const newToken = jwt.sign(updatedPayload, JWT_SECRET, { expiresIn: "7d" });
+
+    cookieStore.set("auth_token", newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
+    return { success: true, name: trimmedName };
+  } catch (error: any) {
+    console.error("Update profile name error:", error);
+    return { success: false, error: error.message || "Failed to update profile name" };
+  }
+}
+

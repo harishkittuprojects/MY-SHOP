@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
+import mysql from "@/lib/mysql";
+
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev-only-change-this";
 
 export async function getSession() {
@@ -13,6 +15,20 @@ export async function getSession() {
     const decoded = jwt.verify(token, JWT_SECRET) as { email: string; sub: string; name?: string; phone?: string };
     
     let displayName = decoded.name;
+
+    // Check database for any updated name
+    try {
+      const dbUsers: any = await mysql.query(
+        "SELECT name FROM users WHERE email = ? OR phone = ? OR id = ? LIMIT 1",
+        [decoded.email || "", decoded.phone || "", decoded.sub || ""]
+      );
+      if (dbUsers && dbUsers[0]?.name) {
+        displayName = dbUsers[0].name;
+      }
+    } catch {
+      // Fallback to token decoded data
+    }
+
     if (!displayName || displayName === "Customer") {
       if (decoded.email && !decoded.email.endsWith("@myshop.local")) {
         const username = decoded.email.split("@")[0];

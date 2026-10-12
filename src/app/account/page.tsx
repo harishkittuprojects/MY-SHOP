@@ -24,7 +24,7 @@ import {
   faPlus,
   faBagShopping
 } from "@fortawesome/free-solid-svg-icons";
-import { logoutAction } from "@/lib/actions/auth";
+import { logoutAction, updateProfileNameAction } from "@/lib/actions/auth";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import InvoiceModal from "@/components/common/InvoiceModal";
@@ -47,6 +47,9 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   
   const [user, setUser] = useState<any>(null);
+  const [profileName, setProfileName] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -88,6 +91,7 @@ export default function AccountPage() {
         }
         
         setUser(session.user);
+        setProfileName(session.user.name || session.user.email?.split('@')[0] || "");
 
         // Fetch user's orders
         try {
@@ -121,6 +125,36 @@ export default function AccountPage() {
     await logoutAction();
     router.push("/");
     router.refresh();
+  };
+
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = profileName.trim();
+    if (!trimmed) {
+      setProfileMessage({ text: "Please enter your name", type: "error" });
+      return;
+    }
+    setIsSavingProfile(true);
+    setProfileMessage(null);
+    try {
+      const res = await updateProfileNameAction(trimmed);
+      if (res.success && res.name) {
+        setUser((prev: any) => ({ ...prev, name: res.name }));
+        setProfileName(res.name);
+        setProfileMessage({ text: "Profile name updated successfully!", type: "success" });
+        // Dispatch session update so header and other components update immediately
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("user_session_updated"));
+        }
+        router.refresh();
+      } else {
+        setProfileMessage({ text: res.error || "Failed to update profile name", type: "error" });
+      }
+    } catch (err: any) {
+      setProfileMessage({ text: err.message || "An error occurred", type: "error" });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleMoveWishlistToCart = (item: any) => {
@@ -576,36 +610,58 @@ export default function AccountPage() {
                   <p className="text-xs text-slate-500">Update your contact information and security preferences</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
-                    <input
-                      type="text"
-                      defaultValue={user.name || user.email?.split('@')[0]}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 outline-none focus:bg-white focus:border-secondary"
-                    />
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+                      <input
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Enter your full name"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 outline-none focus:bg-white focus:border-secondary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                      <input
+                        type="email"
+                        defaultValue={user.email}
+                        disabled
+                        className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-500 outline-none cursor-not-allowed"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
-                    <input
-                      type="email"
-                      defaultValue={user.email}
-                      disabled
-                      className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-500 outline-none cursor-not-allowed"
-                    />
-                  </div>
-                </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Account status: <strong>Active &amp; Verified</strong></span>
-                  <button
-                    type="button"
-                    onClick={() => alert("Profile updated successfully!")}
-                    className="px-5 py-2.5 bg-secondary text-white rounded-xl text-xs font-black shadow-md hover:bg-[#255732] transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                </div>
+                  {profileMessage && (
+                    <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                      profileMessage.type === "success" 
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200" 
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}>
+                      <FontAwesomeIcon icon={profileMessage.type === "success" ? faCheckCircle : faClock} />
+                      <span>{profileMessage.text}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-xs text-slate-500">Account status: <strong>Active &amp; Verified</strong></span>
+                    <button
+                      type="submit"
+                      disabled={isSavingProfile}
+                      className="px-5 py-2.5 bg-secondary text-white rounded-xl text-xs font-black shadow-md hover:bg-[#255732] transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                    >
+                      {isSavingProfile ? (
+                        <>
+                          <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <span>Save Changes</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
