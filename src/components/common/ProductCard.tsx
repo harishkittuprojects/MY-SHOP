@@ -52,7 +52,7 @@ export default function ProductCard({
   const router = useRouter();
   
   const normalizeImageUrl = (url?: string) => {
-    if (!url) return "/mobile-logo.png";
+    if (!url) return "/placeholder.png";
     if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("/")) return url;
     return `/${url}`;
   };

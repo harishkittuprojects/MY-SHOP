@@ -14,6 +14,9 @@ export default function BottomNavigation() {
   // Don't show bottom nav inside admin panel
   if (pathname?.startsWith("/admin")) return null;
 
+  // Don't show bottom nav on product detail pages (they have their own dedicated sticky Add to Cart / Buy Now bar)
+  if (pathname?.startsWith("/products/") && pathname !== "/products") return null;
+
   const isHome = pathname === "/";
   const isProducts = pathname?.startsWith("/products") || pathname?.startsWith("/categories");
   const isCart = pathname === "/cart";

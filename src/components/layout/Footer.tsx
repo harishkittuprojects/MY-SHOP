@@ -16,7 +16,7 @@ export default function Footer() {
             <Link href="/" className="inline-flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-lg">
                 <Image 
-                  src="/my-shop-logo.png" 
+                  src="/my-shop-icon.png" 
                   alt="My Shop Logo" 
                   width={44} 
                   height={44} 

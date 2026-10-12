@@ -129,7 +129,7 @@ export default function AccountPage() {
       name: item.name,
       price: item.price,
       quantity: 1,
-      image: item.image_url || item.image || "/mobile-logo.png",
+      image: item.image_url || item.image || "/placeholder.png",
       category: item.category || "Mobiles",
       selectedUnit: item.unit || "Default",
     });
@@ -437,7 +437,7 @@ export default function AccountPage() {
                         <div className="flex items-start gap-3 mb-3">
                           <div className="relative w-20 h-20 rounded-2xl bg-slate-50 border border-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
                             <Image
-                              src={item.image_url || item.image || "/mobile-logo.png"}
+                              src={item.image_url || item.image || "/placeholder.png"}
                               alt={item.name}
                               fill
                               className="object-contain p-1"

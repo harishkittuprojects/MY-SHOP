@@ -30,9 +30,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <CartProvider>
       <WishlistProvider>
         <SubscriptionProvider>
-          <div className="animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden relative">
-            <Navbar />
-            <CartToast />
+          <Navbar />
+          <CartToast />
+          <div className="w-full max-w-full overflow-x-clip relative">
             <main className="min-h-screen pb-14 md:pb-0 pt-0 w-full max-w-full overflow-x-hidden">
               {children}
             </main>

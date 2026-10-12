@@ -33,6 +33,11 @@ export default function Error({
           <p className="text-gray-500 font-bold uppercase tracking-tight text-sm">
             We encountered an unexpected error. Don't worry, our team is already on it.
           </p>
+          {error?.message && (
+            <div className="p-3 bg-red-100 border border-red-200 rounded-xl text-left text-xs font-mono text-red-700 max-h-32 overflow-auto">
+              {error.message}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">

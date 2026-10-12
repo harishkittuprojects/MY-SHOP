@@ -30,7 +30,6 @@ import { addRecentSearch, getRecentSearches, removeRecentSearch, clearRecentHist
 import { matchProductSearch, normalizeSearchTerm } from "@/lib/searchUtils";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<any>(null);
@@ -401,21 +400,10 @@ export default function Navbar() {
     );
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <nav
-      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white ${
-        isScrolled ? "py-0 shadow-md" : "py-0 shadow-sm"
-      }`}
-    >
-      <div className={`container transition-all duration-300 flex items-center justify-between gap-2 sm:gap-4 relative ${isScrolled ? "py-1.5" : "py-1.5 md:py-2"}`}>
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200/80 shadow-xs">
+        <div className="container flex items-center justify-between gap-2 sm:gap-4 relative py-1.5 md:py-2">
         {/* Left Section: Logo */}
         <div className="flex items-center flex-shrink-0 z-50">
           <Link 
@@ -425,12 +413,10 @@ export default function Navbar() {
             <Image 
               src="/my-shop-logo.png" 
               alt="My Shop Logo" 
-              width={160}
-              height={160}
-              sizes="(max-width: 768px) 44px, 64px"
-              className={`w-auto object-contain select-none transition-all duration-300 ${
-                isScrolled ? "h-9 sm:h-11 md:h-13" : "h-10 sm:h-12 md:h-15"
-              }`}
+              width={260}
+              height={80}
+              sizes="(max-width: 768px) 120px, 180px"
+              className="w-auto object-contain select-none h-10 sm:h-12 md:h-14"
               priority
               loading="eager"
             />
@@ -679,5 +665,8 @@ export default function Navbar() {
         </>
       )}
     </nav>
+    {/* Fixed Header Spacer */}
+    <div className="h-[98px] md:h-[72px] w-full shrink-0" aria-hidden="true" />
+  </>
   );
 }

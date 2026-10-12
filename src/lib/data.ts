@@ -515,9 +515,12 @@ export const products = [
     cashback_amount: 4000,
     warranty_period: "1 Year Official Apple India Warranty",
     condition: "Brand New Sealed",
-    image_url: "/products/iphone-16-pro-max.png",
+    image_url: "/products/iphone-16-pro-max-desert.png",
     images: [
-      "/products/iphone-16-pro-max.png"
+      "/products/iphone-16-pro-max-desert.png",
+      "/products/iphone-16-pro-max-natural.png",
+      "/products/iphone-16-pro-max-white.png",
+      "/products/iphone-16-pro-max-black.png"
     ],
     is_available: true,
     is_popular: true,
@@ -536,7 +539,7 @@ export const products = [
         original_price: 144900,
         stock_quantity: 18,
         sku: "IP16PM-256-DESERT",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-desert.png",
         is_active: true
       },
       {
@@ -550,7 +553,7 @@ export const products = [
         original_price: 144900,
         stock_quantity: 9,
         sku: "IP16PM-256-NATURAL",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-natural.png",
         is_active: true
       },
       {
@@ -564,7 +567,7 @@ export const products = [
         original_price: 144900,
         stock_quantity: 4,
         sku: "IP16PM-256-WHITE",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-white.png",
         is_active: true
       },
       {
@@ -578,7 +581,7 @@ export const products = [
         original_price: 144900,
         stock_quantity: 5,
         sku: "IP16PM-256-BLACK",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-black.png",
         is_active: true
       },
       {
@@ -592,7 +595,7 @@ export const products = [
         original_price: 164900,
         stock_quantity: 10,
         sku: "IP16PM-512-DESERT",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-desert.png",
         is_active: true
       },
       {
@@ -606,7 +609,7 @@ export const products = [
         original_price: 164900,
         stock_quantity: 6,
         sku: "IP16PM-512-NATURAL",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-natural.png",
         is_active: true
       },
       {
@@ -620,7 +623,7 @@ export const products = [
         original_price: 164900,
         stock_quantity: 3,
         sku: "IP16PM-512-BLACK",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-black.png",
         is_active: true
       },
       {
@@ -634,7 +637,7 @@ export const products = [
         original_price: 184900,
         stock_quantity: 4,
         sku: "IP16PM-1TB-DESERT",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-desert.png",
         is_active: true
       },
       {
@@ -648,7 +651,7 @@ export const products = [
         original_price: 184900,
         stock_quantity: 2,
         sku: "IP16PM-1TB-BLACK",
-        image_url: "/products/iphone-16-pro-max.png",
+        image_url: "/products/iphone-16-pro-max-black.png",
         is_active: true
       }
     ]

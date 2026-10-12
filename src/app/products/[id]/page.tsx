@@ -39,6 +39,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "@/components/common/ProductCard";
+import ProductImageGallery from "@/components/products/ProductImageGallery";
 
 interface ProductVariant {
   id: string;
@@ -123,7 +124,7 @@ export default function ProductDetailPage({
   const isWishlisted = isInWishlist(product?.id || "");
 
   const normalizeImageUrl = (url?: string) => {
-    if (!url) return "/mobile-logo.png";
+    if (!url) return "/placeholder.png";
     if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("/")) return url;
     return `/${url}`;
   };
@@ -294,6 +295,35 @@ export default function ProductDetailPage({
     return "#475569";
   };
 
+  // Helper to resolve specific color product image URL
+  const resolveColorImageUrl = (colorName: string, explicitUrl?: string): string => {
+    if (explicitUrl && explicitUrl.trim() !== "" && explicitUrl !== "/products/iphone-16-pro-max.png") {
+      return explicitUrl;
+    }
+    const c = (colorName || "").toLowerCase().trim();
+    const pName = (product?.name || "").toLowerCase();
+
+    // iPhone 16 Pro / Pro Max color variants
+    if (pName.includes("iphone 16 pro") || pName.includes("iphone 16 pro max")) {
+      if (c.includes("desert") || c.includes("gold")) return "/products/iphone-16-pro-max-desert.png";
+      if (c.includes("natural")) return "/products/iphone-16-pro-max-natural.png";
+      if (c.includes("white")) return "/products/iphone-16-pro-max-white.png";
+      if (c.includes("black")) return "/products/iphone-16-pro-max-black.png";
+    }
+
+    if (explicitUrl && explicitUrl.trim() !== "" && explicitUrl !== "/products/iphone-16-pro-max.png") {
+      return explicitUrl;
+    }
+
+    // Fallback if dark/black variant has no explicit URL but product.images has a 2nd image
+    if ((c.includes("black") || c.includes("dark")) && Array.isArray(product?.images) && product.images.length > 1) {
+      const distinctImg = product.images.find((img: string) => img !== product?.image_url);
+      if (distinctImg) return distinctImg;
+    }
+
+    return product?.image_url || (product?.images && product.images[0]) || product?.image || "/placeholder.png";
+  };
+
   // Distinct Available RAM Options (e.g. 6GB, 8GB, 12GB, 16GB)
   const availableRams = React.useMemo(() => {
     if (productVariants.length === 0) return [];
@@ -323,16 +353,17 @@ export default function ProductDetailPage({
     return filtered.length > 0 ? filtered : productVariants;
   }, [productVariants, selectedRam, availableRams]);
 
-  // Distinct Available Storages / Sizes for current RAM (Cleaned and Deduplicated)
+  // Distinct Available Storages / Sizes across ALL variants (Cleaned and Deduplicated)
   const availableStorages = React.useMemo(() => {
-    if (variantsForSelectedRam.length === 0) {
+    const sourceVariants = productVariants.length > 0 ? productVariants : variantsForSelectedRam;
+    if (sourceVariants.length === 0) {
       if (!product?.unit) return [];
       const rawUnits = product.unit.split(",").map((u) => u.trim()).filter(Boolean);
-      const cleaned = Array.from(new Set(rawUnits.map(u => cleanStorageLabel(u))));
-      return cleaned;
+      const cleaned = Array.from(new Set(rawUnits.map((u) => cleanStorageLabel(u))));
+      return cleaned.map((label) => ({ label, minPrice: product?.price || 0, hasStock: true }));
     }
     const map = new Map<string, { label: string; minPrice: number; hasStock: boolean }>();
-    variantsForSelectedRam.forEach((v) => {
+    sourceVariants.forEach((v) => {
       const raw = v.rom || v.storage_label || v.size || "Standard";
       const label = cleanStorageLabel(raw);
       const current = map.get(label);
@@ -349,7 +380,7 @@ export default function ProductDetailPage({
       }
     });
     return Array.from(map.values());
-  }, [variantsForSelectedRam, product]);
+  }, [productVariants, variantsForSelectedRam, product]);
 
   // Available Colors for the currently selected RAM + Storage
   const colorsForSelectedConfiguration = React.useMemo(() => {
@@ -365,7 +396,7 @@ export default function ProductDetailPage({
 
   // Universal Available Colors across ALL products & categories
   const availableColors = React.useMemo(() => {
-    const defaultProductImage = product?.image_url || (product?.images && product.images[0]) || product?.image || "/mobile-logo.png";
+    const defaultProductImage = product?.image_url || (product?.images && product.images[0]) || product?.image || "/placeholder.png";
     // 1. If explicit variants exist for selected configuration
     if (colorsForSelectedConfiguration.length > 0) {
       return colorsForSelectedConfiguration.map((v) => ({
@@ -375,7 +406,7 @@ export default function ProductDetailPage({
         price: v.price || product?.price || 0,
         stock_quantity: v.stock_quantity,
         is_active: v.is_active,
-        image_url: (v.image_url && v.image_url !== "/products/iphone-16-pro-max.png" && v.image_url.trim() !== "") ? v.image_url : defaultProductImage,
+        image_url: resolveColorImageUrl(v.color, v.image_url),
       }));
     }
 
@@ -393,7 +424,7 @@ export default function ProductDetailPage({
             price: v.price || product?.price || 0,
             stock_quantity: v.stock_quantity,
             is_active: v.is_active,
-            image_url: (v.image_url && v.image_url !== "/products/iphone-16-pro-max.png" && v.image_url.trim() !== "") ? v.image_url : defaultProductImage,
+            image_url: resolveColorImageUrl(v.color, v.image_url),
           });
         }
       });
@@ -413,7 +444,7 @@ export default function ProductDetailPage({
           price: product?.price || 0,
           stock_quantity: product?.stock_quantity || 15,
           is_active: true,
-          image_url: typeof c === "object" && c.image_url && c.image_url !== "/products/iphone-16-pro-max.png" ? c.image_url : defaultProductImage,
+          image_url: resolveColorImageUrl(cName, typeof c === "object" ? c.image_url : undefined),
         };
       });
     }
@@ -470,21 +501,25 @@ export default function ProductDetailPage({
     });
 
     const targetStorage = cleanStorageLabel(selectedStorage).toLowerCase();
-    const match = variantsInRam.find((v) => {
+    let match = variantsInRam.find((v) => {
       const raw = v.rom || v.storage_label || v.size || "";
       const cleaned = cleanStorageLabel(raw).toLowerCase();
-      const matchStor = cleaned === targetStorage || raw.toLowerCase().includes(targetStorage);
-      return matchStor && v.color.toLowerCase() === selectedColor.toLowerCase() && (v.stock_quantity || 0) > 0;
-    }) || variantsInRam[0];
+      return cleaned === targetStorage || raw.toLowerCase().includes(targetStorage);
+    });
+
+    if (!match) {
+      match = variantsInRam[0];
+    }
 
     if (match) {
       const rawStor = match.rom || match.storage_label || match.size || "Standard";
       setSelectedStorage(cleanStorageLabel(rawStor));
-      setSelectedColor(match.color);
-      if (match.image_url && match.image_url !== "/products/iphone-16-pro-max.png" && match.image_url.trim() !== "") {
-        setSelectedImage(normalizeImageUrl(match.image_url));
-      } else if (product?.image_url || product?.images?.[0]) {
-        setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+      if (match.color) {
+        setSelectedColor(match.color);
+        const resolved = resolveColorImageUrl(match.color, match.image_url);
+        if (resolved) {
+          setSelectedImage(normalizeImageUrl(resolved));
+        }
       }
     }
   };
@@ -493,31 +528,32 @@ export default function ProductDetailPage({
   const handleStorageSelect = (newStorage: string) => {
     setSelectedStorage(newStorage);
     const targetStorage = cleanStorageLabel(newStorage).toLowerCase();
-    const variantsInStorage = variantsForSelectedRam.filter((v) => {
+
+    // Check if current selected RAM supports this storage
+    let match = variantsForSelectedRam.find((v) => {
       const raw = v.rom || v.storage_label || v.size || "";
       const cleaned = cleanStorageLabel(raw).toLowerCase();
       return cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
     });
 
-    const sameColorMatch = variantsInStorage.find(
-      (c) => c.color.toLowerCase() === selectedColor.toLowerCase() && (c.stock_quantity || 0) > 0
-    );
-
-    if (sameColorMatch) {
-      setSelectedColor(sameColorMatch.color);
-      if (sameColorMatch.image_url && sameColorMatch.image_url !== "/products/iphone-16-pro-max.png" && sameColorMatch.image_url.trim() !== "") {
-        setSelectedImage(normalizeImageUrl(sameColorMatch.image_url));
-      } else if (product?.image_url || product?.images?.[0]) {
-        setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+    // If current RAM doesn't support this storage, find variant across ALL variants that supports it and update RAM!
+    if (!match) {
+      match = productVariants.find((v) => {
+        const raw = v.rom || v.storage_label || v.size || "";
+        const cleaned = cleanStorageLabel(raw).toLowerCase();
+        return cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
+      });
+      if (match && match.ram) {
+        setSelectedRam(match.ram.trim().toUpperCase());
       }
-    } else {
-      const firstInStock = variantsInStorage.find((c) => (c.stock_quantity || 0) > 0) || variantsInStorage[0];
-      if (firstInStock) {
-        setSelectedColor(firstInStock.color);
-        if (firstInStock.image_url && firstInStock.image_url !== "/products/iphone-16-pro-max.png" && firstInStock.image_url.trim() !== "") {
-          setSelectedImage(normalizeImageUrl(firstInStock.image_url));
-        } else if (product?.image_url || product?.images?.[0]) {
-          setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+    }
+
+    if (match) {
+      if (match.color) {
+        setSelectedColor(match.color);
+        const resolved = resolveColorImageUrl(match.color, match.image_url);
+        if (resolved) {
+          setSelectedImage(normalizeImageUrl(resolved));
         }
       }
     }
@@ -525,13 +561,44 @@ export default function ProductDetailPage({
 
   // Handle Color Select
   const handleColorSelect = (variant: any) => {
-    setSelectedColor(variant.color);
-    if (variant.image_url && variant.image_url !== "/products/iphone-16-pro-max.png" && variant.image_url.trim() !== "") {
-      setSelectedImage(normalizeImageUrl(variant.image_url));
-    } else if (product?.image_url || product?.images?.[0]) {
-      setSelectedImage(normalizeImageUrl(product?.image_url || product?.images?.[0]));
+    const cName = variant.color || variant.name || "";
+    setSelectedColor(cName);
+    const resolvedImg = variant.image_url || resolveColorImageUrl(cName, variant.image_url);
+    if (resolvedImg) {
+      setSelectedImage(normalizeImageUrl(resolvedImg));
     }
   };
+
+  let rawImagesList: string[] = [];
+  if (product) {
+    if (Array.isArray(product.images)) {
+      rawImagesList = product.images;
+    } else if (typeof (product as any).images === "string") {
+      try {
+        const parsed = JSON.parse((product as any).images);
+        if (Array.isArray(parsed)) rawImagesList = parsed;
+        else if (typeof parsed === "string") rawImagesList = [parsed];
+      } catch {
+        rawImagesList = ((product as any).images as string).split(",").map((s: string) => s.trim());
+      }
+    }
+  }
+
+  const allImages = React.useMemo(() => {
+    if (!product) return ["/placeholder.png"];
+    const list = [
+      product.image_url,
+      ...rawImagesList,
+      product.image,
+      activeVariant ? resolveColorImageUrl(activeVariant.color, activeVariant.image_url) : null,
+      ...(product.variants?.map((v) => resolveColorImageUrl(v.color, v.image_url)).filter(Boolean) || []),
+      ...(product.variants?.map((v) => v.image_url).filter(Boolean) || []),
+    ];
+    if (selectedImage) {
+      list.push(selectedImage);
+    }
+    return Array.from(new Set(list.filter(Boolean).map((u) => normalizeImageUrl(u as string))));
+  }, [product, rawImagesList, activeVariant, selectedImage]);
 
   if (loading) {
     return (
@@ -586,18 +653,7 @@ export default function ProductDetailPage({
 
   const brandName = product.name.split(" ")[0] || "Official";
 
-  const allImages = Array.from(
-    new Set(
-      [
-        product.image_url,
-        ...(product.images || []),
-        product.image,
-        activeVariant?.image_url && activeVariant.image_url !== "/products/iphone-16-pro-max.png" ? activeVariant.image_url : null,
-      ]
-        .filter(Boolean)
-        .map((u) => normalizeImageUrl(u as string))
-    )
-  );
+
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -665,20 +721,32 @@ export default function ProductDetailPage({
   };
 
   const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product.name,
-        text: `Check out ${product.name} (${selectedStorage} - ${selectedColor}) at ₹${currentPrice}!`,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Product link copied to clipboard!");
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        navigator
+          .share({
+            title: product.name,
+            text: `Check out ${product.name} (${selectedStorage} - ${selectedColor}) at ₹${currentPrice}!`,
+            url: typeof window !== "undefined" ? window.location.href : "",
+          })
+          .catch(() => {});
+      } else if (
+        typeof navigator !== "undefined" &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === "function"
+      ) {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Product link copied to clipboard!");
+      } else {
+        setShowShareModal(true);
+      }
+    } catch {
+      setShowShareModal(true);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-12 md:pb-8 text-slate-800">
+    <div className="min-h-screen bg-[#f8fafc] pb-32 md:pb-16 text-slate-800">
       {/* Toast Notification */}
       <AnimatePresence>
         {addedToast && (
@@ -725,85 +793,22 @@ export default function ProductDetailPage({
       <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
-          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Large & High Impact) ======================= */}
-          <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start">
-            {/* Main Image Viewer */}
-            <div className="relative w-full aspect-square min-h-[380px] xs:min-h-[420px] sm:min-h-[500px] md:min-h-[540px] lg:min-h-[560px] bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs flex items-center justify-center group overflow-hidden">
-              {/* Top Action Buttons */}
-              <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowShareModal(true)}
-                  className="w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 flex items-center justify-center shadow-md border border-slate-200/80 transition-all cursor-pointer backdrop-blur-xs active:scale-90 hover:text-emerald-700"
-                  title="Share product"
-                >
-                  <FontAwesomeIcon icon={faShareNodes} className="text-sm" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => product && toggleWishlist(product as any)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md border border-slate-200/80 transition-all cursor-pointer backdrop-blur-xs active:scale-90 ${
-                    isWishlisted ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-white/95 hover:bg-rose-50 text-slate-600 hover:text-rose-600"
-                  }`}
-                  title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
-                >
-                  <FontAwesomeIcon icon={faHeart} className="text-sm" />
-                </button>
-              </div>
-
-              {/* Main Product Image (Clean Contain View Without Cropping) */}
-              <div className="relative w-full h-full flex items-center justify-center">
-                {selectedImage ? (
-                  <Image
-                    src={selectedImage}
-                    alt={product.name}
-                    fill
-                    className="object-contain w-full h-full p-2 sm:p-4 transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
-                    priority
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm text-slate-400">No Image Available</div>
-                )}
-
-                {isOutOfStock && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20">
-                    <span className="bg-red-600 text-white font-black px-4 py-2 rounded-xl text-sm uppercase tracking-wider shadow-lg">
-                      Out of Stock
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Horizontal Thumbnail Strip Below Main Image */}
-            <div className="w-full flex items-center justify-start gap-2.5 overflow-x-auto scrollbar-none py-1 px-0.5">
-              {allImages.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  onMouseEnter={() => setSelectedImage(img)}
-                  className={`relative w-16 h-18 sm:w-20 sm:h-22 rounded-xl sm:rounded-2xl bg-white border shrink-0 transition-all cursor-pointer overflow-hidden p-1.5 ${
-                    selectedImage === img
-                      ? "border-[#2E6F40] shadow-md ring-2 ring-[#2E6F40]/40 scale-105"
-                      : "border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100 shadow-2xs"
-                  }`}
-                >
-                  <Image
-                    src={img}
-                    alt={`${product.name} thumbnail ${idx + 1}`}
-                    fill
-                    className="object-contain w-full h-full p-1"
-                    unoptimized
-                  />
-                </button>
-              ))}
-            </div>
+          {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Interactive 20-Feature Gallery) ======================= */}
+          <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start min-w-0">
+            <ProductImageGallery
+              images={allImages}
+              productName={product.name}
+              selectedImage={selectedImage}
+              onSelectImage={(img) => setSelectedImage(img)}
+              isOutOfStock={isOutOfStock}
+              onShare={handleShare}
+              isWishlisted={isWishlisted}
+              onToggleWishlist={() => product && toggleWishlist(product as any)}
+            />
           </div>
 
           {/* ======================= COLUMN 2 (4 cols): Center Product Details ======================= */}
-          <div className="lg:col-span-4 w-full space-y-4">
+          <div className="lg:col-span-4 w-full space-y-4 min-w-0">
             
             {/* Title & Brand Store Link */}
             <div className="space-y-1.5 border-b border-slate-200 pb-3">
@@ -860,8 +865,9 @@ export default function ProductDetailPage({
             </div>
 
             {/* Visual Color Cards Selector (Matching Amazon / Apple screenshot) */}
+            {/* Visual Color Cards Selector */}
             {availableColors.length > 0 && (
-              <div className="space-y-2.5 border-b border-slate-200 pb-4">
+              <div className="space-y-2 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-800">
                     Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || availableColors[0]?.color}</strong>
@@ -873,12 +879,12 @@ export default function ProductDetailPage({
                   )}
                 </div>
 
-                {/* Visual Thumbnail Cards Row */}
-                <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
+                {/* Visual Thumbnail Cards Row (Wrapping cleanly without clipping) */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
                   {availableColors.map((v) => {
                     const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
                     const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
-                    const imgToDisplay = v.image_url || product?.image_url || "/products/iphone-16-pro-max.png";
+                    const imgToDisplay = v.image_url || resolveColorImageUrl(v.color, v.image_url);
 
                     return (
                       <button
@@ -886,28 +892,20 @@ export default function ProductDetailPage({
                         type="button"
                         onClick={() => handleColorSelect(v)}
                         title={v.color}
-                        className={`group relative w-14 h-20 sm:w-16 sm:h-22 rounded-2xl p-1 bg-white flex flex-col items-center justify-between transition-all cursor-pointer shrink-0 ${
+                        className={`group relative w-13 h-17 sm:w-15 sm:h-19 rounded-xl p-1 bg-white flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                           isColorSelected
-                            ? "border-2 border-slate-950 ring-2 ring-slate-950/15 shadow-sm scale-105"
+                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 shadow-xs"
                             : "border border-slate-200 hover:border-slate-400 hover:shadow-2xs"
                         } ${isOut ? "opacity-50" : ""}`}
                       >
-                        {/* Device Product Image in Color */}
-                        <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+                        {/* Device Product Image in Specific Color */}
+                        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                           <Image
                             src={imgToDisplay}
                             alt={v.color}
                             fill
                             className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
                             unoptimized
-                          />
-                        </div>
-
-                        {/* Subtle color swatch dot at bottom */}
-                        <div className="flex items-center justify-center gap-1 w-full pt-0.5 pb-0.5">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full border border-black/15 shadow-2xs shrink-0"
-                            style={{ backgroundColor: v.color_code || getColorHex(v.color) }}
                           />
                         </div>
                       </button>
@@ -919,13 +917,13 @@ export default function ProductDetailPage({
 
             {/* RAM / Memory Options Selector (e.g. 6GB, 8GB, 12GB, 16GB) */}
             {availableRams.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-3.5">
+              <div className="space-y-2 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-700 font-bold">
-                    RAM: <strong className="text-slate-950 font-black">{selectedRam || availableRams[0]}</strong>
+                  <span className="text-sm font-semibold text-slate-800">
+                    RAM: <strong className="text-slate-950 font-bold">{selectedRam || availableRams[0]}</strong>
                   </span>
                 </div>
-                <div className="flex flex-row items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
                   {availableRams.map((ramOption, idx) => {
                     const isSelected = (selectedRam || availableRams[0]).toLowerCase() === ramOption.toLowerCase();
                     return (
@@ -933,10 +931,10 @@ export default function ProductDetailPage({
                         key={idx}
                         type="button"
                         onClick={() => handleRamSelect(ramOption)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer shrink-0 ${
+                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border cursor-pointer min-w-[72px] sm:min-w-[80px] text-center flex items-center justify-center ${
                           isSelected
-                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 bg-white text-slate-950 font-black shadow-xs"
+                            : "border border-slate-200 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 shadow-2xs hover:bg-slate-50/70"
                         }`}
                       >
                         {ramOption}
@@ -947,15 +945,15 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* Storage / Configuration Selector with dynamic rates placed side-by-side */}
+            {/* Storage / Configuration Selector (ROM) with all tiers visible */}
             {availableStorages.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-3.5">
+              <div className="space-y-2 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-700 font-bold">
-                    Storage / Size: <strong className="text-slate-950 font-black">{selectedStorage}</strong>
+                  <span className="text-sm font-semibold text-slate-800">
+                    Storage: <strong className="text-slate-950 font-bold">{selectedStorage}</strong>
                   </span>
                 </div>
-                <div className="flex flex-row items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
                   {availableStorages.map((item, idx) => {
                     const label = typeof item === 'string' ? item : item.label;
                     const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
@@ -965,15 +963,21 @@ export default function ProductDetailPage({
                         key={idx}
                         type="button"
                         onClick={() => handleStorageSelect(label)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-center justify-center text-center shrink-0 min-w-[90px] ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-center justify-center text-center min-w-[88px] sm:min-w-[96px] ${
                           isSelected
-                            ? "bg-amber-50 border-orange-500 text-slate-950 shadow-xs ring-1 ring-orange-500 scale-105"
-                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 bg-white shadow-xs"
+                            : "border border-slate-200 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 shadow-2xs hover:bg-slate-50/70"
                         }`}
                       >
-                        <span className="whitespace-nowrap">{label}</span>
+                        <span className={`whitespace-nowrap ${isSelected ? "text-slate-950 font-black" : "text-slate-800 font-bold"}`}>
+                          {label}
+                        </span>
                         {minPrice && minPrice > 0 ? (
-                          <span className={`text-[10px] ${isSelected ? "text-orange-700 font-black" : "text-slate-500 font-semibold"}`}>
+                          <span className={`text-[10px] mt-0.5 ${
+                            isSelected
+                              ? "font-extrabold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded-md border border-emerald-200"
+                              : "font-semibold text-slate-500"
+                          }`}>
                             ₹{Number(minPrice).toLocaleString("en-IN")}
                           </span>
                         ) : null}
@@ -1045,7 +1049,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* ======================= COLUMN 3 (3 cols): Amazon Right Buy Box ======================= */}
-          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 sticky top-20 text-xs select-none">
+          <div className="lg:col-span-3 min-w-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 sticky top-20 text-xs select-none">
 
             {/* Radio 1: With Exchange */}
             <div 

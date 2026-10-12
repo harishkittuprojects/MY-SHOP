@@ -28,7 +28,7 @@ interface QuantityModalProps {
 export default function QuantityModal({ isOpen, onClose, onConfirm, onBuyNow, product }: QuantityModalProps) {
   const router = useRouter();
   const normalizeImageUrl = (url: string) => {
-    if (!url) return "/mobile-logo.png";
+    if (!url) return "/placeholder.png";
     if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("/")) return url;
     return `/${url}`;
   };
