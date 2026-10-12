@@ -16,14 +16,18 @@ import {
   Wrench, 
   Layers, 
   Package, 
-  History 
+  History,
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 import StreamingTagline from "./StreamingTagline";
 import { addRecentSearch, getRecentSearches, removeRecentSearch, clearRecentHistory } from "@/lib/recentHistory";
 import { matchProductSearch, normalizeSearchTerm } from "@/lib/searchUtils";
+import { logoutAction } from "@/lib/actions/auth";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -33,6 +37,7 @@ export default function Navbar() {
   const [wishlistBump, setWishlistBump] = useState(false);
   const desktopSearchContainerRef = useRef<HTMLDivElement>(null);
   const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
   const prevWishlistCount = useRef<number | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -96,13 +101,14 @@ export default function Navbar() {
       }
     }
 
+    setIsUserDropdownOpen(false);
     checkSession();
     fetchData();
     
     return () => controller.abort();
   }, [pathname]);
 
-  // Handle outside clicks to close search suggestions
+  // Handle outside clicks to close search suggestions and user dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -111,11 +117,26 @@ export default function Navbar() {
       if (!clickedDesktop && !clickedMobile) {
         setShowSuggestions(false);
       }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(target)) {
+        setIsUserDropdownOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleSignOut = async () => {
+    setIsUserDropdownOpen(false);
+    try {
+      await logoutAction();
+      setUser(null);
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error("Sign out error:", err);
+    }
+  };
 
   // Popular Brands for instant jumps
   const POPULAR_BRANDS = [
@@ -542,14 +563,84 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Profile / Account Symbol */}
+            {/* Profile / Account Dropdown */}
             {user ? (
-              <Link href="/account" className="flex items-center gap-1.5 text-slate-800 hover:text-secondary transition-colors flex-shrink-0 p-0.5">
-                <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] flex items-center justify-center">
-                  <User className="w-3.5 h-3.5 text-secondary" />
-                </div>
-                <span className="hidden lg:block text-xs font-semibold text-slate-800">Account</span>
-              </Link>
+              <div ref={userDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsUserDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-1.5 text-slate-800 hover:text-secondary transition-colors flex-shrink-0 p-0.5 rounded-full hover:bg-slate-50 focus:outline-hidden group"
+                  aria-expanded={isUserDropdownOpen}
+                  aria-haspopup="true"
+                  title={user.name || "My Account"}
+                >
+                  <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] flex items-center justify-center flex-shrink-0 group-hover:border-secondary/40 transition-colors">
+                    <User className="w-3.5 h-3.5 text-secondary" />
+                  </div>
+                  <span className="hidden sm:block text-xs font-semibold text-slate-800 max-w-[110px] md:max-w-[140px] truncate text-left">
+                    {user.name || "Account"}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-slate-500 transition-transform duration-200 hidden sm:block ${isUserDropdownOpen ? "rotate-180 text-secondary" : ""}`} />
+                </button>
+
+                {isUserDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Header info */}
+                    <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/70 rounded-t-xl mb-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">Signed in as</p>
+                      <p className="text-xs font-bold text-slate-900 truncate mt-0.5">{user.name || "Customer"}</p>
+                      {user.email && (
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{user.email}</p>
+                      )}
+                    </div>
+
+                    <Link
+                      href="/account?tab=profile"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-secondary hover:bg-slate-50 transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Profile</span>
+                    </Link>
+
+                    <Link
+                      href="/account?tab=orders"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-secondary hover:bg-slate-50 transition-colors"
+                    >
+                      <Package className="w-3.5 h-3.5 text-slate-500" />
+                      <span>My Orders</span>
+                    </Link>
+
+                    <Link
+                      href="/account?tab=wishlist"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="flex items-center justify-between px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-secondary hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Heart className="w-3.5 h-3.5 text-slate-500" />
+                        <span>My Wishlist</span>
+                      </div>
+                      {wishlistCount > 0 && (
+                        <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                          {wishlistCount}
+                        </span>
+                      )}
+                    </Link>
+
+                    <div className="my-1 border-t border-slate-100" />
+
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-red-500" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link href="/login" className="flex items-center gap-1.5 text-slate-800 hover:text-secondary transition-colors flex-shrink-0 p-0.5">
                 <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] flex items-center justify-center">
@@ -704,6 +795,62 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
+
+              {/* Account Section in Mobile Menu */}
+              <div className="pt-2 border-t border-slate-100 flex flex-col gap-1">
+                {user ? (
+                  <>
+                    <div className="px-2 py-1.5 rounded-lg bg-slate-50 flex items-center justify-between mb-1">
+                      <div className="truncate">
+                        <p className="text-[10px] uppercase font-bold text-slate-400">Signed In As</p>
+                        <p className="text-xs font-bold text-slate-800 truncate">{user.name}</p>
+                      </div>
+                      <span className="text-[10px] font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full shrink-0">Active</span>
+                    </div>
+                    <Link 
+                      href="/account?tab=profile" 
+                      onClick={() => setIsMobileMenuOpen(false)} 
+                      className="py-1.5 px-2 font-medium text-xs text-slate-700 flex items-center justify-between hover:text-secondary rounded-lg"
+                    >
+                      <span className="flex items-center gap-2"><User className="w-3.5 h-3.5 text-secondary" />Profile</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                    </Link>
+                    <Link 
+                      href="/account?tab=orders" 
+                      onClick={() => setIsMobileMenuOpen(false)} 
+                      className="py-1.5 px-2 font-medium text-xs text-slate-700 flex items-center justify-between hover:text-secondary rounded-lg"
+                    >
+                      <span className="flex items-center gap-2"><Package className="w-3.5 h-3.5 text-secondary" />My Orders</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                    </Link>
+                    <Link 
+                      href="/account?tab=wishlist" 
+                      onClick={() => setIsMobileMenuOpen(false)} 
+                      className="py-1.5 px-2 font-medium text-xs text-slate-700 flex items-center justify-between hover:text-secondary rounded-lg"
+                    >
+                      <span className="flex items-center gap-2"><Heart className="w-3.5 h-3.5 text-secondary" />My Wishlist</span>
+                      {wishlistCount > 0 && <span className="text-[10px] bg-red-500 text-white font-bold px-1.5 rounded-full">{wishlistCount}</span>}
+                    </Link>
+                    <button 
+                      type="button"
+                      onClick={() => { setIsMobileMenuOpen(false); handleSignOut(); }} 
+                      className="py-1.5 px-2 font-semibold text-xs text-red-600 flex items-center gap-2 hover:bg-red-50 rounded-lg text-left cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-red-500" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link 
+                    href="/login" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="py-2 px-2 font-semibold text-xs text-secondary flex items-center justify-between bg-secondary/5 rounded-lg"
+                  >
+                    <span className="flex items-center gap-2"><User className="w-3.5 h-3.5" />Sign In / Register</span>
+                    <ArrowRight className="w-3 h-3 text-secondary" />
+                  </Link>
+                )}
+              </div>
             </div>
           </>
         )}

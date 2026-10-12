@@ -10,11 +10,26 @@ export async function getSession() {
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string; sub: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { email: string; sub: string; name?: string; phone?: string };
+    
+    let displayName = decoded.name;
+    if (!displayName || displayName === "Customer") {
+      if (decoded.email && !decoded.email.endsWith("@myshop.local")) {
+        const username = decoded.email.split("@")[0];
+        displayName = username.charAt(0).toUpperCase() + username.slice(1);
+      } else if (decoded.phone) {
+        displayName = `User ${decoded.phone.slice(-4)}`;
+      } else {
+        displayName = "Customer";
+      }
+    }
+
     return {
       user: {
         email: decoded.email,
         id: decoded.sub,
+        name: displayName,
+        phone: decoded.phone,
       },
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
