@@ -2298,62 +2298,25 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 2. BRAND SHOWCASE (Explore Brands Tailored Per Category or Catalog)
             ========================================================================= */}
             {brandList && brandList.length > 0 && (
-              <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-2.5">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-6 bg-[#2E6F40] rounded-full" />
+                    <span className="w-2 h-4 bg-[#2E6F40] rounded-full" />
                     <div>
-                      <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      <h2 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
                         <span>
                           {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
-                            ? "Explore Refurbished Mobile Brands"
+                            ? "Explore Refurbished Brands"
                             : activeKey === "mobiles"
                             ? "Explore Mobile Brands"
                             : activeKey === "laptops"
-                            ? "Explore Laptop & Computer Brands"
-                            : activeKey === "fashion"
-                            ? "Explore Fashion & Lifestyle Brands"
-                            : activeKey === "electronics"
-                            ? "Explore Smartwatch & Gadget Brands"
-                            : activeKey === "jewellery"
-                            ? "Explore Precious Jewellery Brands"
-                            : activeKey === "accessories"
-                            ? "Explore Accessories Brands"
-                            : activeKey === "ev"
-                            ? "Explore EV & Mobility Brands"
-                            : activeKey === "tv"
-                            ? "Explore TV & Audio Brands"
-                            : activeKey === "appliances"
-                            ? "Explore Appliance Brands"
+                            ? "Explore Laptop Brands"
                             : "Explore Brands"}
                         </span>
-                        <span className="text-xs font-bold text-slate-400 font-mono">
+                        <span className="text-[10px] font-semibold text-slate-400">
                           ({brandList.length})
                         </span>
                       </h2>
-                      <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                        {activeKey === "refurbished" || (categoryFilter && categoryFilter.toLowerCase().includes("refurbished"))
-                          ? "Select a brand to view 32-point tested Grade A+ refurbished smartphones with 6-month warranty"
-                          : activeKey === "mobiles"
-                          ? "Select a brand to view 100% brand sealed 5G smartphones with official brand warranty"
-                          : activeKey === "laptops"
-                          ? "Select a brand to view high-performance laptops, MacBooks & gaming rigs with official warranty"
-                          : activeKey === "fashion"
-                          ? "Select a brand to view 100% authentic designer apparel, sneakers & lifestyle fashion"
-                          : activeKey === "electronics"
-                          ? "Select a brand to view AMOLED calling smartwatches, fitness bands & audio wearables"
-                          : activeKey === "jewellery"
-                          ? "Select a brand to view 100% BIS hallmarked gold & certified diamond jewellery"
-                          : activeKey === "accessories"
-                          ? "Select a brand to view GaN fast chargers, armor cases & power accessories"
-                          : activeKey === "ev"
-                          ? "Select a brand to view high speed electric scooters with subsidy benefits"
-                          : activeKey === "tv"
-                          ? "Select a brand to view 4K Ultra HD smart TVs, Dolby Atmos soundbars & home theatres"
-                          : activeKey === "appliances"
-                          ? "Select a brand to view energy-efficient smart kitchen & home appliances"
-                          : "Select a brand to view authentic products with official warranty & offers"}
-                      </p>
                     </div>
                   </div>
                   
@@ -2363,90 +2326,67 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       <button
                         type="button"
                         onClick={() => handleBrandClick("")}
-                        className="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-[10px] sm:text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         <span>Clear ({selectedBrand})</span>
-                        <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                        <FontAwesomeIcon icon={faTimes} className="text-[9px]" />
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* BRAND CARDS GRID */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 w-full">
+                {/* Minimal Brand Tiles Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 w-full">
                   {/* All Brands Tile */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => handleBrandClick("")}
-                    className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full select-none ${
+                    className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none ${
                       !selectedBrand 
-                        ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
-                        : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                        ? "border-[#2E6F40] bg-emerald-50/50 text-[#2E6F40] font-bold shadow-2xs ring-1 ring-[#2E6F40]/30" 
+                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/80 shadow-2xs hover:border-slate-300"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-100/70 text-[#2E6F40] font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                        ★ ALL
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
-                          All Brands
-                        </h3>
-                        <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
-                          Full Catalog
-                        </p>
-                      </div>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+                      !selectedBrand ? "bg-[#2E6F40] text-white" : "bg-slate-100 text-slate-600"
+                    }`}>
+                      ★
                     </div>
-                    {!selectedBrand && (
-                      <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
-                        Active
-                      </span>
-                    )}
-                  </div>
+                    <span className="text-xs truncate">All Brands</span>
+                  </button>
 
-                  {/* Specific Brand Cards */}
+                  {/* Specific Brand Tiles */}
                   {brandList.map((b, i) => {
                     const isSelected = selectedBrand?.toLowerCase() === b.query.toLowerCase();
                     return (
-                      <div
+                      <button
                         key={b.id || i}
+                        type="button"
                         onClick={() => handleBrandClick(b.query)}
-                        className={`group bg-white rounded-2xl border transition-all duration-200 flex items-center justify-between p-2.5 sm:p-3 cursor-pointer w-full select-none ${
+                        className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none group ${
                           isSelected 
-                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-md bg-emerald-50/20 scale-[1.01]" 
-                            : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-md"
+                            ? "border-[#2E6F40] bg-emerald-50/50 text-[#2E6F40] font-bold shadow-2xs ring-1 ring-[#2E6F40]/30" 
+                            : "bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border-slate-200/80 shadow-2xs hover:border-slate-300"
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1 overflow-hidden shrink-0">
-                            {b.logo_url ? (
-                              <Image 
-                                src={b.logo_url} 
-                                alt={b.name} 
-                                fill 
-                                className="object-contain p-1 group-hover:scale-105 transition-transform duration-200" 
-                                unoptimized 
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-700 font-black text-xs">
-                                {b.name.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-[#2E6F40] transition-colors truncate">
-                              {b.name}
-                            </h3>
-                            <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate">
-                              Official Store
-                            </p>
-                          </div>
+                        <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center p-1 shrink-0 overflow-hidden relative">
+                          {b.logo_url ? (
+                            <Image 
+                              src={b.logo_url} 
+                              alt={b.name} 
+                              fill 
+                              sizes="28px"
+                              className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200" 
+                              unoptimized 
+                            />
+                          ) : (
+                            <span className="text-[10px] font-black text-slate-600 uppercase">
+                              {b.name.slice(0, 2)}
+                            </span>
+                          )}
                         </div>
-                        {isSelected && (
-                          <span className="bg-[#2E6F40] text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs shrink-0 ml-1">
-                            Active
-                          </span>
-                        )}
-                      </div>
+                        <span className="text-xs truncate">{b.name}</span>
+                      </button>
                     );
                   })}
                 </div>
