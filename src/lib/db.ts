@@ -329,7 +329,7 @@ export const ProductsDB = {
     const record: any = {
       id,
       name: product.name || '',
-      category_id: product.category_id || 'mobiles-accessories',
+      category_id: product.category_id || 'mobiles',
       category_name: product.category_name || product.category || '',
       sub_category: product.sub_category || '',
       price: Number(product.price) || 0,
@@ -574,7 +574,7 @@ export const ProductsDB = {
     const cleanRecord: any = {
       id: current.id,
       name: current.name || '',
-      category_id: current.category_id || 'mobiles-accessories',
+      category_id: current.category_id || 'mobiles',
       category_name: current.category_name || current.category || '',
       sub_category: current.sub_category || '',
       price: Number(current.price) || 0,

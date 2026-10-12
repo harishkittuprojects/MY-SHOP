@@ -1367,6 +1367,101 @@ function getCategoryConfig(categoryParam?: string | null): { key: string; config
   return { key: "default", config: CATEGORY_CONFIGS.default };
 }
 
+// Helper to determine if a product is an actual mobile phone / smartphone (never an accessory)
+export function isMobilePhone(p: any): boolean {
+  if (!p) return false;
+  const pName = (p.name || "").toLowerCase();
+  const sub = (p.sub_category || "").toLowerCase();
+  const c = (p.category || p.category_name || "").toLowerCase();
+  const cid = (p.category_id || "").toLowerCase();
+  const unit = (p.unit || "").toLowerCase();
+
+  // Accessory keywords: if present in name or subcategory, it's an accessory, not the phone hardware
+  const ACCESSORY_WORDS = [
+    "case", "cover", "guard", "glass", "protector", "charger", "adapter",
+    "cable", "power bank", "powerbank", "mount", "holder", "earbuds", "earphone",
+    "headphone", "microsd", "memory card", "stylus", "skin", "strap"
+  ];
+  const hasAccessoryWord = ACCESSORY_WORDS.some(w => pName.includes(w) || sub.includes(w));
+  if (hasAccessoryWord) return false;
+
+  // Sub-category explicitly designating phone device models
+  if (
+    sub.includes("phone") || 
+    sub.includes("flagship") || 
+    sub.includes("5g phones") || 
+    sub.includes("budget") ||
+    sub.includes("gaming phones") ||
+    sub === "mobiles"
+  ) {
+    return true;
+  }
+
+  // RAM/ROM/Storage/hardware specs indicative of phone devices
+  if (
+    /\b\d+gb\s+(ram|storage|rom)\b/i.test(pName) ||
+    /\b\d+gb\s+(ram|storage|rom)\b/i.test(unit) ||
+    /\b\d+mp\b/i.test(pName) ||
+    /\bsnapdragon\b/i.test(pName) ||
+    /\bdimensity\b/i.test(pName) ||
+    /\bbionic\b/i.test(pName) ||
+    /\b(smartphone|5g)\b/i.test(pName)
+  ) {
+    return true;
+  }
+
+  // Category explicitly "Mobiles" without accessory indicator
+  if (c === "mobiles" || c === "mobile" || cid === "mobiles") {
+    return true;
+  }
+
+  return false;
+}
+
+// Helper to determine if a product is a genuine mobile accessory (chargers, covers, screen guards, cables, power banks, etc.)
+export function isMobileAccessory(p: any): boolean {
+  if (!p) return false;
+  // If it's a mobile phone device, it is strictly NEVER an accessory
+  if (isMobilePhone(p)) return false;
+
+  const c = (p.category || p.category_name || "").toLowerCase().trim();
+  const cid = (p.category_id || "").toLowerCase().trim();
+  const sub = (p.sub_category || "").toLowerCase().trim();
+  const pName = (p.name || "").toLowerCase().trim();
+
+  // Explicit accessory category
+  if (
+    c === "mobile accessories" || 
+    c === "accessories" || 
+    cid === "mobile-accessories"
+  ) {
+    return true;
+  }
+
+  // Sub-category keywords for accessories
+  const ACCESSORY_SUB_KEYWORDS = [
+    "accessories", "charger", "adapter", "cable", "case", "cover", 
+    "power bank", "screen protector", "screen guard", "tempered glass", 
+    "storage", "mount", "holder", "audio", "earbuds", "earphone", "headphone"
+  ];
+  if (ACCESSORY_SUB_KEYWORDS.some(k => sub.includes(k))) {
+    return true;
+  }
+
+  // Name keywords for accessories
+  const ACCESSORY_NAME_KEYWORDS = [
+    "adapter", "charger", "cable", "case", "cover", "power bank", "powerbank",
+    "tempered glass", "screen protector", "screen guard", "mount", "holder",
+    "earbuds", "earphone", "headphone", "microsd", "memory card", "stylus",
+    "magsafe", "dock", "skin", "tripod", "selfie stick", "lens protector"
+  ];
+  if (ACCESSORY_NAME_KEYWORDS.some(k => pName.includes(k))) {
+    return true;
+  }
+
+  return false;
+}
+
 // Brand keyword mapping for accurate matching across all categories
 const BRAND_ALIAS_MAP: Record<string, string[]> = {
   // Mobiles
@@ -1757,8 +1852,8 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
       }
     } else {
       // Standard category filter
-      if (categoryFilter) {
-        const catKey = categoryFilter.toLowerCase().trim();
+      if (categoryFilter || activeKey === "accessories") {
+        const catKey = (categoryFilter || "").toLowerCase().trim();
         const isRefurbishedMode = 
           activeKey === "refurbished" || 
           catKey.includes("refurbish") || 
@@ -1793,33 +1888,17 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             (cond.includes("used") && !cond.includes("brand new"));
 
           if (isRefurbishedMode) {
-            const isAccessory = 
-              c.includes("accessories") || cid.includes("accessories") || 
-              sub.includes("accessories") || sub.includes("charger") || 
-              pName.includes("adapter") || pName.includes("cable") || 
-              pName.includes("power bank") || pName.includes("case") || 
-              pName.includes("screen guard");
-
+            const isAccessory = isMobileAccessory(p);
             return isRefurbishedProduct && !isAccessory;
           }
 
           if (isAccessoriesMode) {
-            return (
-              c.includes("accessories") || cid.includes("accessories") || 
-              sub.includes("accessories") || sub.includes("charger") || 
-              sub.includes("cable") || sub.includes("case") || 
-              sub.includes("cover") || pName.includes("adapter") || 
-              pName.includes("charger") || pName.includes("cable")
-            );
+            // Strictly mobile accessories only (never phones)
+            return isMobileAccessory(p) && !isMobilePhone(p);
           }
 
           if (isNewMobilesMode) {
-            const isAccessory = 
-              c.includes("accessories") || cid.includes("accessories") || 
-              sub.includes("accessories") || pName.includes("adapter") || 
-              pName.includes("cable") || pName.includes("charger") ||
-              pName.includes("power bank") || pName.includes("case") ||
-              pName.includes("cover") || pName.includes("screen guard");
+            const isAccessory = isMobileAccessory(p);
 
             const isEvOrVehicle = 
               c.includes("ev") || cid.includes("ev") || 
@@ -1857,11 +1936,15 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
 
       // Filter by search query or selected brand strictly (guaranteeing only matching brand products are returned)
       if (selectedBrand) {
+        const catKey = (categoryFilter || "").toLowerCase().trim();
+        const isAccessoriesMode = activeKey === "accessories" || catKey.includes("accessories");
         const q = selectedBrand.trim().toLowerCase();
         const matchedKey = Object.keys(BRAND_ALIAS_MAP).find(k => q.includes(k) || k.includes(q));
         const keywords = matchedKey ? BRAND_ALIAS_MAP[matchedKey] : [q];
 
         const matchedBySmartSearch = list.filter(p => {
+          if (isAccessoriesMode && (!isMobileAccessory(p) || isMobilePhone(p))) return false;
+
           const pName = (p.name || "").toLowerCase();
           const pBrand = (p.brand || "").toLowerCase();
           const pSub = (p.sub_category || "").toLowerCase();
@@ -1871,7 +1954,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
           }
 
-          // 2. Name / Title match with brand keywords (e.g. "Apple iPhone", "Samsung Galaxy")
+          // 2. Name / Title match with brand keywords (e.g. "Apple iPhone", "Samsung Galaxy", "Xiaomi")
           const nameMatches = keywords.some(k => {
             const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
             return regex.test(pName) || pName.includes(k);
@@ -1898,20 +1981,43 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
         if (matchedBySmartSearch.length > 0) {
           list = matchedBySmartSearch;
         } else {
-          // Fallback to searching all catalog products across categories if category filter was overly restrictive
-          const globalMatches = catalogProducts.filter(p => {
-            const pName = (p.name || "").toLowerCase();
-            const pBrand = (p.brand || "").toLowerCase();
-            if (pBrand) {
-              return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
-            }
-            return keywords.some(k => {
-              const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
-              return regex.test(pName) || pName.includes(k);
+          if (isAccessoriesMode) {
+            // When in accessories mode, only find accessories matching this brand across catalog
+            const accessoryMatches = catalogProducts.filter(p => {
+              if (!isMobileAccessory(p) || isMobilePhone(p)) return false;
+              const pName = (p.name || "").toLowerCase();
+              const pBrand = (p.brand || "").toLowerCase();
+              if (pBrand) {
+                return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
+              }
+              return keywords.some(k => {
+                const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
+                return regex.test(pName) || pName.includes(k);
+              });
             });
-          });
-          list = globalMatches;
+            list = accessoryMatches;
+          } else {
+            // Fallback to searching all catalog products across categories if category filter was overly restrictive
+            const globalMatches = catalogProducts.filter(p => {
+              const pName = (p.name || "").toLowerCase();
+              const pBrand = (p.brand || "").toLowerCase();
+              if (pBrand) {
+                return pBrand === q || keywords.some(k => pBrand.includes(k) || k.includes(pBrand));
+              }
+              return keywords.some(k => {
+                const regex = new RegExp(`(^|[^a-zA-Z0-9])${k}([^a-zA-Z0-9]|$)`, "i");
+                return regex.test(pName) || pName.includes(k);
+              });
+            });
+            list = globalMatches;
+          }
         }
+      }
+
+      // Final strict guard: in accessories mode, NEVER allow any phone to slip through
+      const catKeyFinal = (categoryFilter || "").toLowerCase().trim();
+      if (activeKey === "accessories" || catKeyFinal.includes("accessories")) {
+        list = list.filter(p => isMobileAccessory(p) && !isMobilePhone(p));
       }
     }
 
@@ -2496,23 +2602,33 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <FontAwesomeIcon icon={faTag} />
                   </div>
                   <h3 className="text-base font-bold text-slate-800">
-                    {selectedBrand ? `No products found for "${selectedBrand}"` : "No products found in this category"}
+                    {selectedBrand 
+                      ? activeKey === "accessories" 
+                        ? `No accessories found for "${selectedBrand}"` 
+                        : `No products found for "${selectedBrand}"` 
+                      : "No products found in this category"}
                   </h3>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
                     {selectedBrand 
-                      ? `We are updating inventory for ${selectedBrand}. Please check out our other collections.`
+                      ? activeKey === "accessories"
+                        ? `We are expanding accessories for ${selectedBrand}. You can browse our universal chargers, power banks, and cases.`
+                        : `We are updating inventory for ${selectedBrand}. Please check out our other collections.`
                       : "We are updating products for this catalog department. Please check out our other flagship categories."
                     }
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      router.push("/products", { scroll: false });
-                      scrollToCatalog();
+                      if (activeKey === "accessories") {
+                        handleBrandClick("");
+                      } else {
+                        router.push("/products", { scroll: false });
+                        scrollToCatalog();
+                      }
                     }}
                     className="px-4 py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
                   >
-                    View All Products
+                    {activeKey === "accessories" ? "Show All Accessories" : "View All Products"}
                   </button>
                 </div>
               )}
