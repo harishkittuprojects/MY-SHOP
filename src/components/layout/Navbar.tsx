@@ -28,6 +28,7 @@ import { logoutAction } from "@/lib/actions/auth";
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -38,6 +39,8 @@ export default function Navbar() {
   const desktopSearchContainerRef = useRef<HTMLDivElement>(null);
   const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const productsDropdownRef = useRef<HTMLDivElement>(null);
+  const productsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevWishlistCount = useRef<number | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -102,13 +105,14 @@ export default function Navbar() {
     }
 
     setIsUserDropdownOpen(false);
+    setIsProductsDropdownOpen(false);
     checkSession();
     fetchData();
     
     return () => controller.abort();
   }, [pathname]);
 
-  // Handle outside clicks to close search suggestions and user dropdown
+  // Handle outside clicks to close search suggestions, user dropdown, and products dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -120,11 +124,25 @@ export default function Navbar() {
       if (userDropdownRef.current && !userDropdownRef.current.contains(target)) {
         setIsUserDropdownOpen(false);
       }
+      if (productsDropdownRef.current && !productsDropdownRef.current.contains(target)) {
+        setIsProductsDropdownOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleProductsMouseEnter = () => {
+    if (productsTimeoutRef.current) clearTimeout(productsTimeoutRef.current);
+    setIsProductsDropdownOpen(true);
+  };
+
+  const handleProductsMouseLeave = () => {
+    productsTimeoutRef.current = setTimeout(() => {
+      setIsProductsDropdownOpen(false);
+    }, 150);
+  };
 
   const handleSignOut = async () => {
     setIsUserDropdownOpen(false);
@@ -462,12 +480,132 @@ export default function Navbar() {
             >
               Home
             </Link>
-            <Link 
-              href="/products" 
-              className={`hover:text-secondary transition-colors ${pathname?.startsWith("/products") || pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""}`}
+            {/* Products with All Categories Dropdown Menu */}
+            <div 
+              ref={productsDropdownRef}
+              className="relative"
+              onMouseEnter={handleProductsMouseEnter}
+              onMouseLeave={handleProductsMouseLeave}
             >
-              Products
-            </Link>
+              <div className="flex items-center">
+                <Link 
+                  href="/products" 
+                  onClick={() => setIsProductsDropdownOpen(false)}
+                  className={`hover:text-secondary transition-colors flex items-center gap-1 py-1 ${
+                    pathname?.startsWith("/products") || pathname?.startsWith("/categories") ? "text-secondary font-bold" : ""
+                  }`}
+                >
+                  <span>Products</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsProductsDropdownOpen(prev => !prev)}
+                  className="p-1 hover:text-secondary transition-colors cursor-pointer text-slate-500 hover:text-slate-800 focus:outline-hidden"
+                  aria-expanded={isProductsDropdownOpen}
+                  aria-label="Toggle all categories dropdown"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isProductsDropdownOpen ? "rotate-180 text-secondary" : ""}`} />
+                </button>
+              </div>
+
+              {/* All Categories Dropdown Menu */}
+              {isProductsDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 mt-2 w-[540px] xl:w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onMouseEnter={handleProductsMouseEnter}
+                  onMouseLeave={handleProductsMouseLeave}
+                >
+                  {/* Dropdown Header */}
+                  <div className="flex items-center justify-between pb-3 mb-2.5 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+                        <Layers className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">All Categories</span>
+                        <span className="text-[10px] text-slate-400 block font-normal">Explore certified smartphones &amp; electronics</span>
+                      </div>
+                    </div>
+                    <Link
+                      href="/products"
+                      onClick={() => setIsProductsDropdownOpen(false)}
+                      className="text-xs font-bold text-secondary hover:text-[#235832] flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary/10 transition-colors"
+                    >
+                      <span>View All Products</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+
+                  {/* Categories Grid */}
+                  <div className="grid grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1">
+                    {(categories && categories.length > 0 ? categories : [
+                      { id: "mobiles", name: "Mobiles", image_url: "/products/iphone-16-pro-max.png", sub_categories: ["Flagship Phones", "5G Phones", "Gaming Phones"] },
+                      { id: "old-refurbished-mobiles", name: "Old / Refurbished Mobiles", image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600", sub_categories: ["Superb Grade A+", "Refurbished iPhones"] },
+                      { id: "mobile-accessories", name: "Mobile Accessories", image_url: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=600", sub_categories: ["Chargers & Adapters", "Cases & Covers", "Tempered Glass"] },
+                      { id: "computers-tablets", name: "Computers & Tablets", image_url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600", sub_categories: ["Laptops", "iPads & Tablets", "Monitors"] },
+                      { id: "tv-audio", name: "TV & Audio", image_url: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=600", sub_categories: ["Smart TVs", "Soundbars & Speakers"] },
+                      { id: "fashion", name: "Fashion", image_url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600", sub_categories: ["Handbags & Purses", "Watches & Chronographs"] },
+                      { id: "jewellery", name: "Jewellery", image_url: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600", sub_categories: ["Gold & Diamond", "Silver & Moissanite"] },
+                      { id: "ev-vehicles", name: "EV Vehicles", image_url: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600", sub_categories: ["Electric Scooters", "Electric Bikes"] },
+                    ]).map((cat) => (
+                      <Link
+                        key={cat.id || cat.name}
+                        href={`/products?category=${encodeURIComponent(cat.name)}`}
+                        onClick={() => setIsProductsDropdownOpen(false)}
+                        className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200/60 transition-all group/cat"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center relative overflow-hidden shrink-0 group-hover/cat:border-secondary/40 transition-colors shadow-2xs">
+                          {cat.image_url ? (
+                            <Image
+                              src={cat.image_url.startsWith("http") ? cat.image_url : `/api/admin/proxy-image?url=${encodeURIComponent(cat.image_url)}`}
+                              alt={cat.name}
+                              fill
+                              sizes="40px"
+                              className="object-cover group-hover/cat:scale-110 transition-transform duration-300"
+                              unoptimized
+                            />
+                          ) : (
+                            <Package className="w-4 h-4 text-secondary" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-slate-800 group-hover/cat:text-secondary truncate transition-colors">
+                            {cat.name}
+                          </p>
+                          {cat.sub_categories && cat.sub_categories.length > 0 ? (
+                            <p className="text-[10px] text-slate-400 truncate">
+                              {cat.sub_categories.slice(0, 2).join(", ")}
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-slate-400">Shop collection</p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Dropdown Footer */}
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/70 -mx-4 -mb-4 px-4 py-2.5 rounded-b-2xl">
+                    <Link
+                      href="/categories"
+                      onClick={() => setIsProductsDropdownOpen(false)}
+                      className="text-slate-600 hover:text-secondary font-medium flex items-center gap-1.5 transition-colors text-[11px]"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-secondary" />
+                      <span>Browse Full Category Hub</span>
+                    </Link>
+                    <Link
+                      href="/services/display-replacement"
+                      onClick={() => setIsProductsDropdownOpen(false)}
+                      className="text-secondary font-semibold hover:underline flex items-center gap-1 text-[11px]"
+                    >
+                      <Wrench className="w-3 h-3" />
+                      <span>Repair &amp; Services</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
             <Link 
               href="/services/display-replacement" 
               className={`hover:text-secondary transition-colors flex items-center gap-1.5 ${pathname.includes("/services") ? "text-secondary font-bold" : ""}`}
