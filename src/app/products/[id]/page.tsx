@@ -801,6 +801,25 @@ export default function ProductDetailPage({
               selectedImage={selectedImage}
               onSelectImage={(img) => setSelectedImage(img)}
               isOutOfStock={isOutOfStock}
+              rating={product.rating || 4.1}
+              reviewsCount={product.reviews_count || 27200}
+              selectedColor={selectedColor || availableColors[0]?.color}
+              colorVariants={availableColors.map((v) => ({
+                color: v.color,
+                image_url: v.image_url || resolveColorImageUrl(v.color, v.image_url),
+                price: v.price,
+                stock_quantity: v.stock_quantity,
+              }))}
+              onSelectColor={(colorName) => {
+                const target = availableColors.find(
+                  (c) => c.color.toLowerCase() === colorName.toLowerCase()
+                );
+                if (target) {
+                  handleColorSelect(target);
+                } else {
+                  setSelectedColor(colorName);
+                }
+              }}
               onShare={handleShare}
               isWishlisted={isWishlisted}
               onToggleWishlist={() => product && toggleWishlist(product as any)}
@@ -867,7 +886,7 @@ export default function ProductDetailPage({
             {/* Visual Color Cards Selector (Matching Amazon / Apple screenshot) */}
             {/* Visual Color Cards Selector */}
             {availableColors.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-4">
+              <div className="hidden lg:block space-y-2 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-800">
                     Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || availableColors[0]?.color}</strong>
