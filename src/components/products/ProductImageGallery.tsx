@@ -467,7 +467,7 @@ export default function ProductImageGallery({
           </div>
         )}
 
-        {/* Bottom-Right Floating In-Place Zoom Toggle Button */}
+        {/* Bottom-Right Floating In-Place Zoom Toggle Button (Clear label for customers) */}
         <button
           type="button"
           onClick={(e) => {
@@ -479,15 +479,25 @@ export default function ProductImageGallery({
               setZoomPan({ x: 0, y: 0 });
             }
           }}
-          className={`absolute bottom-3.5 right-3.5 z-20 w-9 h-9 rounded-full shadow-md border flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs ${
+          className={`absolute bottom-3.5 right-3.5 z-20 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-200 active:scale-90 cursor-pointer backdrop-blur-xs ${
             zoomScale > 1
-              ? "bg-slate-900 text-white border-slate-800"
-              : "bg-white/95 hover:bg-white text-slate-700 hover:text-emerald-700 border-slate-200/90"
+              ? "bg-slate-900 text-white border-slate-800 ring-2 ring-emerald-500/40"
+              : "bg-white/95 hover:bg-white text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:shadow-lg"
           }`}
-          title={zoomScale > 1 ? "Reset zoom" : "Zoom product"}
+          title={zoomScale > 1 ? "Reset zoom (Click or Esc)" : "Click to zoom in product"}
           aria-label={zoomScale > 1 ? "Reset zoom" : "Zoom product"}
         >
-          {zoomScale > 1 ? <ZoomOut className="w-4.5 h-4.5" /> : <ZoomIn className="w-4.5 h-4.5" />}
+          {zoomScale > 1 ? (
+            <>
+              <ZoomOut className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[11px] sm:text-xs font-bold text-white">Reset</span>
+            </>
+          ) : (
+            <>
+              <ZoomIn className="w-3.5 h-3.5 text-slate-700 group-hover:text-emerald-700" />
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700">Zoom</span>
+            </>
+          )}
         </button>
 
         {/* Floating Mini Controls Pill when Product is Zoomed In */}
@@ -588,9 +598,18 @@ export default function ProductImageGallery({
               ? isDragging
                 ? "cursor-grabbing"
                 : "cursor-grab"
-              : "cursor-default"
+              : "cursor-zoom-in"
           }`}
           style={{ touchAction: "none" }}
+          onClick={(e) => {
+            if (hasDraggedRef.current) return;
+            if (zoomScale === 1) {
+              const rect = e.currentTarget.getBoundingClientRect();
+              handleDoubleTap(e.clientX, e.clientY, rect);
+            } else {
+              handleResetZoom();
+            }
+          }}
         >
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
