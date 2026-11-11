@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import {
   ChevronLeft,
@@ -11,7 +10,6 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  X,
 } from "lucide-react";
 
 export interface ColorVariantItem {
@@ -88,23 +86,18 @@ export default function ProductImageGallery({
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
   const hasDraggedRef = useRef<boolean>(false);
+  const mainImageContainerRef = useRef<HTMLDivElement>(null);
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
 
-  // Full-screen Zoom Modal State
-  const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+  // In-Place Product Zoom State (Only zooms the product, never the entire screen)
   const [zoomScale, setZoomScale] = useState<number>(1);
   const [zoomPan, setZoomPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isDraggingZoom, setIsDraggingZoom] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const lastTapRef = useRef<number>(0);
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartScaleRef = useRef<number>(1);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Sync with external selectedImage prop
   useEffect(() => {
@@ -125,23 +118,11 @@ export default function ProductImageGallery({
     }
   }, [selectedImage, galleryImages, currentIndex]);
 
-  // Reset zoom whenever image changes
+  // Reset in-place zoom whenever the active image changes
   useEffect(() => {
     setZoomScale(1);
     setZoomPan({ x: 0, y: 0 });
   }, [currentIndex]);
-
-  // Lock body scroll when zoom modal is open
-  useEffect(() => {
-    if (isZoomOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isZoomOpen]);
 
   // Preload neighboring images
   useEffect(() => {
@@ -193,7 +174,7 @@ export default function ProductImageGallery({
   const nextImage = useCallback(() => paginate(1), [paginate]);
   const prevImage = useCallback(() => paginate(-1), [paginate]);
 
-  // Main gallery drag end handler (when not zoomed)
+  // Main gallery drag end handler (for swiping between slides when not zoomed)
   const handleDragEnd = (
     _e: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
@@ -201,6 +182,8 @@ export default function ProductImageGallery({
     setTimeout(() => {
       hasDraggedRef.current = false;
     }, 150);
+
+    if (zoomScale > 1) return;
 
     const swipeThreshold = 35;
     const velocityThreshold = 180;
@@ -230,14 +213,16 @@ export default function ProductImageGallery({
     setZoomPan({ x: 0, y: 0 });
   }, []);
 
-  // Double tap / double click to toggle zoom
-  const handleDoubleTapZoom = (clientX: number, clientY: number, containerRect: DOMRect) => {
+  // Double tap / double click to toggle in-place zoom
+  const handleDoubleTap = (clientX: number, clientY: number, containerRect: DOMRect) => {
     if (zoomScale === 1) {
       const relX = (clientX - containerRect.left) / containerRect.width;
       const relY = (clientY - containerRect.top) / containerRect.height;
       const targetScale = 2.5;
-      const panX = (0.5 - relX) * containerRect.width * (targetScale - 1);
-      const panY = (0.5 - relY) * containerRect.height * (targetScale - 1);
+      const maxPanX = ((targetScale - 1) * containerRect.width) / 2;
+      const maxPanY = ((targetScale - 1) * containerRect.height) / 2;
+      const panX = Math.max(-maxPanX, Math.min(maxPanX, (0.5 - relX) * containerRect.width * (targetScale - 1)));
+      const panY = Math.max(-maxPanY, Math.min(maxPanY, (0.5 - relY) * containerRect.height * (targetScale - 1)));
       setZoomScale(targetScale);
       setZoomPan({ x: panX, y: panY });
     } else {
@@ -245,32 +230,8 @@ export default function ProductImageGallery({
     }
   };
 
-  // Keyboard navigation & Esc key to close zoom modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        nextImage();
-      } else if (e.key === "ArrowLeft") {
-        prevImage();
-      } else if (e.key === "Escape") {
-        if (isZoomOpen) {
-          setIsZoomOpen(false);
-          handleResetZoom();
-        }
-      } else if (e.key === "+" || e.key === "=") {
-        if (isZoomOpen) handleZoomIn();
-      } else if (e.key === "-") {
-        if (isZoomOpen) handleZoomOut();
-      } else if (e.key === "0") {
-        if (isZoomOpen) handleResetZoom();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextImage, prevImage, isZoomOpen, handleZoomIn, handleZoomOut, handleResetZoom]);
-
-  // Touch handlers inside zoom modal
-  const handleTouchStartZoom = (e: React.TouchEvent) => {
+  // Touch handlers for mobile (Pinch-to-zoom & 1-finger Pan when zoomed)
+  const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -286,22 +247,24 @@ export default function ProductImageGallery({
       const now = Date.now();
       const rect = e.currentTarget.getBoundingClientRect();
 
+      // Double tap check
       if (now - lastTapRef.current < 300) {
-        handleDoubleTapZoom(touch.clientX, touch.clientY, rect);
+        handleDoubleTap(touch.clientX, touch.clientY, rect);
         lastTapRef.current = 0;
         return;
       }
       lastTapRef.current = now;
 
       if (zoomScale > 1) {
-        setIsDraggingZoom(true);
+        setIsDragging(true);
         dragStartRef.current = { x: touch.clientX, y: touch.clientY };
         panStartRef.current = { ...zoomPan };
       }
     }
   };
 
-  const handleTouchMoveZoom = (e: React.TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // 2-finger pinch
     if (e.touches.length === 2 && pinchStartDistRef.current !== null) {
       e.preventDefault();
       const dist = Math.hypot(
@@ -309,42 +272,119 @@ export default function ProductImageGallery({
         e.touches[0].clientY - e.touches[1].clientY
       );
       const ratio = dist / pinchStartDistRef.current;
-      const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 1), 4);
+      const newScale = Math.min(Math.max(Number((pinchStartScaleRef.current * ratio).toFixed(2)), 1), 4);
       setZoomScale(newScale);
       if (newScale === 1) setZoomPan({ x: 0, y: 0 });
       return;
     }
 
-    if (e.touches.length === 1 && zoomScale > 1 && isDraggingZoom) {
+    // 1-finger drag to pan when zoomed
+    if (e.touches.length === 1 && zoomScale > 1 && isDragging) {
       e.preventDefault();
       const touch = e.touches[0];
       const dx = touch.clientX - dragStartRef.current.x;
       const dy = touch.clientY - dragStartRef.current.y;
-      const maxPan = (zoomScale - 1) * 260;
+      const rect = mainImageContainerRef.current?.getBoundingClientRect();
+      const maxPanX = rect ? ((zoomScale - 1) * rect.width) / 2 : 200;
+      const maxPanY = rect ? ((zoomScale - 1) * rect.height) / 2 : 200;
       setZoomPan({
-        x: Math.max(-maxPan, Math.min(maxPan, panStartRef.current.x + dx)),
-        y: Math.max(-maxPan, Math.min(maxPan, panStartRef.current.y + dy)),
+        x: Math.max(-maxPanX, Math.min(maxPanX, panStartRef.current.x + dx)),
+        y: Math.max(-maxPanY, Math.min(maxPanY, panStartRef.current.y + dy)),
       });
     }
   };
 
-  const handleTouchEndZoom = () => {
+  const handleTouchEnd = () => {
     pinchStartDistRef.current = null;
-    setIsDraggingZoom(false);
+    setIsDragging(false);
     if (zoomScale < 1.05) {
       setZoomScale(1);
       setZoomPan({ x: 0, y: 0 });
     }
   };
 
+  // Mouse pan handlers when zoomed
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale > 1) {
+      e.preventDefault();
+      setIsDragging(true);
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      panStartRef.current = { ...zoomPan };
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (zoomScale > 1 && isDragging) {
+      e.preventDefault();
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      const rect = mainImageContainerRef.current?.getBoundingClientRect();
+      const maxPanX = rect ? ((zoomScale - 1) * rect.width) / 2 : 200;
+      const maxPanY = rect ? ((zoomScale - 1) * rect.height) / 2 : 200;
+      setZoomPan({
+        x: Math.max(-maxPanX, Math.min(maxPanX, panStartRef.current.x + dx)),
+        y: Math.max(-maxPanY, Math.min(maxPanY, panStartRef.current.y + dy)),
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Keyboard navigation & Esc key to reset zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        if (zoomScale === 1) nextImage();
+      } else if (e.key === "ArrowLeft") {
+        if (zoomScale === 1) prevImage();
+      } else if (e.key === "Escape") {
+        if (zoomScale > 1) handleResetZoom();
+      } else if (e.key === "+" || e.key === "=") {
+        handleZoomIn();
+      } else if (e.key === "-") {
+        handleZoomOut();
+      } else if (e.key === "0") {
+        handleResetZoom();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [nextImage, prevImage, zoomScale, handleZoomIn, handleZoomOut, handleResetZoom]);
+
   const currentImageUrl = galleryImages[currentIndex] || "/placeholder.png";
   const displayRating = typeof rating === "number" ? rating.toFixed(1) : "4.1";
 
   return (
     <div className="w-full flex flex-col gap-2.5 select-none">
-      {/* ======================= MAIN VIEWER (Flipkart reference style) ======================= */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-square max-h-[500px] bg-[#f1f2f4] rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex items-center justify-center overflow-hidden group">
-        
+      {/* ======================= MAIN VIEWER (In-Place Zoom: Only the product zooms inside the card) ======================= */}
+      <div
+        ref={mainImageContainerRef}
+        className="relative w-full aspect-[4/5] sm:aspect-square max-h-[500px] bg-[#f1f2f4] rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex items-center justify-center overflow-hidden group select-none touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onDoubleClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          handleDoubleTap(e.clientX, e.clientY, rect);
+        }}
+        onWheel={(e) => {
+          if (zoomScale > 1 || e.ctrlKey) {
+            e.preventDefault();
+            if (e.deltaY < 0) handleZoomIn();
+            else handleZoomOut();
+          }
+        }}
+      >
         {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist */}
         <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
           {onShare && (
@@ -392,7 +432,7 @@ export default function ProductImageGallery({
           )}
         </div>
 
-        {/* Bottom-Left Floating Rating Badge Pill: 4.1 ★ | 27.2K+ (Exact match to reference) */}
+        {/* Bottom-Left Floating Rating Badge Pill: 4.1 ★ | 27.2K+ */}
         {rating !== undefined && (
           <div className="absolute bottom-3.5 left-3.5 z-20 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md shadow-xs border border-slate-200/60 flex items-center gap-1.5 text-xs font-bold text-slate-800 pointer-events-none">
             <span>{displayRating}</span>
@@ -402,19 +442,79 @@ export default function ProductImageGallery({
           </div>
         )}
 
-        {/* Bottom-Right Floating Zoom Option Button */}
+        {/* Bottom-Right Floating In-Place Zoom Toggle Button */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            setIsZoomOpen(true);
+            if (zoomScale > 1) {
+              handleResetZoom();
+            } else {
+              setZoomScale(2.5);
+              setZoomPan({ x: 0, y: 0 });
+            }
           }}
-          className="absolute bottom-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-emerald-700 shadow-md border border-slate-200/90 flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs"
-          title="Zoom image"
-          aria-label="Zoom image"
+          className={`absolute bottom-3.5 right-3.5 z-20 w-9 h-9 rounded-full shadow-md border flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs ${
+            zoomScale > 1
+              ? "bg-slate-900 text-white border-slate-800"
+              : "bg-white/95 hover:bg-white text-slate-700 hover:text-emerald-700 border-slate-200/90"
+          }`}
+          title={zoomScale > 1 ? "Reset zoom" : "Zoom product"}
+          aria-label={zoomScale > 1 ? "Reset zoom" : "Zoom product"}
         >
-          <ZoomIn className="w-4.5 h-4.5" />
+          {zoomScale > 1 ? <ZoomOut className="w-4.5 h-4.5" /> : <ZoomIn className="w-4.5 h-4.5" />}
         </button>
+
+        {/* Floating Mini Controls Pill when Product is Zoomed In */}
+        {zoomScale > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/85 backdrop-blur-md px-3 py-1 rounded-full text-white shadow-xl border border-white/20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              disabled={zoomScale <= 1}
+              className={`p-1 rounded-full transition active:scale-90 cursor-pointer ${
+                zoomScale <= 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"
+              }`}
+              title="Zoom out"
+              aria-label="Zoom out"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+
+            <span className="text-[11px] font-mono font-bold text-emerald-400 min-w-[36px] text-center">
+              {Math.round(zoomScale * 100)}%
+            </span>
+
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              disabled={zoomScale >= 4}
+              className={`p-1 rounded-full transition active:scale-90 cursor-pointer ${
+                zoomScale >= 4 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"
+              }`}
+              title="Zoom in"
+              aria-label="Zoom in"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetZoom}
+              className="p-1 rounded-full hover:bg-white/20 transition active:scale-90 cursor-pointer ml-0.5 text-slate-300 hover:text-white"
+              title="Reset Zoom"
+              aria-label="Reset zoom"
+            >
+              <RotateCcw className="w-3 h-3" />
+            </button>
+          </motion.div>
+        )}
 
         {/* Out Of Stock Overlay */}
         {isOutOfStock && (
@@ -425,8 +525,8 @@ export default function ProductImageGallery({
           </div>
         )}
 
-        {/* Desktop-only subtle Hover Navigation Arrows */}
-        {galleryImages.length > 1 && (
+        {/* Desktop-only subtle Hover Navigation Arrows (only when not zoomed) */}
+        {galleryImages.length > 1 && zoomScale === 1 && (
           <>
             <button
               type="button"
@@ -456,12 +556,21 @@ export default function ProductImageGallery({
           </>
         )}
 
-        {/* Smooth Swipeable Carousel Viewport (Click to open Zoom) */}
+        {/* Product Image Viewport (In-Place Zoom & Pan, clipped strictly within this container) */}
         <div
-          className="relative w-full h-full flex items-center justify-center overflow-hidden cursor-zoom-in"
+          className={`relative w-full h-full flex items-center justify-center overflow-hidden ${
+            zoomScale > 1
+              ? isDragging
+                ? "cursor-grabbing"
+                : "cursor-grab"
+              : "cursor-zoom-in"
+          }`}
           onClick={() => {
             if (hasDraggedRef.current) return;
-            setIsZoomOpen(true);
+            if (zoomScale === 1) {
+              setZoomScale(2.5);
+              setZoomPan({ x: 0, y: 0 });
+            }
           }}
         >
           <AnimatePresence initial={false} custom={direction}>
@@ -470,10 +579,21 @@ export default function ProductImageGallery({
               custom={direction}
               variants={slideVariants}
               initial="enter"
-              animate="center"
+              animate={{
+                opacity: 1,
+                scale: zoomScale,
+                x: zoomScale > 1 ? zoomPan.x : 0,
+                y: zoomScale > 1 ? zoomPan.y : 0,
+              }}
               exit="exit"
-              transition={slideTransition}
-              drag={galleryImages.length > 1 ? "x" : false}
+              transition={
+                isDragging
+                  ? { duration: 0 }
+                  : zoomScale > 1
+                  ? { type: "spring", stiffness: 300, damping: 30 }
+                  : slideTransition
+              }
+              drag={zoomScale === 1 && galleryImages.length > 1 ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.4}
               onDragStart={() => {
@@ -481,6 +601,7 @@ export default function ProductImageGallery({
               }}
               onDragEnd={handleDragEnd}
               className="absolute inset-0 w-full h-full flex items-center justify-center select-none touch-pan-y"
+              style={{ transformOrigin: "center center" }}
             >
               <Image
                 src={currentImageUrl}
@@ -503,7 +624,10 @@ export default function ProductImageGallery({
             <button
               key={idx}
               type="button"
-              onClick={() => goToImage(idx)}
+              onClick={() => {
+                goToImage(idx);
+                handleResetZoom();
+              }}
               className={`transition-all duration-300 rounded-full cursor-pointer ${
                 currentIndex === idx
                   ? "w-2.5 h-2.5 bg-[#e01a59]"
@@ -529,7 +653,10 @@ export default function ProductImageGallery({
                 <button
                   key={v.color || idx}
                   type="button"
-                  onClick={() => onSelectColor?.(v.color)}
+                  onClick={() => {
+                    onSelectColor?.(v.color);
+                    handleResetZoom();
+                  }}
                   className={`relative w-15 h-19 sm:w-16 sm:h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                     isColorSelected
                       ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
@@ -562,7 +689,10 @@ export default function ProductImageGallery({
               <button
                 key={idx}
                 type="button"
-                onClick={() => goToImage(idx)}
+                onClick={() => {
+                  goToImage(idx);
+                  handleResetZoom();
+                }}
                 className={`relative w-15 h-19 sm:w-16 sm:h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                   isActive
                     ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
@@ -585,7 +715,7 @@ export default function ProductImageGallery({
         </div>
       ) : null}
 
-      {/* On desktop screens with color variants, also display desktop thumbnails */}
+      {/* Desktop thumbnails strip */}
       {colorVariants && colorVariants.length > 0 && galleryImages.length > 1 && (
         <div
           ref={thumbnailContainerRef}
@@ -597,7 +727,10 @@ export default function ProductImageGallery({
               <button
                 key={idx}
                 type="button"
-                onClick={() => goToImage(idx)}
+                onClick={() => {
+                  goToImage(idx);
+                  handleResetZoom();
+                }}
                 className={`relative w-16 h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                   isActive
                     ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
@@ -619,209 +752,6 @@ export default function ProductImageGallery({
           })}
         </div>
       )}
-
-      {/* ======================= FULLSCREEN ZOOM VIEWER LIGHTBOX ======================= */}
-      {isMounted &&
-        createPortal(
-          <AnimatePresence>
-            {isZoomOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5"
-                onClick={() => {
-                  setIsZoomOpen(false);
-                  handleResetZoom();
-                }}
-              >
-                {/* Modal Top Bar */}
-                <div
-                  className="w-full flex items-center justify-between text-white z-30"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm sm:text-base font-bold text-white/90 line-clamp-1 max-w-[220px] sm:max-w-md">
-                      {productName}
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-xs font-semibold text-slate-300">
-                      {currentIndex + 1} / {galleryImages.length}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsZoomOpen(false);
-                      handleResetZoom();
-                    }}
-                    className="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition active:scale-90 cursor-pointer border border-white/20"
-                    title="Close Zoom (Esc)"
-                    aria-label="Close"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Modal Center Viewport with Interactive Pinch, Double-Tap & Drag Zoom */}
-                <div
-                  className="relative flex-1 w-full flex items-center justify-center overflow-hidden my-2 select-none"
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={handleTouchStartZoom}
-                  onTouchMove={handleTouchMoveZoom}
-                  onTouchEnd={handleTouchEndZoom}
-                  onDoubleClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    handleDoubleTapZoom(e.clientX, e.clientY, rect);
-                  }}
-                  onWheel={(e) => {
-                    e.preventDefault();
-                    if (e.deltaY < 0) handleZoomIn();
-                    else handleZoomOut();
-                  }}
-                >
-                  {/* Modal Left/Right Image Navigation Buttons */}
-                  {galleryImages.length > 1 && zoomScale === 1 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          prevImage();
-                        }}
-                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition active:scale-90 cursor-pointer border border-white/20 backdrop-blur-xs"
-                        title="Previous Image"
-                      >
-                        <ChevronLeft className="w-6 h-6" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          nextImage();
-                        }}
-                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition active:scale-90 cursor-pointer border border-white/20 backdrop-blur-xs"
-                        title="Next Image"
-                      >
-                        <ChevronRight className="w-6 h-6" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Zoomed Image Surface */}
-                  <motion.div
-                    animate={{
-                      scale: zoomScale,
-                      x: zoomScale > 1 ? zoomPan.x : 0,
-                      y: zoomScale > 1 ? zoomPan.y : 0,
-                    }}
-                    transition={
-                      isDraggingZoom ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }
-                    }
-                    className={`relative w-full h-full max-h-[75vh] flex items-center justify-center ${
-                      zoomScale > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
-                    }`}
-                  >
-                    <Image
-                      src={currentImageUrl}
-                      alt={productName}
-                      fill
-                      priority
-                      className="object-contain p-2 select-none pointer-events-none"
-                      unoptimized
-                    />
-                  </motion.div>
-
-                  {/* Floating Zoom Control Pill at Bottom-Center */}
-                  <div
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-white shadow-2xl"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      onClick={handleZoomOut}
-                      disabled={zoomScale <= 1}
-                      className={`p-1.5 rounded-full transition active:scale-90 cursor-pointer ${
-                        zoomScale <= 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"
-                      }`}
-                      title="Zoom Out (-)"
-                      aria-label="Zoom Out"
-                    >
-                      <ZoomOut className="w-4 h-4" />
-                    </button>
-
-                    <span className="text-xs font-mono font-bold text-emerald-400 px-1 min-w-[40px] text-center">
-                      {Math.round(zoomScale * 100)}%
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={handleZoomIn}
-                      disabled={zoomScale >= 4}
-                      className={`p-1.5 rounded-full transition active:scale-90 cursor-pointer ${
-                        zoomScale >= 4 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"
-                      }`}
-                      title="Zoom In (+)"
-                      aria-label="Zoom In"
-                    >
-                      <ZoomIn className="w-4 h-4" />
-                    </button>
-
-                    {zoomScale > 1 && (
-                      <button
-                        type="button"
-                        onClick={handleResetZoom}
-                        className="p-1.5 rounded-full hover:bg-white/20 transition active:scale-90 cursor-pointer ml-1 text-slate-300 hover:text-white"
-                        title="Reset Zoom (0)"
-                        aria-label="Reset Zoom"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Modal Bottom Thumbnail Strip for Switching Photos */}
-                {galleryImages.length > 1 && (
-                  <div
-                    className="w-full flex items-center justify-center gap-2 py-1.5 overflow-x-auto scrollbar-none z-30"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {galleryImages.map((img, idx) => (
-                      <button
-                        key={`modal-thumb-${idx}`}
-                        type="button"
-                        onClick={() => {
-                          goToImage(idx);
-                          handleResetZoom();
-                        }}
-                        className={`relative w-13 h-16 sm:w-15 sm:h-18 rounded-xl bg-white/10 border transition overflow-hidden p-1 shrink-0 cursor-pointer ${
-                          currentIndex === idx
-                            ? "border-emerald-500 ring-2 ring-emerald-500/50 scale-105 bg-white/20"
-                            : "border-white/20 opacity-60 hover:opacity-100"
-                        }`}
-                        title={`Slide ${idx + 1}`}
-                      >
-                        <div className="relative w-full h-full flex items-center justify-center">
-                          <Image
-                            src={img}
-                            alt={`Thumbnail ${idx + 1}`}
-                            fill
-                            className="object-contain"
-                            unoptimized
-                          />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>,
-          document.body
-        )}
     </div>
   );
 }
