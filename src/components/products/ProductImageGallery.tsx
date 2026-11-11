@@ -91,6 +91,7 @@ export default function ProductImageGallery({
 
   // In-Place Product Zoom State (Only zooms the product, never the entire screen)
   const [zoomScale, setZoomScale] = useState<number>(1);
+  const zoomScaleRef = useRef<number>(zoomScale);
   const [zoomPan, setZoomPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -98,6 +99,10 @@ export default function ProductImageGallery({
   const lastTapRef = useRef<number>(0);
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartScaleRef = useRef<number>(1);
+
+  useEffect(() => {
+    zoomScaleRef.current = zoomScale;
+  }, [zoomScale]);
 
   // Sync with external selectedImage prop
   useEffect(() => {
@@ -118,11 +123,39 @@ export default function ProductImageGallery({
     }
   }, [selectedImage, galleryImages, currentIndex]);
 
-  // Reset in-place zoom whenever the active image changes
+  // Reset in-place zoom whenever active image changes
   useEffect(() => {
     setZoomScale(1);
     setZoomPan({ x: 0, y: 0 });
   }, [currentIndex]);
+
+  // Completely block native browser page/screen zoom when touching the product container
+  useEffect(() => {
+    const container = mainImageContainerRef.current;
+    if (!container) return;
+
+    const preventNativeGesture = (e: TouchEvent) => {
+      if (e.touches.length > 1 || zoomScaleRef.current > 1) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    const handleWheelNative = (e: WheelEvent) => {
+      if (zoomScaleRef.current > 1 || e.ctrlKey) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    container.addEventListener("touchmove", preventNativeGesture, { passive: false });
+    container.addEventListener("touchstart", preventNativeGesture, { passive: false });
+    container.addEventListener("wheel", handleWheelNative, { passive: false });
+
+    return () => {
+      container.removeEventListener("touchmove", preventNativeGesture);
+      container.removeEventListener("touchstart", preventNativeGesture);
+      container.removeEventListener("wheel", handleWheelNative);
+    };
+  }, []);
 
   // Preload neighboring images
   useEffect(() => {
@@ -174,7 +207,7 @@ export default function ProductImageGallery({
   const nextImage = useCallback(() => paginate(1), [paginate]);
   const prevImage = useCallback(() => paginate(-1), [paginate]);
 
-  // Main gallery drag end handler (for swiping between slides when not zoomed)
+  // Main gallery drag end handler (for swiping between slides when scale === 1)
   const handleDragEnd = (
     _e: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
@@ -264,9 +297,8 @@ export default function ProductImageGallery({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // 2-finger pinch
+    // 2-finger pinch (zooms ONLY the product image)
     if (e.touches.length === 2 && pinchStartDistRef.current !== null) {
-      e.preventDefault();
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -280,7 +312,6 @@ export default function ProductImageGallery({
 
     // 1-finger drag to pan when zoomed
     if (e.touches.length === 1 && zoomScale > 1 && isDragging) {
-      e.preventDefault();
       const touch = e.touches[0];
       const dx = touch.clientX - dragStartRef.current.x;
       const dy = touch.clientY - dragStartRef.current.y;
@@ -365,7 +396,8 @@ export default function ProductImageGallery({
       {/* ======================= MAIN VIEWER (In-Place Zoom: Only the product zooms inside the card) ======================= */}
       <div
         ref={mainImageContainerRef}
-        className="relative w-full aspect-[4/5] sm:aspect-square max-h-[500px] bg-[#f1f2f4] rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex items-center justify-center overflow-hidden group select-none touch-pan-y"
+        className="relative w-full aspect-[4/5] sm:aspect-square max-h-[500px] bg-[#f1f2f4] rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex items-center justify-center overflow-hidden group select-none touch-none"
+        style={{ touchAction: "none" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -376,13 +408,6 @@ export default function ProductImageGallery({
         onDoubleClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           handleDoubleTap(e.clientX, e.clientY, rect);
-        }}
-        onWheel={(e) => {
-          if (zoomScale > 1 || e.ctrlKey) {
-            e.preventDefault();
-            if (e.deltaY < 0) handleZoomIn();
-            else handleZoomOut();
-          }
         }}
       >
         {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist */}
@@ -556,22 +581,16 @@ export default function ProductImageGallery({
           </>
         )}
 
-        {/* Product Image Viewport (In-Place Zoom & Pan, clipped strictly within this container) */}
+        {/* Product Image Viewport (In-Place Zoom & Pan, strictly clipped within card) */}
         <div
-          className={`relative w-full h-full flex items-center justify-center overflow-hidden ${
+          className={`relative w-full h-full flex items-center justify-center overflow-hidden touch-none ${
             zoomScale > 1
               ? isDragging
                 ? "cursor-grabbing"
                 : "cursor-grab"
-              : "cursor-zoom-in"
+              : "cursor-default"
           }`}
-          onClick={() => {
-            if (hasDraggedRef.current) return;
-            if (zoomScale === 1) {
-              setZoomScale(2.5);
-              setZoomPan({ x: 0, y: 0 });
-            }
-          }}
+          style={{ touchAction: "none" }}
         >
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
@@ -600,8 +619,8 @@ export default function ProductImageGallery({
                 hasDraggedRef.current = true;
               }}
               onDragEnd={handleDragEnd}
-              className="absolute inset-0 w-full h-full flex items-center justify-center select-none touch-pan-y"
-              style={{ transformOrigin: "center center" }}
+              className="absolute inset-0 w-full h-full flex items-center justify-center select-none touch-none"
+              style={{ transformOrigin: "center center", touchAction: "none" }}
             >
               <Image
                 src={currentImageUrl}

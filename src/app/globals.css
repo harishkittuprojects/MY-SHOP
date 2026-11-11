@@ -39,6 +39,7 @@ body {
   width: 100%;
   position: relative;
   -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
 }
 
 *, *::before, *::after {
