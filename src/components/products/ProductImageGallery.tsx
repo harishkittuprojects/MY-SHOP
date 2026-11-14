@@ -410,8 +410,8 @@ export default function ProductImageGallery({
           handleDoubleTap(e.clientX, e.clientY, rect);
         }}
       >
-        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist */}
-        <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
+        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist in Vertical Position */}
+        <div className="absolute top-3.5 right-3.5 z-20 flex flex-col items-center gap-2">
           {onShare && (
             <button
               type="button"
