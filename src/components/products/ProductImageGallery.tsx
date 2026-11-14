@@ -410,8 +410,8 @@ export default function ProductImageGallery({
           handleDoubleTap(e.clientX, e.clientY, rect);
         }}
       >
-        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist in Vertical Position */}
-        <div className="absolute top-3.5 right-3.5 z-20 flex flex-col items-center gap-2">
+        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist in Vertical Position (Safe from product overlap) */}
+        <div className="absolute top-3 right-3 z-20 flex flex-col items-center gap-1.5">
           {onShare && (
             <button
               type="button"
@@ -419,13 +419,13 @@ export default function ProductImageGallery({
                 e.stopPropagation();
                 onShare();
               }}
-              className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md border border-slate-200/90 flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-sm border border-slate-200/90 flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs"
               title="Share product"
               aria-label="Share product"
             >
               {/* Proper Paper-Airplane Share Arrow pointing top-right */}
               <svg
-                className="w-4.5 h-4.5 translate-x-[-1px] translate-y-[1px]"
+                className="w-4 h-4 translate-x-[-1px] translate-y-[1px]"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -446,13 +446,13 @@ export default function ProductImageGallery({
                 e.stopPropagation();
                 onToggleWishlist();
               }}
-              className={`w-9 h-9 rounded-full bg-white/95 hover:bg-white shadow-md border border-slate-200/90 flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white shadow-sm border border-slate-200/90 flex items-center justify-center transition active:scale-90 cursor-pointer backdrop-blur-xs ${
                 isWishlisted ? "text-rose-500" : "text-slate-600 hover:text-rose-500"
               }`}
               title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
               aria-label="Wishlist toggle"
             >
-              <Heart className={`w-4.5 h-4.5 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""}`} />
+              <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""}`} />
             </button>
           )}
         </div>
@@ -647,7 +647,7 @@ export default function ProductImageGallery({
                 fill
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
-                className="object-contain w-full h-full p-2 select-none pointer-events-none"
+                className="object-contain w-full h-full p-6 sm:p-8 md:p-10 select-none pointer-events-none"
                 unoptimized
               />
             </motion.div>
