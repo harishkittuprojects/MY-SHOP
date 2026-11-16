@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
@@ -84,7 +84,9 @@ export default function ProductImageGallery({
   colorVariants = [],
   onSelectColor,
 }: ProductImageGalleryProps) {
-  const galleryImages = images && images.length > 0 ? images : ["/placeholder.png"];
+  const galleryImages = useMemo(() => {
+    return images && images.length > 0 ? images : ["/placeholder.png"];
+  }, [images]);
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
@@ -121,24 +123,26 @@ export default function ProductImageGallery({
     };
   }, [isViewerOpen]);
 
-  // Sync with external selectedImage prop
+  // Sync with external selectedImage prop safely (avoids re-render loop)
   useEffect(() => {
-    if (selectedImage) {
-      const norm = (u: string) => (u || "").split("?")[0].replace(/\/+$/, "").toLowerCase();
-      const target = norm(selectedImage);
-      let idx = galleryImages.findIndex((img) => norm(img) === target);
-      if (idx === -1) {
-        idx = galleryImages.findIndex((img) => {
-          const n = norm(img);
-          return n.includes(target) || target.includes(n);
-        });
-      }
-      if (idx !== -1 && idx !== currentIndex) {
-        setDirection(idx > currentIndex ? 1 : -1);
-        setCurrentIndex(idx);
-      }
+    if (!selectedImage) return;
+    const norm = (u: string) => (u || "").split("?")[0].replace(/\/+$/, "").toLowerCase();
+    const target = norm(selectedImage);
+    let idx = galleryImages.findIndex((img) => norm(img) === target);
+    if (idx === -1) {
+      idx = galleryImages.findIndex((img) => {
+        const n = norm(img);
+        return n.includes(target) || target.includes(n);
+      });
     }
-  }, [selectedImage, galleryImages, currentIndex]);
+    if (idx !== -1) {
+      setCurrentIndex((prev) => {
+        if (prev === idx) return prev;
+        setDirection(idx > prev ? 1 : -1);
+        return idx;
+      });
+    }
+  }, [selectedImage, galleryImages]);
 
   // Reset viewer zoom whenever active image changes
   useEffect(() => {
@@ -365,7 +369,7 @@ export default function ProductImageGallery({
       {/* ======================= MAIN VIEWER (Clicking/Pressing the product opens directly into Fullscreen) ======================= */}
       <div
         ref={mainImageContainerRef}
-        className="relative w-full aspect-[4/5] sm:aspect-square max-h-[500px] bg-[#f1f2f4] rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex items-center justify-center overflow-hidden group select-none cursor-pointer"
+        className="relative w-full aspect-square bg-[#f1f2f4] rounded-none sm:rounded-3xl p-1 sm:p-3 flex items-center justify-center overflow-hidden group select-none cursor-pointer"
         onClick={() => {
           if (cardDragDistRef.current < 10) {
             setIsViewerOpen(true);
@@ -507,7 +511,7 @@ export default function ProductImageGallery({
                 fill
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
-                className="object-contain w-full h-full p-6 sm:p-8 md:p-10 select-none pointer-events-none"
+                className="object-contain w-full h-full p-1.5 sm:p-3 select-none pointer-events-none"
                 unoptimized
               />
             </motion.div>
@@ -517,7 +521,7 @@ export default function ProductImageGallery({
 
       {/* ======================= PAGINATION DOTS (Active dot: Flipkart Magenta) ======================= */}
       {galleryImages.length > 1 && (
-        <div className="w-full flex items-center justify-center gap-1.5 py-1.5">
+        <div className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 sm:px-0">
           {galleryImages.map((_, idx) => (
             <button
               key={idx}
@@ -537,7 +541,7 @@ export default function ProductImageGallery({
 
       {/* ======================= COLOR VARIANTS / THUMBNAILS (Flipkart Reference Style) ======================= */}
       {colorVariants && colorVariants.length > 0 ? (
-        <div className="w-full space-y-2 pt-1 lg:hidden">
+        <div className="w-full space-y-2 pt-1 lg:hidden px-3 sm:px-0">
           <div className="text-xs sm:text-sm font-semibold text-slate-800">
             Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || colorVariants[0]?.color}</strong>
           </div>
@@ -573,7 +577,7 @@ export default function ProductImageGallery({
       ) : galleryImages.length > 1 ? (
         <div
           ref={thumbnailContainerRef}
-          className="w-full flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5"
+          className="w-full flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-3 sm:px-0"
         >
           {galleryImages.map((img, idx) => {
             const isActive = currentIndex === idx;

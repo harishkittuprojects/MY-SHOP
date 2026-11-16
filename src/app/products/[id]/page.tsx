@@ -790,7 +790,7 @@ export default function ProductDetailPage({
       </div>
 
       {/* Main Container: Amazon 3-Column Layout */}
-      <div className="max-w-[1440px] mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-5">
+      <div className="max-w-[1440px] mx-auto px-0 sm:px-4 py-0 sm:py-4 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-6 items-start">
           
           {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Interactive 20-Feature Gallery) ======================= */}
@@ -827,7 +827,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* ======================= COLUMN 2 (4 cols): Center Product Details ======================= */}
-          <div className="lg:col-span-4 w-full space-y-4 min-w-0 self-start lg:pt-2.5">
+          <div className="lg:col-span-4 w-full space-y-4 min-w-0 self-start lg:pt-2.5 px-3 sm:px-0">
             
             {/* Title & Brand Store Link */}
             <div className="space-y-1.5 border-b border-slate-200 pb-3">
@@ -1068,7 +1068,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* ======================= COLUMN 3 (3 cols): Amazon Right Buy Box ======================= */}
-          <div className="lg:col-span-3 min-w-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 lg:sticky lg:top-20 self-start text-xs select-none">
+          <div className="lg:col-span-3 min-w-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 lg:sticky lg:top-20 self-start text-xs select-none mx-3 sm:mx-0">
 
             {/* Radio 1: With Exchange */}
             <div 
@@ -1406,7 +1406,7 @@ export default function ProductDetailPage({
 
         {/* ======================= BOTTOM: Related Products ======================= */}
         {relatedProducts.length > 0 && (
-          <div className="mt-14 pt-8 border-t border-slate-200 space-y-6">
+          <div className="mt-14 pt-8 border-t border-slate-200 space-y-6 px-3 sm:px-0">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
