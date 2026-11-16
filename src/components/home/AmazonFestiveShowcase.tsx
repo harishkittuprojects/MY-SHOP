@@ -2591,7 +2591,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               )}
 
               {matchedCatalogProducts.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 items-stretch auto-rows-fr">
                   {matchedCatalogProducts.map((product) => (
                     <ProductCard key={product.id} product={product} viewMode="grid" />
                   ))}

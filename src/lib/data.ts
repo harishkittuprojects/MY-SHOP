@@ -134,8 +134,8 @@ export const products = [
     image_url: "/products/samsung-galaxy-z-fold7.jpg",
     images: [
       "/products/samsung-galaxy-z-fold7.jpg",
-      "/products/samsung-galaxy-s26-ultra.jpg",
-      "/products/samsung-galaxy-s25-ultra.png"
+      "/products/samsung-galaxy-s25-ultra.png",
+      "/products/oneplus-nord-6-lite.jpg"
     ],
     is_available: true,
     is_popular: true,
@@ -242,9 +242,9 @@ export const products = [
     cashback_amount: 5000,
     warranty_period: "1 Year Official Samsung Warranty",
     condition: "Brand New Sealed",
-    image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+    image_url: "/products/samsung-galaxy-s25-ultra.png",
     images: [
-      "/products/samsung-galaxy-s26-ultra.jpg",
+      "/products/samsung-galaxy-s25-ultra.png",
       "/hero/samsung-s26-ultra-ad.jpg"
     ],
     is_available: true,
@@ -264,7 +264,7 @@ export const products = [
         original_price: 139999,
         stock_quantity: 12,
         sku: "S26U-12-256-SILVER",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {
@@ -292,7 +292,7 @@ export const products = [
         original_price: 139999,
         stock_quantity: 0,
         sku: "S26U-12-256-VIOLET",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {
@@ -306,7 +306,7 @@ export const products = [
         original_price: 149999,
         stock_quantity: 15,
         sku: "S26U-16-512-SILVER",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {
@@ -334,7 +334,7 @@ export const products = [
         original_price: 149999,
         stock_quantity: 4,
         sku: "S26U-16-512-GOLD",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {
@@ -348,7 +348,7 @@ export const products = [
         original_price: 149999,
         stock_quantity: 0,
         sku: "S26U-16-512-VIOLET",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {
@@ -362,7 +362,7 @@ export const products = [
         original_price: 169999,
         stock_quantity: 3,
         sku: "S26U-16-1TB-SILVER",
-        image_url: "/products/samsung-galaxy-s26-ultra.jpg",
+        image_url: "/products/samsung-galaxy-s25-ultra.png",
         is_active: true
       },
       {

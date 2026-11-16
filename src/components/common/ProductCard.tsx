@@ -243,15 +243,16 @@ export default function ProductCard({
             addRecentlyViewedProduct(product.id);
             router.push(`/products/${product.id}`);
           }}
-          className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+          className={`group h-full bg-white rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer select-none ${
             isOutOfStock ? "opacity-75 grayscale-[0.4]" : ""
           }`}
         >
-          <div>
-            {/* 1. 65% PROMINENT IMAGE CANVAS (Flush Edge-to-Edge, Compact on Desktop) */}
-            <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square bg-slate-100 overflow-hidden">
+          {/* Top Section: Fixed Aspect-Square Image & Product Info */}
+          <div className="flex-1 flex flex-col">
+            {/* 1. 100% UNIFORM SQUARE IMAGE CANVAS (Strict 1:1 Aspect Ratio on All Screens) */}
+            <div className="relative w-full aspect-square bg-[#f8f9fa] overflow-hidden shrink-0 flex items-center justify-center">
               
-              {/* Pure Floating Wishlist Heart (No Circular Background) */}
+              {/* Pure Floating Wishlist Heart */}
               <div className="absolute top-2.5 right-2.5 z-10">
                 <button
                   type="button"
@@ -298,25 +299,25 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* 2. 35% BALANCED PRODUCT DETAILS */}
-            <div className="p-2.5 sm:p-3">
-              {/* Product Title */}
-              <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug tracking-tight mb-1">
+            {/* 2. UNIFORM BALANCED PRODUCT DETAILS (Locked Heights for 100% Equal Card Sizes) */}
+            <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between">
+              {/* Product Title: Locked to exactly 2 lines height on every card */}
+              <h3 className="h-8 sm:h-9 text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#2E6F40] transition-colors line-clamp-2 leading-snug tracking-tight">
                 {product.name}
               </h3>
 
-              {/* Price, MRP & Discount Row */}
-              <div className="flex items-baseline gap-1.5 flex-wrap">
+              {/* Price, MRP & Discount Row: Locked to exact height so buttons never shift */}
+              <div className="h-8 sm:h-9 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 content-end mt-1">
                 <span className="text-sm sm:text-base font-black text-slate-900 leading-none">
                   ₹{Math.floor(product.price).toLocaleString("en-IN")}
                 </span>
                 {originalPrice > product.price && (
-                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
+                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal leading-none">
                     ₹{Math.floor(originalPrice).toLocaleString("en-IN")}
                   </span>
                 )}
                 {discountPercent > 0 && (
-                  <span className="text-[10px] sm:text-xs font-bold text-emerald-600">
+                  <span className="text-[10px] sm:text-xs font-bold text-emerald-600 leading-none">
                     {discountPercent}% off
                   </span>
                 )}
@@ -324,12 +325,12 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* 3. EQUAL PROPORTION ACTION BUTTONS (White Buy Now Button) */}
-          <div className="px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-0">
+          {/* 3. EQUAL PROPORTION ACTION BUTTONS (Anchored to Bottom of Every Card) */}
+          <div className="px-2.5 sm:px-3 pb-2.5 sm:pb-3 pt-0 shrink-0">
             {isOutOfStock ? (
               <button
                 disabled
-                className="w-full py-1.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center"
+                className="w-full h-8 sm:h-9 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed text-center flex items-center justify-center"
               >
                 Out of Stock
               </button>
@@ -338,7 +339,7 @@ export default function ProductCard({
                 <button
                   type="button"
                   onClick={handleDirectAddToCart}
-                  className="py-1.5 sm:py-2 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs border border-[#245e35] flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
+                  className="h-8 sm:h-9 rounded-xl bg-[#2E6F40] hover:bg-[#245e35] text-white font-black text-[11px] sm:text-xs border border-[#245e35] flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
                   title="Add to Cart"
                 >
                   <FontAwesomeIcon icon={faCartPlus} className="text-[10px] text-white" />
@@ -347,7 +348,7 @@ export default function ProductCard({
                 <button
                   type="button"
                   onClick={handleDirectBuyNow}
-                  className="py-1.5 sm:py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
+                  className="h-8 sm:h-9 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 active:scale-95 shadow-2xs transition-all cursor-pointer"
                   title="Buy Now"
                 >
                   <FontAwesomeIcon icon={faBagShopping} className="text-[10px]" />
