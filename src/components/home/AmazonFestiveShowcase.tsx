@@ -2288,64 +2288,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     <div className="w-full bg-[#f8fafc] text-slate-800 rounded-none sm:rounded-2xl md:rounded-3xl overflow-hidden border-0 sm:border border-slate-200/90 shadow-none sm:shadow-xs mb-2 sm:mb-4 md:mb-6">
       
       {/* =========================================================================
-          FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Matching user's exact design)
-      ========================================================================= */}
-      <section className="w-full bg-white border-b border-slate-200/80 py-2 sm:py-2.5 px-2 sm:px-4 select-none">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-center justify-start lg:justify-center gap-3.5 sm:gap-6 md:gap-8 lg:gap-10 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
-            {FLIPKART_APP_CATEGORIES.map((cat) => {
-              const isCatActive = 
-                (cat.id === "deals" && !categoryFilter && searchParams.get("sort") === "discount_desc") ||
-                (Boolean(categoryFilter) && (
-                  (cat.query && categoryFilter?.toLowerCase() === cat.query.toLowerCase()) ||
-                  (cat.id && categoryFilter?.toLowerCase().includes(cat.id))
-                ));
-
-              return (
-                <Link
-                  key={cat.id}
-                  href={cat.url}
-                  className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[56px] sm:min-w-[66px] md:min-w-[74px] cursor-pointer"
-                >
-                  {/* Flipkart Style Circular Photo Avatar */}
-                  <div className="relative">
-                    <div className={`w-13 h-13 sm:w-15 sm:h-15 md:w-16 md:h-16 rounded-full bg-slate-50 border overflow-hidden shadow-2xs group-hover:scale-105 transition-all duration-200 relative flex items-center justify-center ${
-                      isCatActive 
-                        ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs" 
-                        : "border-slate-200/90 group-hover:border-[#2E6F40]"
-                    }`}>
-                      <Image
-                        src={cat.image}
-                        alt={cat.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                        sizes="64px"
-                        unoptimized
-                      />
-                    </div>
-                    {cat.isHot && (
-                      <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full border border-white shadow-xs animate-pulse">
-                        HOT
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Clean Label */}
-                  <span className={`mt-1.5 text-[11px] sm:text-xs font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
-                    isCatActive 
-                      ? "text-[#2E6F40] font-black" 
-                      : "text-slate-800 group-hover:text-[#2E6F40]"
-                  }`}>
-                    {cat.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
           MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)
       ========================================================================= */}
       <div className="w-full max-w-[1440px] mx-auto px-2 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4">
@@ -2693,6 +2635,62 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   </div>
                 </>
               )}
+            </div>
+
+            {/* =========================================================================
+                FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Directly below hero banner)
+            ========================================================================= */}
+            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 px-2 sm:px-3 shadow-2xs select-none">
+              <div className="flex items-center gap-3.5 sm:gap-6 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
+                {FLIPKART_APP_CATEGORIES.map((cat) => {
+                  const isCatActive = 
+                    (cat.id === "deals" && !categoryFilter && searchParams.get("sort") === "discount_desc") ||
+                    (Boolean(categoryFilter) && (
+                      (cat.query && categoryFilter?.toLowerCase() === cat.query.toLowerCase()) ||
+                      (cat.id && categoryFilter?.toLowerCase().includes(cat.id))
+                    ));
+
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={cat.url}
+                      className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[56px] sm:min-w-[66px] md:min-w-[74px] cursor-pointer"
+                    >
+                      {/* Flipkart Style Circular Photo Avatar */}
+                      <div className="relative">
+                        <div className={`w-13 h-13 sm:w-15 sm:h-15 md:w-16 md:h-16 rounded-full bg-slate-50 border overflow-hidden shadow-2xs group-hover:scale-105 transition-all duration-200 relative flex items-center justify-center ${
+                          isCatActive 
+                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs" 
+                            : "border-slate-200/90 group-hover:border-[#2E6F40]"
+                        }`}>
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            sizes="64px"
+                            unoptimized
+                          />
+                        </div>
+                        {cat.isHot && (
+                          <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full border border-white shadow-xs animate-pulse">
+                            HOT
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Clean Label */}
+                      <span className={`mt-1.5 text-[11px] sm:text-xs font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
+                        isCatActive 
+                          ? "text-[#2E6F40] font-black" 
+                          : "text-slate-800 group-hover:text-[#2E6F40]"
+                      }`}>
+                        {cat.name}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
 
             {/* When categoryFilter is active: Active Category Header with Return Button */}
