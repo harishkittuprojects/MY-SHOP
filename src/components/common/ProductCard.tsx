@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import QuantityModal from "./QuantityModal";
@@ -19,6 +19,7 @@ interface Product {
   id: string;
   name: string;
   category: string;
+  category_id?: string;
   sub_category?: string;
   unit: string;
   price: number;
@@ -61,6 +62,37 @@ export default function ProductCard({
   const [imgSrc, setImgSrc] = useState(displayImage);
   const displayCategory = product.categories?.name || product.category || "Mobiles";
   const isOutOfStock = product.is_out_of_stock;
+
+  const isClothing = useMemo(() => {
+    const cat = (product.categories?.name || product.category || "").toLowerCase();
+    const catId = (product.category_id || "").toLowerCase();
+    const sub = (product.sub_category || "").toLowerCase();
+    const name = (product.name || "").toLowerCase();
+    return (
+      cat === "fashion" ||
+      catId === "fashion" ||
+      cat.includes("cloth") ||
+      cat.includes("apparel") ||
+      cat.includes("wear") ||
+      sub.includes("shirt") ||
+      sub.includes("jeans") ||
+      sub.includes("t-shirt") ||
+      sub.includes("tee") ||
+      sub.includes("dress") ||
+      sub.includes("kurti") ||
+      sub.includes("saree") ||
+      sub.includes("suit") ||
+      sub.includes("polo") ||
+      sub.includes("trouser") ||
+      name.includes("shirt") ||
+      name.includes("jeans") ||
+      name.includes("t-shirt") ||
+      name.includes("dress") ||
+      name.includes("saree") ||
+      name.includes("kurta") ||
+      name.includes("blazer")
+    );
+  }, [product]);
 
   const originalPrice = product.original_price && product.original_price > product.price 
     ? product.original_price 
@@ -249,8 +281,8 @@ export default function ProductCard({
         >
           {/* Top Section: Fixed Aspect-Square Image & Product Info */}
           <div className="flex-1 flex flex-col">
-            {/* 1. 100% UNIFORM SQUARE IMAGE CANVAS (Strict 1:1 Aspect Ratio on All Screens) */}
-            <div className="relative w-full aspect-square bg-[#f8f9fa] overflow-hidden shrink-0 flex items-center justify-center">
+            {/* 1. IMAGE CANVAS: 3:4 Ratio for Clothes/Fashion, 1:1 Square for Mobiles & Electronics */}
+            <div className={`relative w-full ${isClothing ? "aspect-[3/4]" : "aspect-square"} bg-[#f8f9fa] overflow-hidden shrink-0 flex items-center justify-center`}>
               
               {/* Pure Floating Wishlist Heart */}
               <div className="absolute top-2.5 right-2.5 z-10">
@@ -281,7 +313,11 @@ export default function ProductCard({
                   src={imgSrc} 
                   alt={product.name} 
                   fill 
-                  className="object-contain w-full h-full p-2.5 sm:p-3 group-hover:scale-105 transition-transform duration-500 ease-out" 
+                  className={`${
+                    isClothing 
+                      ? "object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                      : "object-contain w-full h-full p-2.5 sm:p-3 group-hover:scale-105 transition-transform duration-500 ease-out"
+                  }`} 
                   onError={() => setImgSrc("/placeholder.png")}
                   unoptimized
                 />

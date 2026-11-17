@@ -225,12 +225,12 @@ export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
   {
     id: "fashion",
     name: "Fashion",
-    fullName: "Fashion Apparel & Bags",
+    fullName: "Fashion & Clothes Apparel",
     icon: "👗",
-    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=400",
+    image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=600",
     query: "Fashion",
-    sub: "Handbags, Chronographs, Trending Apparel",
-    badge: "Top Brands",
+    sub: "Shirts, Dresses, Jeans, Trending Clothes",
+    badge: "Top Fashion",
     tagColor: "bg-pink-50 text-pink-700 border-pink-200"
   },
   {
@@ -2677,8 +2677,10 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       href={`/products?category=${encodeURIComponent(cat.query)}`}
                       className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 md:p-3 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden"
                     >
-                      {/* Image container */}
-                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-slate-100 mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
+                      {/* Image container: 3:4 for Fashion/Clothes, aspect-square (1:1) for other categories */}
+                      <div className={`relative w-full ${
+                        cat.id === "fashion" ? "aspect-[3/4]" : "aspect-square"
+                      } rounded-lg sm:rounded-xl overflow-hidden bg-slate-100 mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center`}>
                         <Image
                           src={cat.image}
                           alt={cat.name}
