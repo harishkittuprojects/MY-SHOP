@@ -2644,7 +2644,80 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               )}
             </div>
 
+            {/* =========================================================================
+                2. ALL STORE CATEGORIES SHOWCASE - BOXES BOXES GRID
+            ========================================================================= */}
+            {!categoryFilter && (
+              <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-4.5 bg-[#2E6F40] rounded-full" />
+                    <div>
+                      <h2 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                        <span>All Categories</span>
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                          ({ALL_STORE_CATEGORIES.length})
+                        </span>
+                      </h2>
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+                        Shop certified products by category with official warranty
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-bold text-[#2E6F40] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+                    Official Guarantee
+                  </span>
+                </div>
 
+                {/* Categories Grid - Boxes Boxes Layout */}
+                <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5">
+                  {ALL_STORE_CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/products?category=${encodeURIComponent(cat.query)}`}
+                      className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 md:p-3 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden"
+                    >
+                      {/* Image container */}
+                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
+                        <Image
+                          src={cat.image}
+                          alt={cat.name}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          unoptimized
+                        />
+                        {cat.badge && (
+                          <span className="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
+                            {cat.badge}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="space-y-0.5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs sm:text-sm shrink-0">{cat.icon}</span>
+                            <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 group-hover:text-[#2E6F40] line-clamp-1 transition-colors">
+                              {cat.name}
+                            </h3>
+                          </div>
+                          <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                            {cat.sub}
+                          </p>
+                        </div>
+
+                        <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-slate-200/60 text-[10px] sm:text-[11px] font-bold text-[#2E6F40]">
+                          <span>Explore</span>
+                          <FontAwesomeIcon icon={faChevronRight} className="text-[8px] group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* When categoryFilter is active: Active Category Header with Return Button */}
             {categoryFilter && (
