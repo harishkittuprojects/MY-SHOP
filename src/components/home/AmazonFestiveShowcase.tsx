@@ -156,6 +156,13 @@ export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [
     image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=200", 
     url: "/products?category=TV%20%26%20Audio",
     query: "TV & Audio"
+  },
+  { 
+    id: "all-store", 
+    name: "All Deals", 
+    image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&q=80&w=200", 
+    url: "/products",
+    query: ""
   }
 ];
 
@@ -2640,11 +2647,35 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             {/* =========================================================================
                 FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Directly below hero banner)
             ========================================================================= */}
-            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 px-2 sm:px-3 shadow-2xs select-none">
-              <div className="flex items-center gap-3.5 sm:gap-6 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
+            <div className="relative group/catrail w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 px-2 sm:px-3 shadow-2xs select-none">
+              {/* Desktop Left Scroll Button */}
+              <button
+                type="button"
+                onClick={() => scrollCategories("left")}
+                className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catrail:opacity-100"
+                aria-label="Scroll categories left"
+              >
+                <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+              </button>
+
+              {/* Desktop Right Scroll Button */}
+              <button
+                type="button"
+                onClick={() => scrollCategories("right")}
+                className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catrail:opacity-100"
+                aria-label="Scroll categories right"
+              >
+                <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+              </button>
+
+              <div 
+                ref={categoriesScrollRef}
+                className="flex items-center gap-3.5 sm:gap-6 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth"
+              >
                 {FLIPKART_APP_CATEGORIES.map((cat) => {
                   const isCatActive = 
                     (cat.id === "deals" && !categoryFilter && searchParams.get("sort") === "discount_desc") ||
+                    (cat.id === "all-store" && !categoryFilter && !searchParams.get("sort") && !selectedBrand) ||
                     (Boolean(categoryFilter) && (
                       (cat.query && categoryFilter?.toLowerCase() === cat.query.toLowerCase()) ||
                       (cat.id && categoryFilter?.toLowerCase().includes(cat.id))
