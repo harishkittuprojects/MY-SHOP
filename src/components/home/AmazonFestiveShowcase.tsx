@@ -57,6 +57,142 @@ interface DealItem {
   accentBadge: string;
 }
 
+export interface StoreCategoryCard {
+  id: string;
+  name: string;
+  fullName: string;
+  icon: string;
+  image: string;
+  query: string;
+  sub: string;
+  badge: string;
+  tagColor: string;
+}
+
+export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
+  {
+    id: "mobiles",
+    name: "Mobiles",
+    fullName: "Smartphones & 5G Flagships",
+    icon: "📱",
+    image: "/products/iphone-16-pro-max.png",
+    query: "Mobiles",
+    sub: "Flagships, 5G Mobiles, iPhones, Galaxy, OnePlus",
+    badge: "Official Warranty",
+    tagColor: "bg-blue-50 text-blue-700 border-blue-200"
+  },
+  {
+    id: "refurbished",
+    name: "Refurbished",
+    fullName: "Certified Refurbished Mobiles",
+    icon: "♻️",
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=400",
+    query: "Old / Refurbished Mobiles",
+    sub: "Superb Grade A+, 32-Point Quality Check",
+    badge: "32-Point Check",
+    tagColor: "bg-teal-50 text-teal-800 border-teal-200"
+  },
+  {
+    id: "accessories",
+    name: "Accessories",
+    fullName: "Fast Chargers & Mobile Accessories",
+    icon: "🔌",
+    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=400",
+    query: "Mobile Accessories",
+    sub: "Fast Chargers, MagSafe, Cases, Power Banks",
+    badge: "100% Genuine",
+    tagColor: "bg-cyan-50 text-cyan-800 border-cyan-200"
+  },
+  {
+    id: "smart-tech",
+    name: "Smart Tech",
+    fullName: "Smartwatches & Wearables",
+    icon: "💡",
+    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=400",
+    query: "Smart Technology",
+    sub: "Smartwatches, Earbuds, Fitness Trackers",
+    badge: "Trending Tech",
+    tagColor: "bg-violet-50 text-violet-800 border-violet-200"
+  },
+  {
+    id: "laptops",
+    name: "Computers",
+    fullName: "Laptops & Tablets",
+    icon: "💻",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=400",
+    query: "Computers & Tablets",
+    sub: "MacBooks, Windows Laptops, iPads, Monitors",
+    badge: "High Performance",
+    tagColor: "bg-slate-100 text-slate-800 border-slate-300"
+  },
+  {
+    id: "fashion",
+    name: "Fashion",
+    fullName: "Fashion Apparel & Bags",
+    icon: "👗",
+    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=400",
+    query: "Fashion",
+    sub: "Handbags, Chronographs, Trending Apparel",
+    badge: "Top Brands",
+    tagColor: "bg-pink-50 text-pink-700 border-pink-200"
+  },
+  {
+    id: "jewellery",
+    name: "Jewellery",
+    fullName: "Precious Gold & Diamond Jewellery",
+    icon: "💎",
+    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=400",
+    query: "Jewellery",
+    sub: "BIS Hallmarked Gold, Silver, Moissanite",
+    badge: "BIS Hallmarked",
+    tagColor: "bg-amber-50 text-amber-800 border-amber-200"
+  },
+  {
+    id: "ev",
+    name: "EV Vehicles",
+    fullName: "Electric Vehicles & Scooters",
+    icon: "⚡",
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=400",
+    query: "EV Vehicles",
+    sub: "Electric Scooters, Bikes, EV Chargers",
+    badge: "Zero Emission",
+    tagColor: "bg-emerald-50 text-emerald-800 border-emerald-200"
+  },
+  {
+    id: "kitchen-appliances",
+    name: "Kitchen",
+    fullName: "Kitchen Appliances",
+    icon: "🍳",
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=400",
+    query: "Kitchen Appliances",
+    sub: "Air Fryers, Mixer Grinders, Wet Grinders",
+    badge: "Best Offers",
+    tagColor: "bg-orange-50 text-orange-800 border-orange-200"
+  },
+  {
+    id: "home-appliances",
+    name: "Home Appliances",
+    fullName: "Home Appliances & Cooling",
+    icon: "🏠",
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400",
+    query: "Home Appliances",
+    sub: "Refrigerators, Washing Machines, Air Conditioners",
+    badge: "Energy Saver",
+    tagColor: "bg-sky-50 text-sky-800 border-sky-200"
+  },
+  {
+    id: "tv-audio",
+    name: "TV & Audio",
+    fullName: "4K Smart TVs & Audio",
+    icon: "📺",
+    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400",
+    query: "TV & Audio",
+    sub: "4K Smart TVs, Soundbars & Home Theater",
+    badge: "Cinematic Audio",
+    tagColor: "bg-purple-50 text-purple-800 border-purple-200"
+  }
+];
+
 interface CategoryConfig {
   storeTitle: string;
   parentCategory: { name: string; href: string };
@@ -2062,39 +2198,45 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <aside className="hidden lg:block lg:col-span-3 space-y-3 sm:space-y-4 text-xs select-none bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
             {/* Category Breadcrumbs Hierarchy */}
             <div>
-              <h3 className="font-bold text-slate-900 text-[13px] mb-1.5">Category</h3>
-              <Link 
-                href={config.parentCategory.href} 
-                className="text-slate-600 hover:text-[#2E6F40] flex items-center gap-1 font-semibold mb-1 hover:underline transition-colors"
-              >
-                <span>{config.parentCategory.name}</span>
-              </Link>
-              
-              <div className="pl-2 border-l-2 border-[#2E6F40]/30 mt-1.5 space-y-1.5">
-                <span className="font-bold text-[#2E6F40] block text-xs">{config.categoryHeading}</span>
-                <ul className="pl-1 space-y-1 text-slate-600">
-                  {config.categoryTree.map((c, i) => {
-                    const isTreeActive = 
-                      (categoryFilter && c.href.toLowerCase().includes(encodeURIComponent(categoryFilter).toLowerCase())) ||
-                      (!categoryFilter && c.href === "/products");
-
-                    return (
-                      <li key={i}>
-                        <Link 
-                          href={c.href}
-                          className={`flex items-center gap-1.5 py-1 px-2 rounded-lg transition-all ${
-                            isTreeActive 
-                              ? "font-black text-[#2E6F40] bg-emerald-50 border border-emerald-200/80 shadow-2xs" 
-                              : "text-slate-600 hover:text-[#2E6F40] hover:bg-slate-50"
-                          }`}
-                        >
-                          <span className={isTreeActive ? "font-bold" : ""}>{c.name}</span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-slate-900 text-[13px]">All Departments</h3>
+                <span className="text-[10px] text-slate-400 font-bold">({ALL_STORE_CATEGORIES.length})</span>
               </div>
+              
+              <ul className="space-y-0.5 text-slate-600 max-h-[380px] overflow-y-auto pr-1">
+                <li>
+                  <Link 
+                    href="/products"
+                    className={`flex items-center gap-2 py-1.5 px-2 rounded-lg transition-all ${
+                      !categoryFilter 
+                        ? "font-black text-[#2E6F40] bg-emerald-50 border border-emerald-200/80 shadow-2xs" 
+                        : "text-slate-600 hover:text-[#2E6F40] hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="text-xs">★</span>
+                    <span className={!categoryFilter ? "font-bold text-xs" : "text-xs"}>All Products &amp; Categories</span>
+                  </Link>
+                </li>
+                {ALL_STORE_CATEGORIES.map((cat) => {
+                  const isCatActive = categoryFilter?.toLowerCase() === cat.query.toLowerCase() ||
+                                     categoryFilter?.toLowerCase().includes(cat.id);
+                  return (
+                    <li key={cat.id}>
+                      <Link 
+                        href={`/products?category=${encodeURIComponent(cat.query)}`}
+                        className={`flex items-center gap-2 py-1.5 px-2 rounded-lg transition-all ${
+                          isCatActive 
+                            ? "font-black text-[#2E6F40] bg-emerald-50 border border-emerald-200/80 shadow-2xs" 
+                            : "text-slate-600 hover:text-[#2E6F40] hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="text-xs">{cat.icon}</span>
+                        <span className={`text-xs truncate ${isCatActive ? "font-bold" : ""}`}>{cat.name}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
 
             {/* MY SHOP Assured / Prime Filter */}
@@ -2310,6 +2452,44 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* =========================================================================
+                TOP CATEGORY NAVIGATION RAIL (Quick-switch categories across mobile & desktop)
+            ========================================================================= */}
+            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-2 sm:p-2.5 shadow-2xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
+                <Link
+                  href="/products"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                    !categoryFilter
+                      ? "bg-[#2E6F40] text-white shadow-xs"
+                      : "bg-slate-100/80 hover:bg-slate-200 text-slate-700 hover:text-slate-900"
+                  }`}
+                >
+                  <span>★</span>
+                  <span>All Categories</span>
+                </Link>
+                {ALL_STORE_CATEGORIES.map((cat) => {
+                  const isCatActive =
+                    categoryFilter?.toLowerCase() === cat.query.toLowerCase() ||
+                    categoryFilter?.toLowerCase().includes(cat.id);
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={`/products?category=${encodeURIComponent(cat.query)}`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                        isCatActive
+                          ? "bg-[#2E6F40] text-white shadow-xs"
+                          : "bg-slate-100/80 hover:bg-slate-200 text-slate-700 hover:text-slate-900"
+                      }`}
+                    >
+                      <span className="text-xs">{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* =========================================================================
                 1. DYNAMIC BANNER SLIDER (Top Featured Hero Carousel)
             ========================================================================= */}
             <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
@@ -2396,12 +2576,112 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
               )}
             </div>
 
+            {/* =========================================================================
+                2. ALL CATEGORIES SHOWCASE (Prominently displayed when entering /products)
+            ========================================================================= */}
+            {!categoryFilter && (
+              <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-4.5 bg-[#2E6F40] rounded-full" />
+                    <div>
+                      <h2 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                        <span>All Store Categories</span>
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                          ({ALL_STORE_CATEGORIES.length})
+                        </span>
+                      </h2>
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+                        Tap any category to view full collection &amp; deals
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
+                {/* Categories Grid (Optimized for Mobile 2-cols & Desktop 4-cols) */}
+                <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                  {ALL_STORE_CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/products?category=${encodeURIComponent(cat.query)}`}
+                      className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 md:p-3 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden"
+                    >
+                      {/* Image container */}
+                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
+                        <Image
+                          src={cat.image}
+                          alt={cat.name}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          unoptimized
+                        />
+                        {cat.badge && (
+                          <span className="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
+                            {cat.badge}
+                          </span>
+                        )}
+                      </div>
 
+                      {/* Info */}
+                      <div className="space-y-0.5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs sm:text-sm shrink-0">{cat.icon}</span>
+                            <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 group-hover:text-[#2E6F40] line-clamp-1 transition-colors">
+                              {cat.name}
+                            </h3>
+                          </div>
+                          <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                            {cat.sub}
+                          </p>
+                        </div>
 
+                        <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-slate-200/60 text-[10px] sm:text-[11px] font-bold text-[#2E6F40]">
+                          <span>Explore</span>
+                          <FontAwesomeIcon icon={faChevronRight} className="text-[8px] group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* When categoryFilter is active: Active Category Header with Return Button */}
+            {categoryFilter && (
+              <div className="bg-white p-3 sm:p-4 rounded-2xl border border-emerald-200/90 shadow-2xs flex items-center justify-between flex-wrap gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-lg shrink-0">
+                    {ALL_STORE_CATEGORIES.find(c => c.query.toLowerCase() === categoryFilter?.toLowerCase() || c.id === categoryFilter?.toLowerCase())?.icon || "🏷️"}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E6F40] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                        Active Category
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-semibold">
+                        ({matchedCatalogProducts.length} items)
+                      </span>
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
+                      {ALL_STORE_CATEGORIES.find(c => c.query.toLowerCase() === categoryFilter?.toLowerCase() || c.id === categoryFilter?.toLowerCase())?.fullName || categoryFilter}
+                    </h2>
+                  </div>
+                </div>
+
+                <Link
+                  href="/products"
+                  className="text-xs font-bold text-[#2E6F40] hover:text-[#225430] bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 rounded-full shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
+                  <span>View All Categories</span>
+                </Link>
+              </div>
+            )}
 
             {/* =========================================================================
-                2. BRAND SHOWCASE (Explore Brands Tailored Per Category or Catalog)
+                3. BRAND SHOWCASE (Explore Brands Tailored Per Category or Catalog)
             ========================================================================= */}
             {brandList && brandList.length > 0 && (
               <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-2.5">
