@@ -382,6 +382,75 @@ export default function ProductDetailPage({
     return Array.from(map.values());
   }, [productVariants, variantsForSelectedRam, product]);
 
+  // Amazon-Style Set / Configuration List (e.g. "6GB RAM+128G Storage", "256GB Storage")
+  const availableSets = React.useMemo(() => {
+    if (productVariants.length === 0) {
+      if (!product?.unit) return [];
+      const rawUnits = product.unit.split(",").map((u) => u.trim()).filter(Boolean);
+      const cleaned = Array.from(new Set(rawUnits.map((u) => cleanStorageLabel(u))));
+      return cleaned.map((label) => ({
+        id: label.toLowerCase(),
+        label: label.toLowerCase().includes("storage") ? label : `${label} Storage`,
+        storage: label,
+        ram: "",
+        minPrice: product?.price || 0,
+        hasStock: true,
+      }));
+    }
+
+    const hasDistinctRams = availableRams.length > 1;
+    const map = new Map<string, { id: string; label: string; storage: string; ram: string; minPrice: number; hasStock: boolean }>();
+
+    productVariants.forEach((v) => {
+      const rawStorage = v.rom || v.storage_label || v.size || "Standard";
+      const cleanStorage = cleanStorageLabel(rawStorage);
+      const ram = v.ram ? v.ram.trim() : "";
+      
+      let label = "";
+      if (ram && (hasDistinctRams || (v.storage_label && v.storage_label.toLowerCase().includes("ram")))) {
+        const storagePart = cleanStorage.toUpperCase().endsWith("GB") || cleanStorage.toUpperCase().endsWith("TB") ? cleanStorage : `${cleanStorage}GB`;
+        label = `${ram} RAM+${storagePart} Storage`;
+      } else {
+        label = cleanStorage.toLowerCase().includes("storage") ? cleanStorage : `${cleanStorage} Storage`;
+      }
+
+      const key = `${ram}_${cleanStorage}`.toLowerCase();
+      const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
+      const priceVal = v.price || product?.price || 0;
+
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, {
+          id: key,
+          label,
+          storage: cleanStorage,
+          ram,
+          minPrice: priceVal,
+          hasStock: isInstock,
+        });
+      } else {
+        map.set(key, {
+          ...existing,
+          minPrice: Math.min(existing.minPrice || priceVal, priceVal || existing.minPrice),
+          hasStock: existing.hasStock || isInstock,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [productVariants, availableRams, product]);
+
+  // Active Selected Set
+  const activeSet = React.useMemo(() => {
+    if (availableSets.length === 0) return null;
+    const match = availableSets.find((s) => {
+      const matchStorage = s.storage.toLowerCase() === cleanStorageLabel(selectedStorage).toLowerCase();
+      const matchRam = !s.ram || !selectedRam || s.ram.toLowerCase() === selectedRam.toLowerCase();
+      return matchStorage && matchRam;
+    });
+    return match || availableSets[0];
+  }, [availableSets, selectedStorage, selectedRam]);
+
   // Available Colors for the currently selected RAM + Storage
   const colorsForSelectedConfiguration = React.useMemo(() => {
     if (variantsForSelectedRam.length === 0) return [];
@@ -555,6 +624,46 @@ export default function ProductDetailPage({
         if (resolved) {
           setSelectedImage(normalizeImageUrl(resolved));
         }
+      }
+    }
+  };
+
+  // Handle Set Change (Amazon-style Set name selector)
+  const handleSetSelect = (setItem: { id: string; label: string; storage: string; ram?: string }) => {
+    setSelectedStorage(setItem.storage);
+    if (setItem.ram) {
+      setSelectedRam(setItem.ram);
+    }
+
+    const targetStorage = cleanStorageLabel(setItem.storage).toLowerCase();
+    const targetRam = setItem.ram ? setItem.ram.toLowerCase() : "";
+
+    let match = productVariants.find((v) => {
+      const raw = v.rom || v.storage_label || v.size || "";
+      const cleaned = cleanStorageLabel(raw).toLowerCase();
+      const matchStorage = cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
+      const matchRam = !targetRam || !v.ram || v.ram.toLowerCase() === targetRam;
+      const matchColor = v.color && v.color.toLowerCase() === selectedColor.toLowerCase();
+      return matchStorage && matchRam && matchColor;
+    });
+
+    if (!match) {
+      match = productVariants.find((v) => {
+        const raw = v.rom || v.storage_label || v.size || "";
+        const cleaned = cleanStorageLabel(raw).toLowerCase();
+        const matchStorage = cleaned === targetStorage || raw.toLowerCase().includes(targetStorage) || targetStorage.includes(cleaned);
+        const matchRam = !targetRam || !v.ram || v.ram.toLowerCase() === targetRam;
+        return matchStorage && matchRam;
+      });
+    }
+
+    if (match) {
+      if (match.color) {
+        setSelectedColor(match.color);
+      }
+      const resolved = resolveColorImageUrl(match.color || selectedColor, match.image_url);
+      if (resolved) {
+        setSelectedImage(normalizeImageUrl(resolved));
       }
     }
   };
@@ -883,23 +992,23 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Visual Color Cards Selector (Matching Amazon / Apple screenshot) */}
-            {/* Visual Color Cards Selector */}
+            {/* Amazon-Style Visual Colour Selector */}
             {availableColors.length > 0 && (
-              <div className="hidden lg:block space-y-2 border-b border-slate-200 pb-4">
+              <div className="space-y-2.5 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">
-                    Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || availableColors[0]?.color}</strong>
-                  </span>
-                  {activeVariant?.price && (
-                    <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                      ₹{Number(activeVariant.price).toLocaleString("en-IN")}
+                  <div className="text-xs sm:text-sm text-slate-800">
+                    <span className="font-normal text-slate-700">Colour:</span>{" "}
+                    <strong className="text-slate-950 font-bold ml-1">{selectedColor || availableColors[0]?.color}</strong>
+                  </div>
+                  {availableColors.length > 1 && (
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      {availableColors.length} options
                     </span>
                   )}
                 </div>
 
-                {/* Visual Thumbnail Cards Row (Wrapping cleanly without clipping) */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
+                {/* Visual Thumbnail Cards Row (Amazon style: thumbnail on top, color name on bottom) */}
+                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
                   {availableColors.map((v) => {
                     const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
                     const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
@@ -911,14 +1020,14 @@ export default function ProductDetailPage({
                         type="button"
                         onClick={() => handleColorSelect(v)}
                         title={v.color}
-                        className={`group relative w-13 h-17 sm:w-15 sm:h-19 rounded-xl p-1 bg-white flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                        className={`group relative min-w-[76px] w-[78px] sm:w-[84px] h-[98px] sm:h-[106px] rounded-xl p-1.5 bg-white flex flex-col items-center justify-between transition-all cursor-pointer shrink-0 ${
                           isColorSelected
-                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 shadow-xs"
-                            : "border border-slate-200 hover:border-slate-400 hover:shadow-2xs"
+                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 shadow-xs"
+                            : "border border-slate-300 hover:border-slate-400 shadow-2xs"
                         } ${isOut ? "opacity-50" : ""}`}
                       >
                         {/* Device Product Image in Specific Color */}
-                        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                        <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
                           <Image
                             src={imgToDisplay}
                             alt={v.color}
@@ -927,6 +1036,10 @@ export default function ProductDetailPage({
                             unoptimized
                           />
                         </div>
+                        {/* Color name label below image */}
+                        <span className="text-[11px] font-bold text-slate-900 text-center truncate w-full pt-1 block leading-tight">
+                          {v.color}
+                        </span>
                       </button>
                     );
                   })}
@@ -934,45 +1047,56 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* RAM / Memory Options Selector (e.g. 6GB, 8GB, 12GB, 16GB) */}
-            {availableRams.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-4">
+            {/* Amazon-Style Set name Selector (RAM + Storage configurations) */}
+            {availableSets.length > 0 ? (
+              <div className="space-y-2.5 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">
-                    RAM: <strong className="text-slate-950 font-bold">{selectedRam || availableRams[0]}</strong>
-                  </span>
+                  <div className="text-xs sm:text-sm text-slate-800">
+                    <span className="font-normal text-slate-700">Set name:</span>{" "}
+                    <strong className="text-slate-950 font-bold ml-1">{activeSet?.label || selectedStorage}</strong>
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
-                  {availableRams.map((ramOption, idx) => {
-                    const isSelected = (selectedRam || availableRams[0]).toLowerCase() === ramOption.toLowerCase();
+
+                {/* Amazon Set name Cards Row */}
+                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
+                  {availableSets.map((setItem) => {
+                    const isSelected = activeSet?.id === setItem.id;
+                    const isOut = !setItem.hasStock;
+
                     return (
                       <button
-                        key={idx}
+                        key={setItem.id}
                         type="button"
-                        onClick={() => handleRamSelect(ramOption)}
-                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border cursor-pointer min-w-[72px] sm:min-w-[80px] text-center flex items-center justify-center ${
+                        onClick={() => handleSetSelect(setItem)}
+                        className={`group min-w-[136px] sm:min-w-[152px] max-w-[210px] px-3 py-2 rounded-xl transition-all cursor-pointer flex flex-col items-start justify-center text-left shrink-0 ${
                           isSelected
-                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 bg-white text-slate-950 font-black shadow-xs"
-                            : "border border-slate-200 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 shadow-2xs hover:bg-slate-50/70"
-                        }`}
+                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 bg-white shadow-xs"
+                            : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
+                        } ${isOut ? "opacity-50" : ""}`}
                       >
-                        {ramOption}
+                        <span className={`text-xs sm:text-[13px] font-bold leading-tight truncate w-full ${
+                          isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
+                        }`}>
+                          {setItem.label}
+                        </span>
+                        <span className="text-xs sm:text-[13px] font-bold mt-1 text-slate-900">
+                          ₹{Number(setItem.minPrice).toLocaleString("en-IN")}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
               </div>
-            )}
-
-            {/* Storage / Configuration Selector (ROM) with all tiers visible */}
-            {availableStorages.length > 0 && (
-              <div className="space-y-2 border-b border-slate-200 pb-4">
+            ) : availableStorages.length > 0 ? (
+              <div className="space-y-2.5 border-b border-slate-200 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">
-                    Storage: <strong className="text-slate-950 font-bold">{selectedStorage}</strong>
-                  </span>
+                  <div className="text-xs sm:text-sm text-slate-800">
+                    <span className="font-normal text-slate-700">Size:</span>{" "}
+                    <strong className="text-slate-950 font-bold ml-1">{selectedStorage}</strong>
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 py-1">
+
+                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
                   {availableStorages.map((item, idx) => {
                     const label = typeof item === 'string' ? item : item.label;
                     const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
@@ -982,21 +1106,19 @@ export default function ProductDetailPage({
                         key={idx}
                         type="button"
                         onClick={() => handleStorageSelect(label)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex flex-col items-center justify-center text-center min-w-[88px] sm:min-w-[96px] ${
+                        className={`group min-w-[110px] sm:min-w-[124px] px-3 py-2 rounded-xl transition-all cursor-pointer flex flex-col items-start justify-center text-left shrink-0 ${
                           isSelected
-                            ? "border-2 border-slate-950 ring-2 ring-slate-950/10 bg-white shadow-xs"
-                            : "border border-slate-200 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 shadow-2xs hover:bg-slate-50/70"
+                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 bg-white shadow-xs"
+                            : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
                         }`}
                       >
-                        <span className={`whitespace-nowrap ${isSelected ? "text-slate-950 font-black" : "text-slate-800 font-bold"}`}>
+                        <span className={`text-xs sm:text-[13px] font-bold leading-tight truncate w-full ${
+                          isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
+                        }`}>
                           {label}
                         </span>
                         {minPrice && minPrice > 0 ? (
-                          <span className={`text-[10px] mt-0.5 ${
-                            isSelected
-                              ? "font-extrabold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded-md border border-emerald-200"
-                              : "font-semibold text-slate-500"
-                          }`}>
+                          <span className="text-xs sm:text-[13px] font-bold mt-1 text-slate-900">
                             ₹{Number(minPrice).toLocaleString("en-IN")}
                           </span>
                         ) : null}
@@ -1005,7 +1127,7 @@ export default function ProductDetailPage({
                   })}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* 3 Horizontal Amazon Offers Cards */}
             <div className="space-y-2 border-b border-slate-200 pb-4">

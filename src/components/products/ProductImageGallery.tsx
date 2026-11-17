@@ -539,42 +539,8 @@ export default function ProductImageGallery({
         </div>
       )}
 
-      {/* ======================= COLOR VARIANTS / THUMBNAILS (Flipkart Reference Style) ======================= */}
-      {colorVariants && colorVariants.length > 0 ? (
-        <div className="w-full space-y-2 pt-1 lg:hidden px-3 sm:px-0">
-          <div className="text-xs sm:text-sm font-semibold text-slate-800">
-            Selected Color: <strong className="text-slate-950 font-bold">{selectedColor || colorVariants[0]?.color}</strong>
-          </div>
-          <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1">
-            {colorVariants.map((v, idx) => {
-              const isColorSelected = (selectedColor || colorVariants[0]?.color).toLowerCase() === v.color.toLowerCase();
-              return (
-                <button
-                  key={v.color || idx}
-                  type="button"
-                  onClick={() => onSelectColor?.(v.color)}
-                  className={`relative w-15 h-19 sm:w-16 sm:h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                    isColorSelected
-                      ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
-                      : "border border-slate-200 hover:border-slate-400 shadow-2xs"
-                  }`}
-                  title={v.color}
-                >
-                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    <Image
-                      src={v.image_url || "/placeholder.png"}
-                      alt={v.color}
-                      fill
-                      className="object-contain p-0.5"
-                      unoptimized
-                    />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : galleryImages.length > 1 ? (
+      {/* ======================= PHOTO GALLERY THUMBNAILS STRIP ======================= */}
+      {galleryImages.length > 1 && (
         <div
           ref={thumbnailContainerRef}
           className="w-full flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-3 sm:px-0"
@@ -588,42 +554,7 @@ export default function ProductImageGallery({
                 onClick={() => goToImage(idx)}
                 className={`relative w-15 h-19 sm:w-16 sm:h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                   isActive
-                    ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
-                    : "border border-slate-200 hover:border-slate-400 shadow-2xs"
-                }`}
-                title={`Image ${idx + 1}`}
-              >
-                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                  <Image
-                    src={img}
-                    alt={`${productName} thumbnail ${idx + 1}`}
-                    fill
-                    className="object-contain p-0.5"
-                    unoptimized
-                  />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-
-      {/* Desktop thumbnails strip */}
-      {colorVariants && colorVariants.length > 0 && galleryImages.length > 1 && (
-        <div
-          ref={thumbnailContainerRef}
-          className="hidden lg:flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5"
-        >
-          {galleryImages.map((img, idx) => {
-            const isActive = currentIndex === idx;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => goToImage(idx)}
-                className={`relative w-16 h-20 rounded-2xl bg-white p-1.5 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                  isActive
-                    ? "border-2 border-slate-900 shadow-xs ring-2 ring-slate-900/10"
+                    ? "border-2 border-[#007185] shadow-xs ring-1 ring-[#007185]/30"
                     : "border border-slate-200 hover:border-slate-400 shadow-2xs"
                 }`}
                 title={`Image ${idx + 1}`}
