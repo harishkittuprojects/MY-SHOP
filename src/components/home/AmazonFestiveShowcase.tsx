@@ -78,7 +78,7 @@ export interface FlipkartAppCategory {
   isHot?: boolean;
 }
 
-export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [
+export const FLIPKART_ROW_1: FlipkartAppCategory[] = [
   { 
     id: "deals", 
     name: "Top Deals", 
@@ -121,7 +121,10 @@ export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [
     image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=200", 
     url: "/products?category=Computers%20%26%20Tablets",
     query: "Computers & Tablets"
-  },
+  }
+];
+
+export const FLIPKART_ROW_2: FlipkartAppCategory[] = [
   { 
     id: "fashion", 
     name: "Fashion", 
@@ -156,8 +159,17 @@ export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [
     image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=200", 
     url: "/products?category=TV%20%26%20Audio",
     query: "TV & Audio"
+  },
+  { 
+    id: "all-store", 
+    name: "All Deals", 
+    image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&q=80&w=200", 
+    url: "/products",
+    query: ""
   }
 ];
+
+export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [...FLIPKART_ROW_1, ...FLIPKART_ROW_2];
 
 export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
   {
@@ -2638,11 +2650,12 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             </div>
 
             {/* =========================================================================
-                FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Directly below hero banner)
+                FLIPKART-STYLE 2-ROW CIRCULAR CATEGORY PHOTO RAILS (Directly below hero banner)
             ========================================================================= */}
-            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2.5 sm:py-3 px-2 sm:px-3 shadow-2xs select-none">
+            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2.5 sm:py-3.5 px-2 sm:px-3 shadow-2xs select-none space-y-2.5 sm:space-y-3">
+              {/* Row 1 */}
               <div className="flex items-center gap-3.5 sm:gap-6 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
-                {FLIPKART_APP_CATEGORIES.map((cat) => {
+                {FLIPKART_ROW_1.map((cat) => {
                   const isCatActive = 
                     (cat.id === "deals" && !categoryFilter && searchParams.get("sort") === "discount_desc") ||
                     (Boolean(categoryFilter) && (
@@ -2677,6 +2690,52 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                             HOT
                           </span>
                         )}
+                      </div>
+
+                      {/* Clean Label */}
+                      <span className={`mt-1.5 text-[11px] sm:text-xs font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
+                        isCatActive 
+                          ? "text-[#2E6F40] font-black" 
+                          : "text-slate-800 group-hover:text-[#2E6F40]"
+                      }`}>
+                        {cat.name}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Row 2 (Down below Row 1) */}
+              <div className="flex items-center gap-3.5 sm:gap-6 md:gap-7 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth pt-2 sm:pt-2.5 border-t border-slate-100">
+                {FLIPKART_ROW_2.map((cat) => {
+                  const isCatActive = 
+                    Boolean(categoryFilter) && (
+                      (cat.query && categoryFilter?.toLowerCase() === cat.query.toLowerCase()) ||
+                      (cat.id && categoryFilter?.toLowerCase().includes(cat.id))
+                    );
+
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={cat.url}
+                      className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[56px] sm:min-w-[66px] md:min-w-[74px] cursor-pointer"
+                    >
+                      {/* Flipkart Style Circular Photo Avatar */}
+                      <div className="relative">
+                        <div className={`w-13 h-13 sm:w-15 sm:h-15 md:w-16 md:h-16 rounded-full bg-slate-50 border overflow-hidden shadow-2xs group-hover:scale-105 transition-all duration-200 relative flex items-center justify-center ${
+                          isCatActive 
+                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs" 
+                            : "border-slate-200/90 group-hover:border-[#2E6F40]"
+                        }`}>
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            sizes="64px"
+                            unoptimized
+                          />
+                        </div>
                       </div>
 
                       {/* Clean Label */}
@@ -2766,13 +2825,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                   )}
                 </div>
 
-                {/* Minimal Brand Tiles Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 w-full">
+                {/* Minimal Brand Tiles in Smooth Horizontal Row */}
+                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-0.5 scroll-smooth w-full">
                   {/* All Brands Tile */}
                   <button
                     type="button"
                     onClick={() => handleBrandClick("")}
-                    className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none shrink-0 ${
                       !selectedBrand 
                         ? "border-[#2E6F40] bg-emerald-50/50 text-[#2E6F40] font-bold shadow-2xs ring-1 ring-[#2E6F40]/30" 
                         : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/80 shadow-2xs hover:border-slate-300"
@@ -2783,7 +2842,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     }`}>
                       ★
                     </div>
-                    <span className="text-xs truncate">All Brands</span>
+                    <span className="text-xs whitespace-nowrap">All Brands</span>
                   </button>
 
                   {/* Specific Brand Tiles */}
@@ -2794,7 +2853,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                         key={b.id || i}
                         type="button"
                         onClick={() => handleBrandClick(b.query)}
-                        className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none group ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition-all duration-150 cursor-pointer select-none shrink-0 group ${
                           isSelected 
                             ? "border-[#2E6F40] bg-emerald-50/50 text-[#2E6F40] font-bold shadow-2xs ring-1 ring-[#2E6F40]/30" 
                             : "bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border-slate-200/80 shadow-2xs hover:border-slate-300"
@@ -2816,7 +2875,7 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                             </span>
                           )}
                         </div>
-                        <span className="text-xs truncate">{b.name}</span>
+                        <span className="text-xs whitespace-nowrap">{b.name}</span>
                       </button>
                     );
                   })}
