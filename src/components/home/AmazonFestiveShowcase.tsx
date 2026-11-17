@@ -172,7 +172,7 @@ export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
     name: "Mobiles",
     fullName: "Smartphones & 5G Flagships",
     icon: "📱",
-    image: "/products/iphone-16-pro-max.png",
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=500",
     query: "Mobiles",
     sub: "Flagships, 5G Mobiles, iPhones, Galaxy, OnePlus",
     badge: "Official Warranty",
@@ -183,7 +183,7 @@ export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
     name: "Refurbished",
     fullName: "Certified Refurbished Mobiles",
     icon: "♻️",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=400",
+    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=500",
     query: "Old / Refurbished Mobiles",
     sub: "Superb Grade A+, 32-Point Quality Check",
     badge: "32-Point Check",
@@ -2678,17 +2678,13 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                       className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 md:p-3 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden"
                     >
                       {/* Image container */}
-                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
+                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-slate-100 mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
                         <Image
                           src={cat.image}
                           alt={cat.name}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className={`${
-                            cat.id === "mobiles" || cat.image.startsWith("/")
-                              ? "object-contain p-2.5 sm:p-3"
-                              : "object-cover"
-                          } group-hover:scale-105 transition-transform duration-300`}
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                           unoptimized
                         />
                         {cat.badge && (
