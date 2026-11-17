@@ -1673,6 +1673,15 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
   const categoryFilter = category || searchParams.get("category");
   const brandSearch = searchParams.get("search") || "";
 
+  const categoriesScrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollCategories = (direction: "left" | "right") => {
+    if (categoriesScrollRef.current) {
+      const scrollAmount = direction === "left" ? -300 : 300;
+      categoriesScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   const [primeFilter, setPrimeFilter] = useState(false);
   const [deliveryFilter, setDeliveryFilter] = useState<string | null>(null);
   const [priceSort, setPriceSort] = useState<string | null>("low-to-high");
@@ -2452,21 +2461,30 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* =========================================================================
-                TOP CATEGORY NAVIGATION RAIL (Quick-switch categories across mobile & desktop)
+                TOP CATEGORY NAVIGATION RAIL (Horizontal circular avatars across mobile & desktop)
             ========================================================================= */}
-            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-2 sm:p-2.5 shadow-2xs">
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
+            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2 sm:py-2.5 px-2 sm:px-3 shadow-2xs select-none">
+              <div className="flex items-center gap-3 sm:gap-4 md:gap-5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
+                {/* All Categories Avatar */}
                 <Link
                   href="/products"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
-                    !categoryFilter
-                      ? "bg-[#2E6F40] text-white shadow-xs"
-                      : "bg-slate-100/80 hover:bg-slate-200 text-slate-700 hover:text-slate-900"
-                  }`}
+                  className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[54px] sm:min-w-[62px] cursor-pointer"
                 >
-                  <span>★</span>
-                  <span>All Categories</span>
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg transition-all shadow-2xs ${
+                    !categoryFilter 
+                      ? "bg-[#2E6F40] text-white ring-2 ring-[#2E6F40]/40 shadow-sm" 
+                      : "bg-slate-100 text-slate-600 border border-slate-200 group-hover:bg-slate-200"
+                  }`}>
+                    ★
+                  </div>
+                  <span className={`mt-1 text-[10px] sm:text-[11px] font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
+                    !categoryFilter ? "text-[#2E6F40] font-black" : "text-slate-700 group-hover:text-slate-900"
+                  }`}>
+                    All
+                  </span>
                 </Link>
+
+                {/* Each Category Circular Avatar */}
                 {ALL_STORE_CATEGORIES.map((cat) => {
                   const isCatActive =
                     categoryFilter?.toLowerCase() === cat.query.toLowerCase() ||
@@ -2475,14 +2493,29 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                     <Link
                       key={cat.id}
                       href={`/products?category=${encodeURIComponent(cat.query)}`}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
-                        isCatActive
-                          ? "bg-[#2E6F40] text-white shadow-xs"
-                          : "bg-slate-100/80 hover:bg-slate-200 text-slate-700 hover:text-slate-900"
-                      }`}
+                      className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[54px] sm:min-w-[62px] cursor-pointer"
                     >
-                      <span className="text-xs">{cat.icon}</span>
-                      <span>{cat.name}</span>
+                      <div className="relative">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white overflow-hidden shadow-2xs group-hover:scale-105 transition-all relative flex items-center justify-center border-2 ${
+                          isCatActive 
+                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/40 shadow-sm" 
+                            : "border-slate-200 group-hover:border-[#2E6F40]/50"
+                        }`}>
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            sizes="60px"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                      <span className={`mt-1 text-[10px] sm:text-[11px] font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
+                        isCatActive ? "text-[#2E6F40] font-black" : "text-slate-700 group-hover:text-[#2E6F40]"
+                      }`}>
+                        {cat.name}
+                      </span>
                     </Link>
                   );
                 })}
@@ -2577,11 +2610,11 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
             </div>
 
             {/* =========================================================================
-                2. ALL CATEGORIES SHOWCASE (Prominently displayed when entering /products)
+                2. ALL CATEGORIES SHOWCASE (Horizontal Scrollable Shelf in /products)
             ========================================================================= */}
             {!categoryFilter && (
-              <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 flex-wrap gap-2">
+              <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-4.5 bg-[#2E6F40] rounded-full" />
                     <div>
@@ -2591,59 +2624,86 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           ({ALL_STORE_CATEGORIES.length})
                         </span>
                       </h2>
-                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
-                        Tap any category to view full collection &amp; deals
-                      </p>
                     </div>
                   </div>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#2E6F40] flex items-center gap-1">
+                    <span>Swipe</span>
+                    <FontAwesomeIcon icon={faArrowRight} className="text-[9px]" />
+                  </span>
                 </div>
 
-                {/* Categories Grid (Optimized for Mobile 2-cols & Desktop 4-cols) */}
-                <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                  {ALL_STORE_CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/products?category=${encodeURIComponent(cat.query)}`}
-                      className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 md:p-3 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden"
-                    >
-                      {/* Image container */}
-                      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
-                        <Image
-                          src={cat.image}
-                          alt={cat.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          unoptimized
-                        />
-                        {cat.badge && (
-                          <span className="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
-                            {cat.badge}
-                          </span>
-                        )}
-                      </div>
+                {/* Horizontal Scrollable Categories Container */}
+                <div className="relative group/catscroll">
+                  {/* Left Scroll Button (Desktop) */}
+                  <button
+                    type="button"
+                    onClick={() => scrollCategories("left")}
+                    className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catscroll:opacity-100"
+                    aria-label="Scroll left"
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                  </button>
 
-                      {/* Info */}
-                      <div className="space-y-0.5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs sm:text-sm shrink-0">{cat.icon}</span>
-                            <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 group-hover:text-[#2E6F40] line-clamp-1 transition-colors">
-                              {cat.name}
-                            </h3>
+                  {/* Right Scroll Button (Desktop) */}
+                  <button
+                    type="button"
+                    onClick={() => scrollCategories("right")}
+                    className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catscroll:opacity-100"
+                    aria-label="Scroll right"
+                  >
+                    <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                  </button>
+
+                  {/* Horizontal Scrollable Category Cards (Single Row, No Multi-Row Stacking) */}
+                  <div 
+                    ref={categoriesScrollRef}
+                    className="flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth py-1 px-0.5"
+                  >
+                    {ALL_STORE_CATEGORIES.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/products?category=${encodeURIComponent(cat.query)}`}
+                        className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden shrink-0 w-[135px] xs:w-[145px] sm:w-[160px] md:w-[175px]"
+                      >
+                        {/* Image container */}
+                        <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            sizes="175px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            unoptimized
+                          />
+                          {cat.badge && (
+                            <span className="absolute top-1 left-1 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
+                              {cat.badge}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="space-y-0.5 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs shrink-0">{cat.icon}</span>
+                              <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 group-hover:text-[#2E6F40] line-clamp-1 transition-colors">
+                                {cat.name}
+                              </h3>
+                            </div>
+                            <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                              {cat.sub}
+                            </p>
                           </div>
-                          <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
-                            {cat.sub}
-                          </p>
-                        </div>
 
-                        <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-slate-200/60 text-[10px] sm:text-[11px] font-bold text-[#2E6F40]">
-                          <span>Explore</span>
-                          <FontAwesomeIcon icon={faChevronRight} className="text-[8px] group-hover:translate-x-0.5 transition-transform" />
+                          <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] font-bold text-[#2E6F40]">
+                            <span>Explore</span>
+                            <FontAwesomeIcon icon={faChevronRight} className="text-[8px] group-hover:translate-x-0.5 transition-transform" />
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
