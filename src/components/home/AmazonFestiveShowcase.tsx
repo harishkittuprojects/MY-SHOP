@@ -2684,11 +2684,15 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                           alt={cat.name}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          className={`${
+                            cat.id === "mobiles" || cat.image.startsWith("/")
+                              ? "object-contain p-2.5 sm:p-3"
+                              : "object-cover"
+                          } group-hover:scale-105 transition-transform duration-300`}
                           unoptimized
                         />
                         {cat.badge && (
-                          <span className="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
+                          <span className="absolute top-1.5 left-1.5 z-10 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
                             {cat.badge}
                           </span>
                         )}
