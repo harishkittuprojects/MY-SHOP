@@ -69,6 +69,96 @@ export interface StoreCategoryCard {
   tagColor: string;
 }
 
+export interface FlipkartAppCategory {
+  id: string;
+  name: string;
+  image: string;
+  url: string;
+  query: string;
+  isHot?: boolean;
+}
+
+export const FLIPKART_APP_CATEGORIES: FlipkartAppCategory[] = [
+  { 
+    id: "deals", 
+    name: "Top Deals", 
+    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?sort=discount_desc",
+    query: "",
+    isHot: true 
+  },
+  { 
+    id: "mobiles", 
+    name: "Mobiles", 
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Mobiles",
+    query: "Mobiles"
+  },
+  { 
+    id: "refurbished", 
+    name: "Refurbished", 
+    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Old%20%2F%20Refurbished%20Mobiles",
+    query: "Old / Refurbished Mobiles"
+  },
+  { 
+    id: "accessories", 
+    name: "Accessories", 
+    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Mobile%20Accessories",
+    query: "Mobile Accessories"
+  },
+  { 
+    id: "smart-tech", 
+    name: "Smart Tech", 
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Smart%20Technology",
+    query: "Smart Technology"
+  },
+  { 
+    id: "laptops", 
+    name: "Laptops", 
+    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Computers%20%26%20Tablets",
+    query: "Computers & Tablets"
+  },
+  { 
+    id: "fashion", 
+    name: "Fashion", 
+    image: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Fashion",
+    query: "Fashion"
+  },
+  { 
+    id: "jewellery", 
+    name: "Jewellery", 
+    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Jewellery",
+    query: "Jewellery"
+  },
+  { 
+    id: "ev", 
+    name: "EV Scooters", 
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=EV%20Vehicles",
+    query: "EV Vehicles"
+  },
+  { 
+    id: "appliances", 
+    name: "Appliances", 
+    image: "https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=Kitchen%20Appliances",
+    query: "Kitchen Appliances"
+  },
+  { 
+    id: "tv-audio", 
+    name: "TV & Audio", 
+    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=200", 
+    url: "/products?category=TV%20%26%20Audio",
+    query: "TV & Audio"
+  }
+];
+
 export const ALL_STORE_CATEGORIES: StoreCategoryCard[] = [
   {
     id: "mobiles",
@@ -2198,6 +2288,64 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
     <div className="w-full bg-[#f8fafc] text-slate-800 rounded-none sm:rounded-2xl md:rounded-3xl overflow-hidden border-0 sm:border border-slate-200/90 shadow-none sm:shadow-xs mb-2 sm:mb-4 md:mb-6">
       
       {/* =========================================================================
+          FLIPKART-STYLE REAL PRODUCT PHOTO CATEGORY RAIL (Matching user's exact design)
+      ========================================================================= */}
+      <section className="w-full bg-white border-b border-slate-200/80 py-2 sm:py-2.5 px-2 sm:px-4 select-none">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="flex items-center justify-start lg:justify-center gap-3.5 sm:gap-6 md:gap-8 lg:gap-10 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-1 scroll-smooth">
+            {FLIPKART_APP_CATEGORIES.map((cat) => {
+              const isCatActive = 
+                (cat.id === "deals" && !categoryFilter && searchParams.get("sort") === "discount_desc") ||
+                (Boolean(categoryFilter) && (
+                  (cat.query && categoryFilter?.toLowerCase() === cat.query.toLowerCase()) ||
+                  (cat.id && categoryFilter?.toLowerCase().includes(cat.id))
+                ));
+
+              return (
+                <Link
+                  key={cat.id}
+                  href={cat.url}
+                  className="flex flex-col items-center group flex-shrink-0 active:scale-95 transition-all min-w-[56px] sm:min-w-[66px] md:min-w-[74px] cursor-pointer"
+                >
+                  {/* Flipkart Style Circular Photo Avatar */}
+                  <div className="relative">
+                    <div className={`w-13 h-13 sm:w-15 sm:h-15 md:w-16 md:h-16 rounded-full bg-slate-50 border overflow-hidden shadow-2xs group-hover:scale-105 transition-all duration-200 relative flex items-center justify-center ${
+                      isCatActive 
+                        ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/30 shadow-xs" 
+                        : "border-slate-200/90 group-hover:border-[#2E6F40]"
+                    }`}>
+                      <Image
+                        src={cat.image}
+                        alt={cat.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                        sizes="64px"
+                        unoptimized
+                      />
+                    </div>
+                    {cat.isHot && (
+                      <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full border border-white shadow-xs animate-pulse">
+                        HOT
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Clean Label */}
+                  <span className={`mt-1.5 text-[11px] sm:text-xs font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
+                    isCatActive 
+                      ? "text-[#2E6F40] font-black" 
+                      : "text-slate-800 group-hover:text-[#2E6F40]"
+                  }`}>
+                    {cat.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
           MAIN CONTENT AREA (Sidebar Filter + Brand Emerald Festive Banner & Horizontal Cards)
       ========================================================================= */}
       <div className="w-full max-w-[1440px] mx-auto px-2 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4">
@@ -2461,68 +2609,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
           <div className="col-span-1 lg:col-span-9 space-y-3 sm:space-y-4 md:space-y-5">
             
             {/* =========================================================================
-                TOP CATEGORY NAVIGATION RAIL (Horizontal circular avatars across mobile & desktop)
-            ========================================================================= */}
-            <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 py-2 sm:py-2.5 px-2 sm:px-3 shadow-2xs select-none">
-              <div className="flex items-center gap-3 sm:gap-4 md:gap-5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5 px-0.5 scroll-smooth">
-                {/* All Categories Avatar */}
-                <Link
-                  href="/products"
-                  className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[54px] sm:min-w-[62px] cursor-pointer"
-                >
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg transition-all shadow-2xs ${
-                    !categoryFilter 
-                      ? "bg-[#2E6F40] text-white ring-2 ring-[#2E6F40]/40 shadow-sm" 
-                      : "bg-slate-100 text-slate-600 border border-slate-200 group-hover:bg-slate-200"
-                  }`}>
-                    ★
-                  </div>
-                  <span className={`mt-1 text-[10px] sm:text-[11px] font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
-                    !categoryFilter ? "text-[#2E6F40] font-black" : "text-slate-700 group-hover:text-slate-900"
-                  }`}>
-                    All
-                  </span>
-                </Link>
-
-                {/* Each Category Circular Avatar */}
-                {ALL_STORE_CATEGORIES.map((cat) => {
-                  const isCatActive =
-                    categoryFilter?.toLowerCase() === cat.query.toLowerCase() ||
-                    categoryFilter?.toLowerCase().includes(cat.id);
-                  return (
-                    <Link
-                      key={cat.id}
-                      href={`/products?category=${encodeURIComponent(cat.query)}`}
-                      className="flex flex-col items-center group shrink-0 active:scale-95 transition-all min-w-[54px] sm:min-w-[62px] cursor-pointer"
-                    >
-                      <div className="relative">
-                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white overflow-hidden shadow-2xs group-hover:scale-105 transition-all relative flex items-center justify-center border-2 ${
-                          isCatActive 
-                            ? "border-[#2E6F40] ring-2 ring-[#2E6F40]/40 shadow-sm" 
-                            : "border-slate-200 group-hover:border-[#2E6F40]/50"
-                        }`}>
-                          <Image
-                            src={cat.image}
-                            alt={cat.name}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-300"
-                            sizes="60px"
-                            unoptimized
-                          />
-                        </div>
-                      </div>
-                      <span className={`mt-1 text-[10px] sm:text-[11px] font-bold text-center tracking-tight transition-colors whitespace-nowrap ${
-                        isCatActive ? "text-[#2E6F40] font-black" : "text-slate-700 group-hover:text-[#2E6F40]"
-                      }`}>
-                        {cat.name}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* =========================================================================
                 1. DYNAMIC BANNER SLIDER (Top Featured Hero Carousel)
             ========================================================================= */}
             <div className="relative w-full rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-slate-950 group">
@@ -2608,105 +2694,6 @@ export default function AmazonFestiveShowcase({ category }: { category?: string 
                 </>
               )}
             </div>
-
-            {/* =========================================================================
-                2. ALL CATEGORIES SHOWCASE (Horizontal Scrollable Shelf in /products)
-            ========================================================================= */}
-            {!categoryFilter && (
-              <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-4.5 bg-[#2E6F40] rounded-full" />
-                    <div>
-                      <h2 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
-                        <span>All Store Categories</span>
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
-                          ({ALL_STORE_CATEGORIES.length})
-                        </span>
-                      </h2>
-                    </div>
-                  </div>
-                  <span className="text-[10px] sm:text-[11px] font-bold text-[#2E6F40] flex items-center gap-1">
-                    <span>Swipe</span>
-                    <FontAwesomeIcon icon={faArrowRight} className="text-[9px]" />
-                  </span>
-                </div>
-
-                {/* Horizontal Scrollable Categories Container */}
-                <div className="relative group/catscroll">
-                  {/* Left Scroll Button (Desktop) */}
-                  <button
-                    type="button"
-                    onClick={() => scrollCategories("left")}
-                    className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catscroll:opacity-100"
-                    aria-label="Scroll left"
-                  >
-                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
-                  </button>
-
-                  {/* Right Scroll Button (Desktop) */}
-                  <button
-                    type="button"
-                    onClick={() => scrollCategories("right")}
-                    className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 items-center justify-center text-slate-700 hover:text-[#2E6F40] hover:bg-emerald-50 cursor-pointer transition-all opacity-0 group-hover/catscroll:opacity-100"
-                    aria-label="Scroll right"
-                  >
-                    <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
-                  </button>
-
-                  {/* Horizontal Scrollable Category Cards (Single Row, No Multi-Row Stacking) */}
-                  <div 
-                    ref={categoriesScrollRef}
-                    className="flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth py-1 px-0.5"
-                  >
-                    {ALL_STORE_CATEGORIES.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/products?category=${encodeURIComponent(cat.query)}`}
-                        className="group relative bg-slate-50 hover:bg-emerald-50/40 rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-[#2E6F40]/50 p-2 sm:p-2.5 transition-all duration-200 flex flex-col justify-between hover:shadow-md cursor-pointer overflow-hidden shrink-0 w-[135px] xs:w-[145px] sm:w-[160px] md:w-[175px]"
-                      >
-                        {/* Image container */}
-                        <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-white mb-2 border border-slate-100/80 shadow-2xs flex items-center justify-center">
-                          <Image
-                            src={cat.image}
-                            alt={cat.name}
-                            fill
-                            sizes="175px"
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            unoptimized
-                          />
-                          {cat.badge && (
-                            <span className="absolute top-1 left-1 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white backdrop-blur-xs shadow-xs">
-                              {cat.badge}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Info */}
-                        <div className="space-y-0.5 flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs shrink-0">{cat.icon}</span>
-                              <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 group-hover:text-[#2E6F40] line-clamp-1 transition-colors">
-                                {cat.name}
-                              </h3>
-                            </div>
-                            <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
-                              {cat.sub}
-                            </p>
-                          </div>
-
-                          <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] font-bold text-[#2E6F40]">
-                            <span>Explore</span>
-                            <FontAwesomeIcon icon={faChevronRight} className="text-[8px] group-hover:translate-x-0.5 transition-transform" />
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* When categoryFilter is active: Active Category Header with Return Button */}
             {categoryFilter && (
