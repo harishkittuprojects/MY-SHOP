@@ -376,9 +376,9 @@ export default function ProductImageGallery({
           }
         }}
       >
-        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist (Safe from product overlap) */}
+        {/* Top-Right Action Controls: Properly Styled Share Arrow & Wishlist (Desktop only) */}
         <div
-          className="absolute top-3 right-3 z-20 flex flex-col items-center gap-1.5"
+          className="hidden lg:flex absolute top-3 right-3 z-20 flex-col items-center gap-1.5"
           onClick={(e) => e.stopPropagation()}
         >
           {onShare && (
@@ -519,31 +519,88 @@ export default function ProductImageGallery({
         </div>
       </div>
 
-      {/* ======================= PAGINATION DOTS (Active dot: Flipkart Magenta) ======================= */}
-      {galleryImages.length > 1 && (
-        <div className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 sm:px-0">
-          {galleryImages.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => goToImage(idx)}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                currentIndex === idx
-                  ? "w-2.5 h-2.5 bg-[#e01a59]"
-                  : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
-              }`}
-              title={`Go to image ${idx + 1}`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      )}
+      {/* ======================= PAGINATION DOTS & ACTION ICONS (Amazon Mobile Exact) ======================= */}
+      <div className="w-full flex items-center justify-between py-2 px-3 sm:px-1">
+        {/* Left balance spacer */}
+        <div className="w-16 shrink-0" />
 
-      {/* ======================= PHOTO GALLERY THUMBNAILS STRIP ======================= */}
+        {/* Center: Pagination Dots */}
+        {galleryImages.length > 1 ? (
+          <div className="flex items-center justify-center gap-1.5">
+            {galleryImages.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => goToImage(idx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  currentIndex === idx
+                    ? "w-2 h-2 bg-slate-900"
+                    : "w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400"
+                }`}
+                title={`Go to image ${idx + 1}`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        ) : (
+          <div />
+        )}
+
+        {/* Right: Wishlist & Share Action Icons (Mobile visible, matches screenshot) */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {onToggleWishlist && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleWishlist();
+              }}
+              className="p-1 text-slate-700 hover:text-rose-500 transition cursor-pointer active:scale-90"
+              title={isWishlisted ? "In Wishlist" : "Add to Wishlist"}
+              aria-label="Wishlist toggle"
+            >
+              <Heart className={`w-5 h-5 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""}`} />
+            </button>
+          )}
+
+          {onShare && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+              className="p-1 text-slate-700 hover:text-slate-950 transition cursor-pointer active:scale-90"
+              title="Share product"
+              aria-label="Share product"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ======================= DESKTOP-ONLY PHOTO GALLERY THUMBNAILS STRIP ======================= */}
       {galleryImages.length > 1 && (
         <div
           ref={thumbnailContainerRef}
-          className="w-full flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-3 sm:px-0"
+          className="hidden lg:flex w-full items-center gap-2.5 overflow-x-auto scrollbar-none py-1.5 px-3 sm:px-0"
         >
           {galleryImages.map((img, idx) => {
             const isActive = currentIndex === idx;

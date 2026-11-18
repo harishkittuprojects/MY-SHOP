@@ -382,24 +382,35 @@ export default function ProductDetailPage({
     return Array.from(map.values());
   }, [productVariants, variantsForSelectedRam, product]);
 
+  // Helper for Amazon Price with superscript
+  const renderAmazonPriceParts = (priceVal: number) => {
+    const parts = Number(priceVal || 0).toFixed(2).split(".");
+    const intPart = Number(parts[0]).toLocaleString("en-IN");
+    const decPart = parts[1] || "00";
+    return { intPart, decPart };
+  };
+
   // Amazon-Style Set / Configuration List (e.g. "6GB RAM+128G Storage", "256GB Storage")
   const availableSets = React.useMemo(() => {
     if (productVariants.length === 0) {
       if (!product?.unit) return [];
       const rawUnits = product.unit.split(",").map((u) => u.trim()).filter(Boolean);
       const cleaned = Array.from(new Set(rawUnits.map((u) => cleanStorageLabel(u))));
+      const basePrice = product?.price || 0;
+      const baseOrig = product?.original_price || Math.round(basePrice * 1.35);
       return cleaned.map((label) => ({
         id: label.toLowerCase(),
         label: label.toLowerCase().includes("storage") ? label : `${label} Storage`,
         storage: label,
         ram: "",
-        minPrice: product?.price || 0,
+        minPrice: basePrice,
+        originalPrice: baseOrig,
         hasStock: true,
       }));
     }
 
     const hasDistinctRams = availableRams.length > 1;
-    const map = new Map<string, { id: string; label: string; storage: string; ram: string; minPrice: number; hasStock: boolean }>();
+    const map = new Map<string, { id: string; label: string; storage: string; ram: string; minPrice: number; originalPrice: number; hasStock: boolean }>();
 
     productVariants.forEach((v) => {
       const rawStorage = v.rom || v.storage_label || v.size || "Standard";
@@ -417,6 +428,7 @@ export default function ProductDetailPage({
       const key = `${ram}_${cleanStorage}`.toLowerCase();
       const isInstock = (v.stock_quantity || 0) > 0 && v.is_active !== false;
       const priceVal = v.price || product?.price || 0;
+      const origVal = v.original_price || (product?.original_price ? product.original_price : Math.round(priceVal * 1.35));
 
       const existing = map.get(key);
       if (!existing) {
@@ -426,12 +438,14 @@ export default function ProductDetailPage({
           storage: cleanStorage,
           ram,
           minPrice: priceVal,
+          originalPrice: origVal,
           hasStock: isInstock,
         });
       } else {
         map.set(key, {
           ...existing,
           minPrice: Math.min(existing.minPrice || priceVal, priceVal || existing.minPrice),
+          originalPrice: Math.max(existing.originalPrice || origVal, origVal),
           hasStock: existing.hasStock || isInstock,
         });
       }
@@ -854,6 +868,215 @@ export default function ProductDetailPage({
     }
   };
 
+  // Amazon-Style Variant Selector Block (Question Chips, Colour Cards, Set name Cards, Prime Banner)
+  const renderAmazonVariantSelectors = () => (
+    <div className="space-y-3.5">
+      {/* Customer Question Pills (Amazon Exact) */}
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+        {[
+          "Is it compatible with my existing charger?",
+          "Does it come with a protective case?",
+          "What is the battery backup?",
+          "Is 5G supported on all Indian bands?",
+        ].map((q, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className="shrink-0 bg-[#e7f4f5] text-[#002f36] hover:bg-[#d8edef] border border-[#a2d1d6]/80 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer"
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
+      <div className="border-t border-slate-200" />
+
+      {/* Colour Section */}
+      {availableColors.length > 0 && (
+        <div className="space-y-2 pb-1">
+          <div className="flex items-center justify-between">
+            <div className="text-xs sm:text-sm text-slate-800">
+              <span className="font-normal text-slate-700">Colour:</span>{" "}
+              <strong className="text-slate-950 font-bold ml-1">{selectedColor || availableColors[0]?.color}</strong>
+            </div>
+            {availableColors.length > 1 && (
+              <span className="text-[11px] font-semibold text-slate-500">
+                {availableColors.length} options
+              </span>
+            )}
+          </div>
+
+          {/* Colour Cards Row (Matching Screenshot: White background, rounded-2xl, tall phone photo, bold color name) */}
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scrollbar-none py-1">
+            {availableColors.map((v) => {
+              const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
+              const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
+              const imgToDisplay = v.image_url || resolveColorImageUrl(v.color, v.image_url);
+
+              return (
+                <button
+                  key={v.id || v.color}
+                  type="button"
+                  onClick={() => handleColorSelect(v)}
+                  title={v.color}
+                  className={`group relative min-w-[105px] w-[115px] sm:w-[125px] h-[135px] sm:h-[145px] rounded-2xl p-2.5 bg-white flex flex-col items-center justify-between transition-all cursor-pointer shrink-0 ${
+                    isColorSelected
+                      ? "border-2 border-[#007185] ring-1 ring-[#007185]/20 shadow-xs"
+                      : "border border-slate-300 hover:border-slate-400 shadow-2xs"
+                  } ${isOut ? "opacity-50" : ""}`}
+                >
+                  <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+                    <Image
+                      src={imgToDisplay}
+                      alt={v.color}
+                      fill
+                      className="object-contain p-1 group-hover:scale-105 transition-transform duration-200"
+                      unoptimized
+                    />
+                  </div>
+                  <span className="text-xs sm:text-[13px] font-bold text-slate-900 text-center truncate w-full pt-1.5 block leading-tight">
+                    {v.color}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Set name Section */}
+      {availableSets.length > 0 ? (
+        <div className="space-y-2 pb-1">
+          <div className="flex items-center justify-between">
+            <div className="text-xs sm:text-sm text-slate-800">
+              <span className="font-normal text-slate-700">Set name:</span>{" "}
+              <strong className="text-slate-950 font-bold ml-1">{activeSet?.label || selectedStorage}</strong>
+            </div>
+          </div>
+
+          {/* Amazon Set name Cards Row */}
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scrollbar-none py-1">
+            {availableSets.map((setItem) => {
+              const isSelected = activeSet?.id === setItem.id;
+              const isOut = !setItem.hasStock;
+              const priceParts = renderAmazonPriceParts(setItem.minPrice);
+              const origParts = renderAmazonPriceParts(setItem.originalPrice);
+
+              return (
+                <button
+                  key={setItem.id}
+                  type="button"
+                  onClick={() => handleSetSelect(setItem)}
+                  className={`group min-w-[155px] sm:min-w-[170px] max-w-[215px] p-3 rounded-2xl transition-all cursor-pointer flex flex-col items-start justify-between text-left shrink-0 ${
+                    isSelected
+                      ? "border-2 border-[#007185] ring-1 ring-[#007185]/20 bg-[#f0f8ff] sm:bg-white shadow-xs"
+                      : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
+                  } ${isOut ? "opacity-50" : ""}`}
+                >
+                  {/* Line 1: Configuration Label */}
+                  <span className={`text-xs sm:text-sm font-bold leading-tight truncate w-full ${
+                    isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
+                  }`}>
+                    {setItem.label}
+                  </span>
+
+                  {/* Line 2: Discounted Price with Superscript */}
+                  <div className="mt-1 font-bold text-slate-900 inline-flex items-start">
+                    <span className="text-sm sm:text-base leading-none">₹{priceParts.intPart}</span>
+                    <span className="text-[10px] leading-none ml-0.5 font-semibold">{priceParts.decPart}</span>
+                  </div>
+
+                  {/* Line 3: Original Price with Strikethrough */}
+                  <span className="text-[11px] sm:text-xs text-slate-500 line-through mt-0.5 block">
+                    ₹{origParts.intPart}.{origParts.decPart}
+                  </span>
+
+                  {/* Line 4: In stock indicator */}
+                  <span className={`text-[11px] sm:text-xs font-semibold mt-1 block ${
+                    setItem.hasStock ? "text-[#007600]" : "text-red-600"
+                  }`}>
+                    {setItem.hasStock ? "In stock" : "Currently unavailable"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : availableStorages.length > 0 ? (
+        <div className="space-y-2 pb-1">
+          <div className="flex items-center justify-between">
+            <div className="text-xs sm:text-sm text-slate-800">
+              <span className="font-normal text-slate-700">Size:</span>{" "}
+              <strong className="text-slate-950 font-bold ml-1">{selectedStorage}</strong>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scrollbar-none py-1">
+            {availableStorages.map((item, idx) => {
+              const label = typeof item === 'string' ? item : item.label;
+              const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
+              const minPrice = typeof item === 'object' ? item.minPrice : (product?.price || 0);
+              const origPrice = typeof item === 'object' && (item as any).originalPrice ? (item as any).originalPrice : Math.round(minPrice * 1.35);
+              const priceParts = renderAmazonPriceParts(minPrice);
+              const origParts = renderAmazonPriceParts(origPrice);
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleStorageSelect(label)}
+                  className={`group min-w-[140px] sm:min-w-[155px] p-3 rounded-2xl transition-all cursor-pointer flex flex-col items-start justify-between text-left shrink-0 ${
+                    isSelected
+                      ? "border-2 border-[#007185] ring-1 ring-[#007185]/20 bg-[#f0f8ff] sm:bg-white shadow-xs"
+                      : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
+                  }`}
+                >
+                  <span className={`text-xs sm:text-sm font-bold leading-tight truncate w-full ${
+                    isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
+                  }`}>
+                    {label}
+                  </span>
+                  <div className="mt-1 font-bold text-slate-900 inline-flex items-start">
+                    <span className="text-sm sm:text-base leading-none">₹{priceParts.intPart}</span>
+                    <span className="text-[10px] leading-none ml-0.5 font-semibold">{priceParts.decPart}</span>
+                  </div>
+                  <span className="text-[11px] sm:text-xs text-slate-500 line-through mt-0.5 block">
+                    ₹{origParts.intPart}.{origParts.decPart}
+                  </span>
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#007600] mt-1 block">
+                    In stock
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Amazon Prime Delivery Banner Card */}
+      <div className="rounded-xl border border-slate-200/90 bg-white p-3 sm:p-3.5 shadow-2xs space-y-1">
+        <div className="flex items-start gap-2.5">
+          <div className="shrink-0 pt-0.5">
+            <span className="text-[#00a8e1] font-black italic text-lg tracking-tight">prime</span>
+          </div>
+          <div className="text-xs text-slate-800 leading-snug">
+            <span>Enjoy </span>
+            <strong className="font-bold text-slate-950">Unlimited FREE Same day/1-day delivery</strong>
+            <span>, Prime offers everyday and more</span>
+          </div>
+        </div>
+        <div className="pl-12">
+          <button
+            type="button"
+            className="text-xs font-bold text-[#007185] hover:text-[#004f5d] hover:underline cursor-pointer"
+          >
+            Join Prime &gt;&gt;
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-32 md:pb-16 text-slate-800">
       {/* Toast Notification */}
@@ -904,6 +1127,30 @@ export default function ProductDetailPage({
           
           {/* ======================= COLUMN 1 (5 cols): Gallery & Thumbnails (Interactive 20-Feature Gallery) ======================= */}
           <div className="lg:col-span-5 w-full flex flex-col gap-3.5 lg:sticky lg:top-20 self-start min-w-0">
+            {/* Mobile Header: Brand link + Rating + Title (Amazon Mobile Exact) */}
+            <div className="lg:hidden px-3 pt-2.5 pb-1 space-y-1 bg-white">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <Link 
+                  href={`/products?category=Mobiles&search=${encodeURIComponent(brandName)}`}
+                  className="text-xs font-semibold text-[#007185] hover:underline"
+                >
+                  Visit the {brandName} Store
+                </Link>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold text-slate-800">{product.rating || 4.5}</span>
+                  <div className="flex text-amber-500 text-[10px]">
+                    {[...Array(5)].map((_, i) => (
+                      <FontAwesomeIcon key={i} icon={faStar} />
+                    ))}
+                  </div>
+                  <span className="text-[#007185] text-[11px]">({product.reviews_count || 111})</span>
+                </div>
+              </div>
+              <h1 className="text-sm sm:text-base font-medium text-slate-900 leading-snug line-clamp-2">
+                {product.name}
+              </h1>
+            </div>
+
             <ProductImageGallery
               images={allImages}
               productName={product.name}
@@ -933,13 +1180,18 @@ export default function ProductDetailPage({
               isWishlisted={isWishlisted}
               onToggleWishlist={() => product && toggleWishlist(product as any)}
             />
+
+            {/* Mobile-Only Variant Selectors & Prime Banner directly beneath gallery */}
+            <div className="lg:hidden px-3 pt-1">
+              {renderAmazonVariantSelectors()}
+            </div>
           </div>
 
           {/* ======================= COLUMN 2 (4 cols): Center Product Details ======================= */}
           <div className="lg:col-span-4 w-full space-y-4 min-w-0 self-start lg:pt-2.5 px-3 sm:px-0">
             
-            {/* Title & Brand Store Link */}
-            <div className="space-y-1.5 border-b border-slate-200 pb-3">
+            {/* Title & Brand Store Link (Desktop only) */}
+            <div className="hidden lg:block space-y-1.5 border-b border-slate-200 pb-3">
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 leading-snug">
                 {product.name}
               </h1>
@@ -992,142 +1244,10 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Amazon-Style Visual Colour Selector */}
-            {availableColors.length > 0 && (
-              <div className="space-y-2.5 border-b border-slate-200 pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs sm:text-sm text-slate-800">
-                    <span className="font-normal text-slate-700">Colour:</span>{" "}
-                    <strong className="text-slate-950 font-bold ml-1">{selectedColor || availableColors[0]?.color}</strong>
-                  </div>
-                  {availableColors.length > 1 && (
-                    <span className="text-[11px] font-semibold text-slate-500">
-                      {availableColors.length} options
-                    </span>
-                  )}
-                </div>
-
-                {/* Visual Thumbnail Cards Row (Amazon style: thumbnail on top, color name on bottom) */}
-                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
-                  {availableColors.map((v) => {
-                    const isColorSelected = (selectedColor || availableColors[0]?.color).toLowerCase() === v.color.toLowerCase();
-                    const isOut = v.stock_quantity !== undefined && v.stock_quantity <= 0;
-                    const imgToDisplay = v.image_url || resolveColorImageUrl(v.color, v.image_url);
-
-                    return (
-                      <button
-                        key={v.id || v.color}
-                        type="button"
-                        onClick={() => handleColorSelect(v)}
-                        title={v.color}
-                        className={`group relative min-w-[76px] w-[78px] sm:w-[84px] h-[98px] sm:h-[106px] rounded-xl p-1.5 bg-white flex flex-col items-center justify-between transition-all cursor-pointer shrink-0 ${
-                          isColorSelected
-                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 shadow-xs"
-                            : "border border-slate-300 hover:border-slate-400 shadow-2xs"
-                        } ${isOut ? "opacity-50" : ""}`}
-                      >
-                        {/* Device Product Image in Specific Color */}
-                        <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
-                          <Image
-                            src={imgToDisplay}
-                            alt={v.color}
-                            fill
-                            className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
-                            unoptimized
-                          />
-                        </div>
-                        {/* Color name label below image */}
-                        <span className="text-[11px] font-bold text-slate-900 text-center truncate w-full pt-1 block leading-tight">
-                          {v.color}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Amazon-Style Set name Selector (RAM + Storage configurations) */}
-            {availableSets.length > 0 ? (
-              <div className="space-y-2.5 border-b border-slate-200 pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs sm:text-sm text-slate-800">
-                    <span className="font-normal text-slate-700">Set name:</span>{" "}
-                    <strong className="text-slate-950 font-bold ml-1">{activeSet?.label || selectedStorage}</strong>
-                  </div>
-                </div>
-
-                {/* Amazon Set name Cards Row */}
-                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
-                  {availableSets.map((setItem) => {
-                    const isSelected = activeSet?.id === setItem.id;
-                    const isOut = !setItem.hasStock;
-
-                    return (
-                      <button
-                        key={setItem.id}
-                        type="button"
-                        onClick={() => handleSetSelect(setItem)}
-                        className={`group min-w-[136px] sm:min-w-[152px] max-w-[210px] px-3 py-2 rounded-xl transition-all cursor-pointer flex flex-col items-start justify-center text-left shrink-0 ${
-                          isSelected
-                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 bg-white shadow-xs"
-                            : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
-                        } ${isOut ? "opacity-50" : ""}`}
-                      >
-                        <span className={`text-xs sm:text-[13px] font-bold leading-tight truncate w-full ${
-                          isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
-                        }`}>
-                          {setItem.label}
-                        </span>
-                        <span className="text-xs sm:text-[13px] font-bold mt-1 text-slate-900">
-                          ₹{Number(setItem.minPrice).toLocaleString("en-IN")}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : availableStorages.length > 0 ? (
-              <div className="space-y-2.5 border-b border-slate-200 pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs sm:text-sm text-slate-800">
-                    <span className="font-normal text-slate-700">Size:</span>{" "}
-                    <strong className="text-slate-950 font-bold ml-1">{selectedStorage}</strong>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none py-1">
-                  {availableStorages.map((item, idx) => {
-                    const label = typeof item === 'string' ? item : item.label;
-                    const isSelected = selectedStorage.toLowerCase() === label.toLowerCase();
-                    const minPrice = typeof item === 'object' ? item.minPrice : null;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleStorageSelect(label)}
-                        className={`group min-w-[110px] sm:min-w-[124px] px-3 py-2 rounded-xl transition-all cursor-pointer flex flex-col items-start justify-center text-left shrink-0 ${
-                          isSelected
-                            ? "border-2 border-[#007185] ring-1 ring-[#007185]/30 bg-white shadow-xs"
-                            : "border border-slate-300 hover:border-slate-400 bg-white shadow-2xs hover:bg-slate-50/50"
-                        }`}
-                      >
-                        <span className={`text-xs sm:text-[13px] font-bold leading-tight truncate w-full ${
-                          isSelected ? "text-slate-950 font-extrabold" : "text-slate-800 font-bold"
-                        }`}>
-                          {label}
-                        </span>
-                        {minPrice && minPrice > 0 ? (
-                          <span className="text-xs sm:text-[13px] font-bold mt-1 text-slate-900">
-                            ₹{Number(minPrice).toLocaleString("en-IN")}
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
+            {/* Desktop-Only Variant Selectors & Prime Banner */}
+            <div className="hidden lg:block border-b border-slate-200 pb-4">
+              {renderAmazonVariantSelectors()}
+            </div>
 
             {/* 3 Horizontal Amazon Offers Cards */}
             <div className="space-y-2 border-b border-slate-200 pb-4">
