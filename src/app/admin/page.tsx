@@ -21,7 +21,7 @@ import {
   faPhotoVideo,
   faSyncAlt,
   faChartLine,
-  faMobileScreenButton,
+  faAward,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface DashboardStats {
@@ -389,10 +389,10 @@ export default function AdminDashboardPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm border border-purple-200">
-                    <FontAwesomeIcon icon={faMobileScreenButton} />
+                    <FontAwesomeIcon icon={faAward} />
                   </div>
                   <div>
-                    <div className="text-sm font-bold">Mobile Brands</div>
+                    <div className="text-sm font-bold">All Brands</div>
                     <div className="text-[11px] text-slate-500">Manage brands &amp; store filters</div>
                   </div>
                 </div>

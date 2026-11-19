@@ -15,7 +15,8 @@ import {
   faCheck,
   faEye,
   faRefresh,
-  faLayerGroup
+  faLayerGroup,
+  faAward,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Brand {
@@ -241,12 +242,12 @@ export default function AdminBrandsPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-xl bg-emerald-100 text-[#2E6F40] flex items-center justify-center text-sm font-black">
-              <FontAwesomeIcon icon={faMobileScreenButton} />
+              <FontAwesomeIcon icon={faAward} />
             </span>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Mobile Brands Management</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">All Brands Management</h1>
           </div>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Add, update, or remove mobile and device brands shown in store filters &amp; quick brand selectors.
+            Add, update, or remove brands across all categories (Mobiles, Fashion, Jewellery, EV Vehicles, Accessories) shown in store filters &amp; brand directories.
           </p>
         </div>
 
@@ -283,8 +284,8 @@ export default function AdminBrandsPage() {
           <span className="text-2xl font-black text-blue-900 mt-1 block">{stats.mobiles}</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-purple-200/80 bg-purple-50/20 shadow-2xs">
-          <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider block">Accessories Brands</span>
-          <span className="text-2xl font-black text-purple-900 mt-1 block">{stats.accessories}</span>
+          <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider block">Fashion, EV &amp; Other</span>
+          <span className="text-2xl font-black text-purple-900 mt-1 block">{stats.total - stats.mobiles}</span>
         </div>
       </div>
 
@@ -340,7 +341,7 @@ export default function AdminBrandsPage() {
             </div>
             <h3 className="text-base font-bold text-slate-800">No brands found</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              {searchQuery ? "Try searching with a different term" : "Click the button below to add your first mobile brand."}
+              {searchQuery ? "Try searching with a different term" : "Click the button below to add your first brand."}
             </p>
             <button
               onClick={handleOpenAddModal}
@@ -459,7 +460,7 @@ export default function AdminBrandsPage() {
             {/* Modal Header */}
             <div className="mb-5">
               <span className="text-[10px] font-black uppercase tracking-wider text-[#2E6F40] bg-emerald-50 px-2 py-0.5 rounded">
-                {isEditing ? "Edit Mobile Brand" : "Add New Mobile Brand"}
+                {isEditing ? "Edit Brand" : "Add New Brand"}
               </span>
               <h2 className="text-xl font-black text-slate-900 mt-1">
                 {isEditing ? `Edit "${formData.name}"` : "Create Brand"}
