@@ -238,34 +238,123 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <div className="flex-1 lg:pl-72 flex flex-col min-w-0 min-h-screen">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shadow-xs">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-3 sm:px-6 lg:px-8 shadow-xs">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 flex items-center justify-center"
+              className="lg:hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 border border-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
               aria-label="Open menu"
             >
-              <FontAwesomeIcon icon={faBars} />
+              <FontAwesomeIcon icon={faBars} className="text-base" />
             </button>
+            <Link href="/admin" className="lg:hidden flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-black text-sm shadow-xs">
+                MS
+              </div>
+              <div>
+                <span className="font-extrabold text-sm text-slate-900 tracking-tight leading-none block">MY SHOP</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700">Admin Control</span>
+              </div>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all active:scale-95"
             >
-              <FontAwesomeIcon icon={faStore} />
-              <span>Customer Website</span>
+              <FontAwesomeIcon icon={faStore} className="text-xs" />
+              <span className="hidden sm:inline">Customer Website</span>
+              <span className="sm:hidden">Store</span>
             </Link>
           </div>
         </header>
 
         {/* Page Content Viewport */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-y-auto">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Visible on mobile/tablet <lg) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-1 py-1.5 shadow-lg shadow-slate-900/10 flex items-center justify-around">
+        <Link
+          href="/admin"
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+            pathname === "/admin"
+              ? "text-emerald-700 font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm mb-0.5 ${
+            pathname === "/admin" ? "bg-emerald-100 text-emerald-700" : ""
+          }`}>
+            <FontAwesomeIcon icon={faChartPie} />
+          </div>
+          <span>Overview</span>
+        </Link>
+
+        <Link
+          href="/admin/orders"
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+            pathname.startsWith("/admin/orders")
+              ? "text-emerald-700 font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm mb-0.5 ${
+            pathname.startsWith("/admin/orders") ? "bg-emerald-100 text-emerald-700" : ""
+          }`}>
+            <FontAwesomeIcon icon={faShoppingBag} />
+          </div>
+          <span>Orders</span>
+        </Link>
+
+        <Link
+          href="/admin/products"
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+            pathname.startsWith("/admin/products")
+              ? "text-emerald-700 font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm mb-0.5 ${
+            pathname.startsWith("/admin/products") ? "bg-emerald-100 text-emerald-700" : ""
+          }`}>
+            <FontAwesomeIcon icon={faBox} />
+          </div>
+          <span>Products</span>
+        </Link>
+
+        <Link
+          href="/admin/inventory"
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all ${
+            pathname.startsWith("/admin/inventory")
+              ? "text-emerald-700 font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm mb-0.5 ${
+            pathname.startsWith("/admin/inventory") ? "bg-emerald-100 text-emerald-700" : ""
+          }`}>
+            <FontAwesomeIcon icon={faWarehouse} />
+          </div>
+          <span>Inventory</span>
+        </Link>
+
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all text-slate-500 hover:text-slate-900 cursor-pointer ${
+            isMobileMenuOpen ? "text-emerald-700 font-extrabold" : ""
+          }`}
+        >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm mb-0.5">
+            <FontAwesomeIcon icon={faBars} />
+          </div>
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }

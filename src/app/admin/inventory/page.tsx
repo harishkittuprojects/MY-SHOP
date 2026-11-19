@@ -699,7 +699,7 @@ export default function AdminInventoryPage() {
           {/* Variants Table */}
           <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[760px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3.5 px-4">Product & Variant</th>
@@ -917,7 +917,7 @@ export default function AdminInventoryPage() {
 
           <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[760px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3.5 px-4">Product Name</th>
@@ -1008,7 +1008,7 @@ export default function AdminInventoryPage() {
             <p className="text-slate-400 text-sm py-12 text-center">No inventory changes recorded yet.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[760px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="pb-3 px-4">Timestamp</th>
