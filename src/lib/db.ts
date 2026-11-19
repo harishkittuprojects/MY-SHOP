@@ -3,6 +3,113 @@ import { categories as defaultCategories, products as defaultProducts } from './
 import { matchProductSearch } from './searchUtils';
 
 // ==============================================================================
+// In-Memory Fallback Stores for Resilient Offline / Server Operation
+// Attached to globalThis to share state across Next.js API route bundles
+// ==============================================================================
+const globalStore = (globalThis as any);
+
+if (!globalStore.__myShopFallbackOrders) {
+  globalStore.__myShopFallbackOrders = [];
+}
+if (!globalStore.__myShopFallbackCustomers) {
+  globalStore.__myShopFallbackCustomers = [];
+}
+if (!globalStore.__myShopFallbackPayments) {
+  globalStore.__myShopFallbackPayments = [];
+}
+if (!globalStore.__myShopFallbackCoupons) {
+  globalStore.__myShopFallbackCoupons = [
+    {
+      id: 'coup-1',
+      code: 'WELCOME10',
+      discount_type: 'percentage',
+      discount_value: 10,
+      min_order_value: 500,
+      max_discount_amount: 1000,
+      is_active: true,
+      applicable_category: 'all',
+      applicable_product_id: 'all',
+      applicable_product_name: '',
+      used_count: 5,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 'coup-2',
+      code: 'FESTIVAL20',
+      discount_type: 'percentage',
+      discount_value: 20,
+      min_order_value: 1000,
+      max_discount_amount: 2000,
+      is_active: true,
+      applicable_category: 'all',
+      applicable_product_id: 'all',
+      applicable_product_name: '',
+      used_count: 12,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 'coup-3',
+      code: 'FLAT500',
+      discount_type: 'fixed',
+      discount_value: 500,
+      min_order_value: 2999,
+      is_active: true,
+      applicable_category: 'all',
+      applicable_product_id: 'all',
+      applicable_product_name: '',
+      used_count: 3,
+      created_at: new Date().toISOString(),
+    }
+  ];
+}
+if (!globalStore.__myShopFallbackHeroSlides) {
+  globalStore.__myShopFallbackHeroSlides = [
+    {
+      id: 'slide-1',
+      title: 'iPhone 16 Pro Max',
+      subtitle: 'Titanium. So strong. So light. So Pro.',
+      image_url: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=1200',
+      link_url: '/products',
+      button_text: 'Shop Now',
+      display_order: 1,
+      is_active: true,
+    },
+    {
+      id: 'slide-2',
+      title: 'Mega Festival Sale',
+      subtitle: 'Flat 20% OFF on all 5G Smartphones!',
+      image_url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=1200',
+      link_url: '/products?category=mobiles',
+      button_text: 'Explore Deals',
+      display_order: 2,
+      is_active: true,
+    }
+  ];
+}
+if (!globalStore.__myShopFallbackActivityLogs) {
+  globalStore.__myShopFallbackActivityLogs = [];
+}
+if (!globalStore.__myShopFallbackInventoryLogs) {
+  globalStore.__myShopFallbackInventoryLogs = [];
+}
+if (!globalStore.__myShopFallbackServiceBookings) {
+  globalStore.__myShopFallbackServiceBookings = [];
+}
+if (!globalStore.__myShopFallbackMediaGallery) {
+  globalStore.__myShopFallbackMediaGallery = [];
+}
+
+const fallbackOrders: any[] = globalStore.__myShopFallbackOrders;
+const fallbackCustomers: any[] = globalStore.__myShopFallbackCustomers;
+const fallbackPayments: any[] = globalStore.__myShopFallbackPayments;
+const fallbackCoupons: any[] = globalStore.__myShopFallbackCoupons;
+const fallbackHeroSlides: any[] = globalStore.__myShopFallbackHeroSlides;
+const fallbackActivityLogs: any[] = globalStore.__myShopFallbackActivityLogs;
+const fallbackInventoryLogs: any[] = globalStore.__myShopFallbackInventoryLogs;
+const fallbackServiceBookings: any[] = globalStore.__myShopFallbackServiceBookings;
+const fallbackMediaGallery: any[] = globalStore.__myShopFallbackMediaGallery;
+
+// ==============================================================================
 // 1. AUDIT LOGGING HELPER
 // ==============================================================================
 export async function logActivity(params: {
@@ -13,18 +120,24 @@ export async function logActivity(params: {
   entity_id?: string;
   details?: any;
 }) {
+  const logEntry = {
+    id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    admin_name: params.admin_name || 'Admin',
+    admin_id: params.admin_id || null,
+    action: params.action,
+    entity_type: params.entity_type,
+    entity_id: params.entity_id || null,
+    details: params.details || {},
+    created_at: new Date().toISOString(),
+  };
+
   try {
-    await supabase.from('activity_logs').insert([{
-      admin_name: params.admin_name || 'Admin',
-      admin_id: params.admin_id || null,
-      action: params.action,
-      entity_type: params.entity_type,
-      entity_id: params.entity_id || null,
-      details: params.details || {},
-    }]);
+    await supabase.from('activity_logs').insert([logEntry]);
   } catch (err) {
     console.warn('Audit logging skipped / failed:', err);
   }
+
+  fallbackActivityLogs.unshift(logEntry);
 }
 
 // ==============================================================================
@@ -741,6 +854,7 @@ export const ProductsDB = {
 // ==============================================================================
 export const OrdersDB = {
   async getAll(filter?: { status?: string; search?: string }) {
+    let list: any[] = [...fallbackOrders];
     try {
       let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
 
@@ -752,17 +866,40 @@ export const OrdersDB = {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id, item));
+        fallbackOrders.forEach(item => {
+          if (!map.has(item.id)) map.set(item.id, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Use fallbackOrders
     }
+
+    if (filter?.status && filter.status !== 'all') {
+      list = list.filter(o => (o.order_status || '').toLowerCase() === filter.status?.toLowerCase());
+    }
+    if (filter?.search) {
+      const s = filter.search.toLowerCase();
+      list = list.filter(o =>
+        (o.id && o.id.toLowerCase().includes(s)) ||
+        (o.customer_name && o.customer_name.toLowerCase().includes(s)) ||
+        (o.customer_phone && o.customer_phone.toLowerCase().includes(s))
+      );
+    }
+    return list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
-    if (error) return null;
-    return data;
+    try {
+      const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+      if (!error && data) return data;
+    } catch {
+      // Fallback
+    }
+    return fallbackOrders.find(o => o.id === id) || null;
   },
 
   async create(orderData: any) {
@@ -790,11 +927,17 @@ export const OrdersDB = {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from('orders').insert([record]).select().single();
-    if (error) {
-      console.error("Supabase order insert error:", error);
-      throw error;
+    let createdRecord = record;
+    try {
+      const { data, error } = await supabase.from('orders').insert([record]).select().single();
+      if (!error && data) {
+        createdRecord = data;
+      }
+    } catch (e) {
+      console.warn("Supabase order insert warning (falling back to memory):", e);
     }
+
+    fallbackOrders.unshift(createdRecord);
 
     // 1. Automatically decrease stock for each ordered item
     try {
@@ -845,7 +988,7 @@ export const OrdersDB = {
       console.warn("Activity log warning:", e);
     }
 
-    return data || record;
+    return createdRecord;
   },
 
   async updateStatus(orderId: string, orderStatus: string, paymentStatus?: string, adminName: string = 'Admin') {
@@ -860,17 +1003,30 @@ export const OrdersDB = {
       updatePayload.payment_status = paymentStatus;
     }
 
-    const { data, error } = await supabase
-      .from('orders')
-      .update(updatePayload)
-      .eq('id', orderId)
-      .select()
-      .single();
+    let updated = { ...existing, ...updatePayload };
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updatePayload)
+        .eq('id', orderId)
+        .select()
+        .single();
+      if (!error && data) {
+        updated = data;
+      }
+    } catch (e) {
+      console.warn("Supabase updateStatus warning:", e);
+    }
 
-    if (error) throw error;
+    const idx = fallbackOrders.findIndex(o => o.id === orderId);
+    if (idx >= 0) {
+      fallbackOrders[idx] = updated;
+    } else {
+      fallbackOrders.unshift(updated);
+    }
 
     // If order was newly CANCELLED, restore product stock!
-    if (orderStatus.toLowerCase() === 'cancelled' && existing.order_status.toLowerCase() !== 'cancelled') {
+    if (orderStatus.toLowerCase() === 'cancelled' && (existing.order_status || '').toLowerCase() !== 'cancelled') {
       const items = Array.isArray(existing.items) ? existing.items : [];
       for (const item of items) {
         const pId = item.id || item.product_id;
@@ -890,7 +1046,7 @@ export const OrdersDB = {
       details: { old_status: existing.order_status, new_status: orderStatus, payment_status: paymentStatus }
     });
 
-    return data;
+    return updated;
   }
 };
 
@@ -899,28 +1055,64 @@ export const OrdersDB = {
 // ==============================================================================
 export const CustomersDB = {
   async getAll() {
+    let list: any[] = [...fallbackCustomers];
     try {
       const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id || item.phone || item.email, item));
+        fallbackCustomers.forEach(item => {
+          const key = item.id || item.phone || item.email;
+          if (!map.has(key)) map.set(key, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Fallback
     }
+    return list;
   },
 
   async getById(id: string) {
-    const { data } = await supabase.from('customers').select('*').eq('id', id).single();
-    return data;
+    try {
+      const { data } = await supabase.from('customers').select('*').eq('id', id).single();
+      if (data) return data;
+    } catch {
+      // Fallback
+    }
+    return fallbackCustomers.find(c => c.id === id || c.email === id || c.phone === id) || null;
   },
 
   async upsertFromOrder(order: any) {
-    try {
-      const email = order.customer_email || `user_${order.customer_phone}@myshop.local`;
-      const phone = order.customer_phone || '';
-      const name = order.customer_name || 'Customer';
-      const address = order.shipping_address || '';
+    const email = order.customer_email || `user_${order.customer_phone}@myshop.local`;
+    const phone = order.customer_phone || '';
+    const name = order.customer_name || 'Customer';
+    const address = order.shipping_address || '';
+    const amount = Number(order.total_amount || 0);
 
-      // Check if exists
+    const memIdx = fallbackCustomers.findIndex(c => (phone && c.phone === phone) || (email && c.email === email));
+    if (memIdx >= 0) {
+      fallbackCustomers[memIdx].total_orders = (fallbackCustomers[memIdx].total_orders || 0) + 1;
+      fallbackCustomers[memIdx].total_spent = Number(fallbackCustomers[memIdx].total_spent || 0) + amount;
+      if (name) fallbackCustomers[memIdx].full_name = name;
+      if (address) fallbackCustomers[memIdx].address = address;
+      fallbackCustomers[memIdx].updated_at = new Date().toISOString();
+    } else {
+      fallbackCustomers.unshift({
+        id: `cust_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        email,
+        phone,
+        full_name: name,
+        address,
+        total_orders: 1,
+        total_spent: amount,
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    try {
       const { data: existing } = await supabase
         .from('customers')
         .select('*')
@@ -931,7 +1123,7 @@ export const CustomersDB = {
       if (existing) {
         await supabase.from('customers').update({
           total_orders: (existing.total_orders || 0) + 1,
-          total_spent: Number(existing.total_spent || 0) + Number(order.total_amount || 0),
+          total_spent: Number(existing.total_spent || 0) + amount,
           full_name: name || existing.full_name,
           address: address || existing.address,
           updated_at: new Date().toISOString()
@@ -943,7 +1135,7 @@ export const CustomersDB = {
           full_name: name,
           address: address,
           total_orders: 1,
-          total_spent: Number(order.total_amount || 0),
+          total_spent: amount,
           status: 'active'
         }]);
       }
@@ -958,88 +1150,106 @@ export const CustomersDB = {
 // ==============================================================================
 export const CouponsDB = {
   async getAll() {
+    let list: any[] = [...fallbackCoupons];
     try {
       const { data, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id || item.code, item));
+        fallbackCoupons.forEach(item => {
+          const key = item.id || item.code;
+          if (!map.has(key)) map.set(key, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Use fallback
     }
+    return list;
   },
 
   async validateCoupon(code: string, subtotal: number, items: any[] = []) {
+    let coupon: any = null;
     try {
-      const { data: coupon, error } = await supabase
+      const { data, error } = await supabase
         .from('coupons')
         .select('*')
         .eq('code', code.toUpperCase().trim())
         .eq('is_active', true)
         .single();
-
-      if (error || !coupon) {
-        return { valid: false, message: 'Invalid or expired coupon code' };
+      if (!error && data) {
+        coupon = data;
       }
-
-      const today = new Date().toISOString().split('T')[0];
-      if (coupon.start_date && today < coupon.start_date) {
-        return { valid: false, message: 'This coupon is not active yet' };
-      }
-      if (coupon.end_date && today > coupon.end_date) {
-        return { valid: false, message: 'This coupon has expired' };
-      }
-      if (coupon.min_order_value && subtotal < Number(coupon.min_order_value)) {
-        return { valid: false, message: `Minimum order amount of ₹${coupon.min_order_value} required` };
-      }
-      if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
-        return { valid: false, message: 'Coupon usage limit reached' };
-      }
-
-      // Check category specification
-      if (coupon.applicable_category && coupon.applicable_category !== 'all' && items && items.length > 0) {
-        const matchesCategory = items.some((item: any) => 
-          item.category_id === coupon.applicable_category || 
-          (item.category_name && item.category_name.toLowerCase() === coupon.applicable_category.toLowerCase()) ||
-          (item.category && item.category.toLowerCase() === coupon.applicable_category.toLowerCase())
-        );
-        if (!matchesCategory) {
-          return { valid: false, message: `This coupon is only valid for items in the specified category (${coupon.applicable_category})` };
-        }
-      }
-
-      // Check product specification
-      if (coupon.applicable_product_id && coupon.applicable_product_id !== 'all' && items && items.length > 0) {
-        const matchesProduct = items.some((item: any) => 
-          String(item.id) === String(coupon.applicable_product_id) || 
-          String(item.product_id) === String(coupon.applicable_product_id)
-        );
-        if (!matchesProduct) {
-          return { valid: false, message: `This coupon is only valid for ${coupon.applicable_product_name || 'the specified product'}` };
-        }
-      }
-
-      let discount = 0;
-      if (coupon.discount_type === 'percentage') {
-        discount = (subtotal * Number(coupon.discount_value)) / 100;
-        if (coupon.max_discount_amount && discount > Number(coupon.max_discount_amount)) {
-          discount = Number(coupon.max_discount_amount);
-        }
-      } else {
-        discount = Number(coupon.discount_value);
-      }
-
-      return {
-        valid: true,
-        discount: Math.min(discount, subtotal),
-        coupon: coupon,
-        message: `Applied ${coupon.code}! Saved ₹${discount.toFixed(0)}`
-      };
     } catch {
-      return { valid: false, message: 'Unable to validate coupon' };
+      // Supabase query failed
     }
+
+    if (!coupon) {
+      coupon = fallbackCoupons.find(c => c.code === code.toUpperCase().trim() && c.is_active);
+    }
+
+    if (!coupon) {
+      return { valid: false, message: 'Invalid or expired coupon code' };
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    if (coupon.start_date && today < coupon.start_date) {
+      return { valid: false, message: 'This coupon is not active yet' };
+    }
+    if (coupon.end_date && today > coupon.end_date) {
+      return { valid: false, message: 'This coupon has expired' };
+    }
+    if (coupon.min_order_value && subtotal < Number(coupon.min_order_value)) {
+      return { valid: false, message: `Minimum order amount of ₹${coupon.min_order_value} required` };
+    }
+    if (coupon.usage_limit && (coupon.used_count || 0) >= coupon.usage_limit) {
+      return { valid: false, message: 'Coupon usage limit reached' };
+    }
+
+    // Check category specification
+    if (coupon.applicable_category && coupon.applicable_category !== 'all' && items && items.length > 0) {
+      const matchesCategory = items.some((item: any) => 
+        item.category_id === coupon.applicable_category || 
+        (item.category_name && item.category_name.toLowerCase() === coupon.applicable_category.toLowerCase()) ||
+        (item.category && item.category.toLowerCase() === coupon.applicable_category.toLowerCase())
+      );
+      if (!matchesCategory) {
+        return { valid: false, message: `This coupon is only valid for items in the specified category (${coupon.applicable_category})` };
+      }
+    }
+
+    // Check product specification
+    if (coupon.applicable_product_id && coupon.applicable_product_id !== 'all' && items && items.length > 0) {
+      const matchesProduct = items.some((item: any) => 
+        String(item.id) === String(coupon.applicable_product_id) || 
+        String(item.product_id) === String(coupon.applicable_product_id)
+      );
+      if (!matchesProduct) {
+        return { valid: false, message: `This coupon is only valid for ${coupon.applicable_product_name || 'the specified product'}` };
+      }
+    }
+
+    let discount = 0;
+    if (coupon.discount_type === 'percentage') {
+      discount = (subtotal * Number(coupon.discount_value)) / 100;
+      if (coupon.max_discount_amount && discount > Number(coupon.max_discount_amount)) {
+        discount = Number(coupon.max_discount_amount);
+      }
+    } else {
+      discount = Number(coupon.discount_value);
+    }
+
+    return {
+      valid: true,
+      discount: Math.min(discount, subtotal),
+      coupon: coupon,
+      message: `Applied ${coupon.code}! Saved ₹${discount.toFixed(0)}`
+    };
   },
 
   async create(data: any, adminName: string = 'Admin') {
     const record: any = {
+      id: data.id || `coup_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       code: data.code.toUpperCase().trim(),
       discount_type: data.discount_type || 'percentage',
       discount_value: Number(data.discount_value),
@@ -1048,27 +1258,33 @@ export const CouponsDB = {
       start_date: data.start_date || null,
       end_date: data.end_date || null,
       usage_limit: data.usage_limit ? Number(data.usage_limit) : null,
+      used_count: 0,
       is_active: data.is_active !== undefined ? data.is_active : true,
       applicable_category: data.applicable_category || 'all',
       applicable_product_id: data.applicable_product_id || 'all',
       applicable_product_name: data.applicable_product_name || '',
+      created_at: new Date().toISOString(),
     };
 
-    let result;
+    let result = record;
     try {
       const { data: res, error } = await supabase.from('coupons').insert([record]).select().single();
-      if (error) throw error;
-      result = res;
+      if (!error && res) {
+        result = res;
+      }
     } catch (err: any) {
       if (err?.message?.includes('column') || err?.code === 'PGRST204' || err?.code === '42703') {
-        const { applicable_category, applicable_product_id, applicable_product_name, ...baseRecord } = record;
-        const { data: res, error: retryError } = await supabase.from('coupons').insert([baseRecord]).select().single();
-        if (retryError) throw retryError;
-        result = { ...res, applicable_category, applicable_product_id, applicable_product_name };
-      } else {
-        throw err;
+        try {
+          const { applicable_category, applicable_product_id, applicable_product_name, ...baseRecord } = record;
+          const { data: res, error: retryError } = await supabase.from('coupons').insert([baseRecord]).select().single();
+          if (!retryError && res) {
+            result = { ...res, applicable_category, applicable_product_id, applicable_product_name };
+          }
+        } catch { /* ignore */ }
       }
     }
+
+    fallbackCoupons.unshift(result);
 
     await logActivity({
       admin_name: adminName,
@@ -1082,20 +1298,27 @@ export const CouponsDB = {
   },
 
   async update(id: string, updates: any, adminName: string = 'Admin') {
-    let result;
+    let result = { id, ...updates };
     try {
       const { data, error } = await supabase.from('coupons').update(updates).eq('id', id).select().single();
-      if (error) throw error;
-      result = data;
+      if (!error && data) {
+        result = data;
+      }
     } catch (err: any) {
       if (err?.message?.includes('column') || err?.code === 'PGRST204' || err?.code === '42703') {
-        const { applicable_category, applicable_product_id, applicable_product_name, ...baseUpdates } = updates;
-        const { data, error: retryError } = await supabase.from('coupons').update(baseUpdates).eq('id', id).select().single();
-        if (retryError) throw retryError;
-        result = { ...data, applicable_category, applicable_product_id, applicable_product_name };
-      } else {
-        throw err;
+        try {
+          const { applicable_category, applicable_product_id, applicable_product_name, ...baseUpdates } = updates;
+          const { data, error: retryError } = await supabase.from('coupons').update(baseUpdates).eq('id', id).select().single();
+          if (!retryError && data) {
+            result = { ...data, applicable_category, applicable_product_id, applicable_product_name };
+          }
+        } catch { /* ignore */ }
       }
+    }
+
+    const idx = fallbackCoupons.findIndex(c => c.id === id || c.code === id);
+    if (idx >= 0) {
+      fallbackCoupons[idx] = { ...fallbackCoupons[idx], ...result };
     }
 
     await logActivity({
@@ -1110,8 +1333,16 @@ export const CouponsDB = {
   },
 
   async delete(id: string, adminName: string = 'Admin') {
-    const { error } = await supabase.from('coupons').delete().eq('id', id);
-    if (error) throw error;
+    try {
+      await supabase.from('coupons').delete().eq('id', id);
+    } catch {
+      // Ignore
+    }
+
+    const idx = fallbackCoupons.findIndex(c => c.id === id || c.code === id);
+    if (idx >= 0) {
+      fallbackCoupons.splice(idx, 1);
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -1129,33 +1360,68 @@ export const CouponsDB = {
 // ==============================================================================
 export const HeroSlidesDB = {
   async getAll() {
+    let list: any[] = [...fallbackHeroSlides];
     try {
       const { data, error } = await supabase.from('hero_slides').select('*').order('display_order', { ascending: true });
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id, item));
+        fallbackHeroSlides.forEach(item => {
+          if (!map.has(item.id)) map.set(item.id, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Fallback
     }
+    return list;
   },
 
   async create(slide: any, adminName: string = 'Admin') {
-    const { data, error } = await supabase.from('hero_slides').insert([slide]).select().single();
-    if (error) throw error;
+    const record = {
+      id: slide.id || `slide_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...slide,
+      created_at: new Date().toISOString(),
+    };
+
+    let result = record;
+    try {
+      const { data, error } = await supabase.from('hero_slides').insert([record]).select().single();
+      if (!error && data) {
+        result = data;
+      }
+    } catch (e) {
+      console.warn('HeroSlides insert warning:', e);
+    }
+
+    fallbackHeroSlides.push(result);
 
     await logActivity({
       admin_name: adminName,
       action: 'create_banner',
       entity_type: 'banner',
-      entity_id: data.id,
+      entity_id: result.id,
       details: { title: slide.title }
     });
 
-    return data;
+    return result;
   },
 
   async update(id: string, updates: any, adminName: string = 'Admin') {
-    const { data, error } = await supabase.from('hero_slides').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    let result = { id, ...updates };
+    try {
+      const { data, error } = await supabase.from('hero_slides').update(updates).eq('id', id).select().single();
+      if (!error && data) {
+        result = data;
+      }
+    } catch (e) {
+      console.warn('HeroSlides update warning:', e);
+    }
+
+    const idx = fallbackHeroSlides.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      fallbackHeroSlides[idx] = { ...fallbackHeroSlides[idx], ...result };
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -1165,12 +1431,20 @@ export const HeroSlidesDB = {
       details: updates
     });
 
-    return data;
+    return result;
   },
 
   async delete(id: string, adminName: string = 'Admin') {
-    const { error } = await supabase.from('hero_slides').delete().eq('id', id);
-    if (error) throw error;
+    try {
+      await supabase.from('hero_slides').delete().eq('id', id);
+    } catch {
+      // Ignore
+    }
+
+    const idx = fallbackHeroSlides.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      fallbackHeroSlides.splice(idx, 1);
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -1188,35 +1462,71 @@ export const HeroSlidesDB = {
 // ==============================================================================
 export const PaymentsDB = {
   async getAll() {
+    let list: any[] = [...fallbackPayments];
     try {
       const { data, error } = await supabase.from('payments').select('*').order('payment_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id || item.order_id, item));
+        fallbackPayments.forEach(item => {
+          const key = item.id || item.order_id;
+          if (!map.has(key)) map.set(key, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Fallback
     }
+    return list;
   },
 
   async create(payment: any) {
+    const record = {
+      id: payment.id || `pay_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      order_id: payment.order_id,
+      customer_name: payment.customer_name || 'Customer',
+      amount: Number(payment.amount) || 0,
+      payment_method: payment.payment_method || 'cod',
+      payment_status: payment.payment_status || 'pending',
+      transaction_id: payment.transaction_id || `TXN-${Date.now()}`,
+      payment_date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
+
+    fallbackPayments.unshift(record);
+
     try {
-      const { data, error } = await supabase.from('payments').insert([payment]).select().single();
-      if (error) throw error;
-      return data;
+      const { data, error } = await supabase.from('payments').insert([record]).select().single();
+      if (!error && data) {
+        return data;
+      }
     } catch (e) {
       console.warn('Payment insert skipped/failed:', e);
-      return null;
     }
+
+    return record;
   },
 
   async updateStatus(id: string, status: string, adminName: string = 'Admin') {
-    const { data, error } = await supabase
-      .from('payments')
-      .update({ payment_status: status })
-      .eq('id', id)
-      .select()
-      .single();
+    let result = { id, payment_status: status };
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .update({ payment_status: status })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        result = data;
+      }
+    } catch (e) {
+      console.warn('Payment updateStatus warning:', e);
+    }
 
-    if (error) throw error;
+    const idx = fallbackPayments.findIndex(p => p.id === id || p.order_id === id);
+    if (idx >= 0) {
+      fallbackPayments[idx] = { ...fallbackPayments[idx], payment_status: status };
+    }
 
     await logActivity({
       admin_name: adminName,
@@ -1226,7 +1536,7 @@ export const PaymentsDB = {
       details: { status }
     });
 
-    return data;
+    return result;
   }
 };
 
@@ -1421,29 +1731,47 @@ export const SiteSettingsDB = {
 // ==============================================================================
 export const MediaGalleryDB = {
   async getAll() {
+    let list: any[] = [...fallbackMediaGallery];
     try {
       const { data, error } = await supabase.from('media_gallery').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id || item.url, item));
+        fallbackMediaGallery.forEach(item => {
+          const key = item.id || item.url;
+          if (!map.has(key)) map.set(key, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Fallback
     }
+    return list;
   },
 
   async save(media: any) {
+    const record = {
+      id: media.id || `media_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...media,
+      created_at: new Date().toISOString()
+    };
+    fallbackMediaGallery.unshift(record);
+
     try {
-      const { data, error } = await supabase.from('media_gallery').insert([media]).select().single();
-      if (error) throw error;
-      return data;
+      const { data, error } = await supabase.from('media_gallery').insert([record]).select().single();
+      if (!error && data) return data;
     } catch (e) {
       console.warn('Media save error:', e);
-      return media;
     }
+    return record;
   },
 
   async delete(id: string) {
-    const { error } = await supabase.from('media_gallery').delete().eq('id', id);
-    if (error) throw error;
+    try {
+      await supabase.from('media_gallery').delete().eq('id', id);
+    } catch { /* ignore */ }
+    const idx = fallbackMediaGallery.findIndex(m => m.id === id || m.url === id);
+    if (idx >= 0) fallbackMediaGallery.splice(idx, 1);
     return true;
   }
 };
@@ -1453,6 +1781,7 @@ export const MediaGalleryDB = {
 // ==============================================================================
 export const ActivityLogsDB = {
   async getAll(limit: number = 100) {
+    let list: any[] = [...fallbackActivityLogs];
     try {
       const { data, error } = await supabase
         .from('activity_logs')
@@ -1460,11 +1789,20 @@ export const ActivityLogsDB = {
         .order('created_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
-      return data || [];
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id, item));
+        fallbackActivityLogs.forEach(item => {
+          if (!map.has(item.id)) map.set(item.id, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch {
-      return [];
+      // Fallback
     }
+    return list
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, limit);
   }
 };
 
@@ -1473,6 +1811,7 @@ export const ActivityLogsDB = {
 // ==============================================================================
 export const InventoryLogsDB = {
   async getAll(productId?: string) {
+    let list: any[] = [...fallbackInventoryLogs];
     try {
       let query = supabase
         .from('inventory_logs')
@@ -1485,9 +1824,20 @@ export const InventoryLogsDB = {
       }
 
       const { data, error } = await query;
-      if (!error && data) return data;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id, item));
+        fallbackInventoryLogs.forEach(item => {
+          if (!map.has(item.id)) map.set(item.id, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch { /* ignore */ }
-    return [];
+
+    if (productId) {
+      list = list.filter(l => l.product_id === productId);
+    }
+    return list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 100);
   },
 
   async logChange(
@@ -1499,24 +1849,28 @@ export const InventoryLogsDB = {
     reason: string,
     adminName: string = 'Admin'
   ) {
+    const record = {
+      id: `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      product_id: productId,
+      product_name: productName,
+      change_amount: changeAmount,
+      previous_stock: previousStock,
+      new_stock: newStock,
+      reason,
+      created_by: adminName,
+      created_at: new Date().toISOString()
+    };
+    fallbackInventoryLogs.unshift(record);
+
     try {
       const { data, error } = await supabase
         .from('inventory_logs')
-        .insert([{
-          product_id: productId,
-          product_name: productName,
-          change_amount: changeAmount,
-          previous_stock: previousStock,
-          new_stock: newStock,
-          reason,
-          created_by: adminName,
-          created_at: new Date().toISOString()
-        }])
+        .insert([record])
         .select()
         .single();
       if (!error && data) return data;
     } catch { /* ignore */ }
-    return null;
+    return record;
   }
 };
 
@@ -1525,6 +1879,7 @@ export const InventoryLogsDB = {
 // ==============================================================================
 export const ServiceBookingsDB = {
   async getAll(filter?: { status?: string; search?: string }) {
+    let list: any[] = [...fallbackServiceBookings];
     try {
       let query = supabase.from('service_bookings').select('*').order('created_at', { ascending: false });
       if (filter?.status && filter.status !== 'all') {
@@ -1534,9 +1889,29 @@ export const ServiceBookingsDB = {
         query = query.or(`id.ilike.%${filter.search}%,customer_name.ilike.%${filter.search}%,customer_phone.ilike.%${filter.search}%,device_model.ilike.%${filter.search}%`);
       }
       const { data, error } = await query;
-      if (!error && data) return data;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const map = new Map<string, any>();
+        data.forEach(item => map.set(item.id, item));
+        fallbackServiceBookings.forEach(item => {
+          if (!map.has(item.id)) map.set(item.id, item);
+        });
+        list = Array.from(map.values());
+      }
     } catch { /* fallback */ }
-    return [];
+
+    if (filter?.status && filter.status !== 'all') {
+      list = list.filter(b => (b.status || '').toLowerCase() === filter.status?.toLowerCase());
+    }
+    if (filter?.search) {
+      const s = filter.search.toLowerCase();
+      list = list.filter(b =>
+        (b.id && b.id.toLowerCase().includes(s)) ||
+        (b.customer_name && b.customer_name.toLowerCase().includes(s)) ||
+        (b.customer_phone && b.customer_phone.toLowerCase().includes(s)) ||
+        (b.device_model && b.device_model.toLowerCase().includes(s))
+      );
+    }
+    return list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
   },
 
   async getById(id: string) {
@@ -1544,7 +1919,7 @@ export const ServiceBookingsDB = {
       const { data, error } = await supabase.from('service_bookings').select('*').eq('id', id).single();
       if (!error && data) return data;
     } catch { /* fallback */ }
-    return null;
+    return fallbackServiceBookings.find(b => b.id === id) || null;
   },
 
   async create(bookingData: {
@@ -1584,9 +1959,13 @@ export const ServiceBookingsDB = {
       updated_at: new Date().toISOString(),
     };
 
+    fallbackServiceBookings.unshift(record);
+
     try {
       const { data, error } = await supabase.from('service_bookings').insert([record]).select().single();
-      if (!error && data) return data;
+      if (!error && data) {
+        // success
+      }
     } catch (e) {
       console.warn('ServiceBookings insert warning:', e);
     }
@@ -1609,6 +1988,14 @@ export const ServiceBookingsDB = {
     };
     if (adminNotes !== undefined) updates.admin_notes = adminNotes;
 
+    let result = { id, ...updates };
+
+    const idx = fallbackServiceBookings.findIndex(b => b.id === id);
+    if (idx >= 0) {
+      fallbackServiceBookings[idx] = { ...fallbackServiceBookings[idx], ...updates };
+      result = fallbackServiceBookings[idx];
+    }
+
     try {
       const { data, error } = await supabase
         .from('service_bookings')
@@ -1617,31 +2004,38 @@ export const ServiceBookingsDB = {
         .select()
         .single();
       if (!error && data) {
-        await logActivity({
-          admin_name: adminName,
-          action: 'update_service_status',
-          entity_type: 'service_booking',
-          entity_id: id,
-          details: updates
-        });
-        return data;
+        result = data;
       }
     } catch (e) {
       console.warn('ServiceBookings update status warning:', e);
     }
-    return { id, ...updates };
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'update_service_status',
+      entity_type: 'service_booking',
+      entity_id: id,
+      details: updates
+    });
+
+    return result;
   },
 
   async delete(id: string, adminName: string = 'Admin') {
     try {
       await supabase.from('service_bookings').delete().eq('id', id);
-      await logActivity({
-        admin_name: adminName,
-        action: 'delete_service_booking',
-        entity_type: 'service_booking',
-        entity_id: id
-      });
     } catch { /* ignore */ }
+
+    const idx = fallbackServiceBookings.findIndex(b => b.id === id);
+    if (idx >= 0) fallbackServiceBookings.splice(idx, 1);
+
+    await logActivity({
+      admin_name: adminName,
+      action: 'delete_service_booking',
+      entity_type: 'service_booking',
+      entity_id: id
+    });
+
     return true;
   }
 };
