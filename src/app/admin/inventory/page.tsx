@@ -475,7 +475,7 @@ export default function AdminInventoryPage() {
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Active Variants</span>
-            <div className="text-xl sm:text-2xl font-black text-blue-700">{totalVariantsCount} SKUs</div>
+            <div className="text-xl sm:text-2xl font-black text-blue-700">{totalVariantsCount}</div>
           </div>
         </div>
 
