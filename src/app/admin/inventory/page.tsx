@@ -17,6 +17,12 @@ import {
   faTrash,
   faMicrochip,
   faRefresh,
+  faTshirt,
+  faGem,
+  faBolt,
+  faTag,
+  faMobileScreen,
+  faSliders,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ProductVariantItem {
@@ -66,21 +72,46 @@ interface InventoryLog {
   created_at: string;
 }
 
+// Multi-category configuration presets
 const RAM_OPTIONS = ["4GB", "6GB", "8GB", "12GB", "16GB", "24GB"];
 const ROM_OPTIONS = ["64GB", "128GB", "256GB", "512GB", "1TB"];
+
+const FASHION_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "Free Size"];
+const SHOE_SIZES = ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 12"];
+
+const JEWELLERY_PURITIES = ["14K Gold", "18K Gold", "22K Gold", "24K Pure Gold", "925 Sterling Silver", "Rose Gold"];
+const JEWELLERY_WEIGHTS = ["1g", "2g", "4g", "8g (1 Sovereign)", "10g", "20g", "50g"];
+
+const ACCESSORY_PRESETS = [
+  "20W Fast Charger",
+  "33W Dart",
+  "45W GaN",
+  "65W SuperVOOC",
+  "100W Ultra",
+  "10,000 mAh",
+  "20,000 mAh",
+  "1m Cable",
+  "2m Cable",
+  "Standard Range",
+  "Extended Range (3.7 kWh)"
+];
+
 const COLOR_PRESETS = [
   { name: "Titanium Black", code: "#1F2022" },
   { name: "Titanium Gray", code: "#8E8D8A" },
   { name: "Titanium Silver", code: "#E5E4E2" },
-  { name: "Titanium Violet", code: "#4C3D54" },
   { name: "Desert Titanium", code: "#C4A482" },
-  { name: "Natural Titanium", code: "#9E9A93" },
-  { name: "Amber Yellow", code: "#E8B923" },
-  { name: "Cobalt Violet", code: "#353866" },
+  { name: "Midnight Black", code: "#0B0B0C" },
   { name: "Marble White", code: "#F2F4F7" },
-  { name: "Onyx Black", code: "#0B0B0C" },
+  { name: "Royal Blue", code: "#2B50AA" },
+  { name: "Crimson Red", code: "#DC2626" },
+  { name: "Rose Gold", code: "#B76E79" },
+  { name: "Gold", code: "#E8B923" },
+  { name: "Emerald Green", code: "#059669" },
   { name: "Pink", code: "#F4C2C2" },
-  { name: "Blue", code: "#2B50AA" },
+  { name: "Navy Blue", code: "#1E3A8A" },
+  { name: "Olive", code: "#556B2F" },
+  { name: "Beige", code: "#D2B48C" },
 ];
 
 export default function AdminInventoryPage() {
@@ -93,6 +124,7 @@ export default function AdminInventoryPage() {
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [stockFilter, setStockFilter] = useState<"all" | "in_stock" | "low" | "out">("all");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
   const [selectedProductFilter, setSelectedProductFilter] = useState<string>("all");
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
 
@@ -102,9 +134,10 @@ export default function AdminInventoryPage() {
   const [adjustmentAmount, setAdjustmentAmount] = useState<number>(0);
   const [adjustmentReason, setAdjustmentReason] = useState("Restock / Warehouse Arrival");
 
-  // Variant Modal (Add / Edit)
+  // Variant Modal (Add / Edit) - Supports All Categories
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariantItem | null>(null);
+  const [variantType, setVariantType] = useState<"mobile" | "fashion" | "jewellery" | "accessories" | "custom">("mobile");
   const [variantForm, setVariantForm] = useState({
     product_id: "",
     ram: "8GB",
@@ -121,6 +154,25 @@ export default function AdminInventoryPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // Helper to detect category type for presets
+  const detectVariantType = (prod?: Product | null): "mobile" | "fashion" | "jewellery" | "accessories" | "custom" => {
+    if (!prod) return "mobile";
+    const cat = `${prod.category_name || prod.category || ""} ${prod.name || ""}`.toLowerCase();
+    if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("apparel") || cat.includes("shirt") || cat.includes("pant") || cat.includes("dress") || cat.includes("shoe") || cat.includes("bag")) {
+      return "fashion";
+    }
+    if (cat.includes("jewel") || cat.includes("gold") || cat.includes("silver") || cat.includes("ring") || cat.includes("necklace") || cat.includes("bangle")) {
+      return "jewellery";
+    }
+    if (cat.includes("access") || cat.includes("charger") || cat.includes("cable") || cat.includes("ev") || cat.includes("scoot") || cat.includes("bike") || cat.includes("power") || cat.includes("audio")) {
+      return "accessories";
+    }
+    if (cat.includes("mobile") || cat.includes("phone") || cat.includes("smart") || cat.includes("galaxy") || cat.includes("iphone") || cat.includes("pixel") || cat.includes("vivo") || cat.includes("oneplus")) {
+      return "mobile";
+    }
+    return "custom";
+  };
 
   // Fetch all inventory, products, and variants
   const fetchInventoryData = async () => {
@@ -228,12 +280,21 @@ export default function AdminInventoryPage() {
   // Open Add Variant Modal
   const handleOpenAddVariant = () => {
     const firstProd = products[0];
+    const detected = detectVariantType(firstProd);
     setEditingVariant(null);
+    setVariantType(detected);
+
+    let defaultLabel = "8GB + 256GB";
+    if (detected === "fashion") defaultLabel = "Size M";
+    else if (detected === "jewellery") defaultLabel = "22K Gold (4g)";
+    else if (detected === "accessories") defaultLabel = "65W Fast Charger";
+    else if (detected === "custom") defaultLabel = "Standard";
+
     setVariantForm({
       product_id: firstProd ? firstProd.id : "",
       ram: "8GB",
       rom: "256GB",
-      storage_label: "8GB + 256GB",
+      storage_label: defaultLabel,
       color: "Titanium Black",
       color_code: "#1F2022",
       price: firstProd ? Number(firstProd.price) || 49999 : 49999,
@@ -249,11 +310,20 @@ export default function AdminInventoryPage() {
   // Open Edit Variant Modal
   const handleOpenEditVariant = (variant: ProductVariantItem) => {
     setEditingVariant(variant);
+    const foundProd = products.find((p) => p.id === variant.product_id);
+    const detected = detectVariantType(foundProd);
+
+    if (variant.ram && variant.rom) {
+      setVariantType("mobile");
+    } else {
+      setVariantType(detected);
+    }
+
     setVariantForm({
       product_id: variant.product_id,
       ram: variant.ram || "8GB",
       rom: variant.rom || "256GB",
-      storage_label: variant.storage_label || `${variant.ram || "8GB"} + ${variant.rom || "256GB"}`,
+      storage_label: variant.storage_label || (variant.ram && variant.rom ? `${variant.ram} + ${variant.rom}` : "Standard"),
       color: variant.color || "Titanium Black",
       color_code: variant.color_code || "#1F2022",
       price: Number(variant.price) || 0,
@@ -276,10 +346,20 @@ export default function AdminInventoryPage() {
 
     setSubmitting(true);
     try {
-      const storageLabel = `${variantForm.ram} + ${variantForm.rom}`;
+      let finalLabel = (variantForm.storage_label || "").trim();
+      if (!finalLabel) {
+        if (variantType === "mobile") {
+          finalLabel = `${variantForm.ram} + ${variantForm.rom}`;
+        } else {
+          finalLabel = "Standard";
+        }
+      }
+
       const payload = {
         ...variantForm,
-        storage_label: storageLabel,
+        storage_label: finalLabel,
+        ram: variantType === "mobile" ? variantForm.ram : "",
+        rom: variantType === "mobile" ? variantForm.rom : "",
         price: Number(variantForm.price),
         original_price: Number(variantForm.original_price),
         stock_quantity: Number(variantForm.stock_quantity),
@@ -353,13 +433,34 @@ export default function AdminInventoryPage() {
     (p) => (Number(p.stock_quantity) || 0) <= 0 || !p.is_available
   );
 
+  // Derived Category List
+  const categories = Array.from(
+    new Set(
+      products
+        .map((p) => p.category_name || p.category || "")
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Products filtered for the dropdown based on selected category
+  const displayedProductsForFilter = products.filter(
+    (p) =>
+      selectedCategoryFilter === "all" ||
+      (p.category_name || p.category || "").toLowerCase() === selectedCategoryFilter.toLowerCase()
+  );
+
   // Filtered Variants
   const filteredVariants = variants.filter((v) => {
     const matchesSearch =
       (v.product_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (v.color || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (v.storage_label || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (v.sku || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (v.sku || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.category_name || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      selectedCategoryFilter === "all" ||
+      (v.category_name || "").toLowerCase() === selectedCategoryFilter.toLowerCase();
 
     const matchesProduct =
       selectedProductFilter === "all" || v.product_id === selectedProductFilter;
@@ -372,22 +473,29 @@ export default function AdminInventoryPage() {
     if (stockFilter === "out") matchesStatus = isOut;
     if (stockFilter === "in_stock") matchesStatus = !isOut && !isLow;
 
-    return matchesSearch && matchesProduct && matchesStatus;
+    return matchesSearch && matchesCategory && matchesProduct && matchesStatus;
   });
 
   // Filtered Products
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       (p.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.sku || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (p.sku || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.category_name || p.category || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      selectedCategoryFilter === "all" ||
+      (p.category_name || p.category || "").toLowerCase() === selectedCategoryFilter.toLowerCase();
 
     const isOut = (p.stock_quantity || 0) <= 0 || !p.is_available;
     const isLow = !isOut && (p.stock_quantity || 0) <= lowStockThreshold;
 
-    if (stockFilter === "low") return matchesSearch && isLow;
-    if (stockFilter === "out") return matchesSearch && isOut;
-    if (stockFilter === "in_stock") return matchesSearch && !isOut && !isLow;
-    return matchesSearch;
+    let matchesStatus = true;
+    if (stockFilter === "low") matchesStatus = isLow;
+    if (stockFilter === "out") matchesStatus = isOut;
+    if (stockFilter === "in_stock") matchesStatus = !isOut && !isLow;
+
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   return (
@@ -405,7 +513,7 @@ export default function AdminInventoryPage() {
             Product Variants & Inventory Management
           </h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            Configure RAM, ROM storage configurations, colour availability, dynamic pricing, and stock quotas.
+            Configure storage, sizes, specifications, colour availability, dynamic pricing, and stock quotas across all product categories.
           </p>
         </div>
 
@@ -452,7 +560,7 @@ export default function AdminInventoryPage() {
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-600/25 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
           >
             <FontAwesomeIcon icon={faPlus} />
-            <span>Add Mobile Variant</span>
+            <span>Add Product Variant</span>
           </button>
         </div>
       </div>
@@ -506,7 +614,7 @@ export default function AdminInventoryPage() {
           {/* Filter Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-4 justify-between items-center shadow-xs">
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full sm:w-64">
                 <FontAwesomeIcon
                   icon={faSearch}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
@@ -520,14 +628,31 @@ export default function AdminInventoryPage() {
                 />
               </div>
 
+              {/* Category selector filter */}
+              <select
+                value={selectedCategoryFilter}
+                onChange={(e) => {
+                  setSelectedCategoryFilter(e.target.value);
+                  setSelectedProductFilter("all");
+                }}
+                className="w-full sm:w-44 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+
               {/* Product selector filter */}
               <select
                 value={selectedProductFilter}
                 onChange={(e) => setSelectedProductFilter(e.target.value)}
                 className="w-full sm:w-56 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600"
               >
-                <option value="all">All Mobile Models</option>
-                {products.map((p) => (
+                <option value="all">All Products</option>
+                {displayedProductsForFilter.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -577,9 +702,9 @@ export default function AdminInventoryPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    <th className="py-3.5 px-4">Smartphone & Variant</th>
-                    <th className="py-3.5 px-3">RAM + ROM</th>
-                    <th className="py-3.5 px-3">Colour Swatch</th>
+                    <th className="py-3.5 px-4">Product & Variant</th>
+                    <th className="py-3.5 px-3">Config / Size / Spec</th>
+                    <th className="py-3.5 px-3">Colour / Style</th>
                     <th className="py-3.5 px-3">Price & MRP</th>
                     <th className="py-3.5 px-3">Stock Units</th>
                     <th className="py-3.5 px-3">Availability</th>
@@ -618,17 +743,24 @@ export default function AdminInventoryPage() {
                                 )}
                               </div>
                               <div>
-                                <div className="font-bold text-slate-900 text-sm">{v.product_name || "Smartphone"}</div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-bold text-slate-900 text-sm">{v.product_name || "Product"}</span>
+                                  {v.category_name && (
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
+                                      {v.category_name}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-[11px] text-slate-400 font-mono">SKU: {v.sku || v.id}</div>
                               </div>
                             </div>
                           </td>
 
-                          {/* RAM + ROM */}
+                          {/* Configuration / Size / Spec */}
                           <td className="py-3.5 px-3">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black font-mono">
-                              <FontAwesomeIcon icon={faMicrochip} className="text-slate-400 text-[10px]" />
-                              {v.storage_label || `${v.ram || "8GB"} + ${v.rom || "256GB"}`}
+                              <FontAwesomeIcon icon={faLayerGroup} className="text-slate-400 text-[10px]" />
+                              {v.storage_label || (v.ram && v.rom ? `${v.ram} + ${v.rom}` : "Standard")}
                             </span>
                           </td>
 
@@ -934,7 +1066,7 @@ export default function AdminInventoryPage() {
                   <FontAwesomeIcon icon={faLayerGroup} />
                 </div>
                 <h3 className="text-lg font-black text-slate-900">
-                  {editingVariant ? "Edit Product Variant" : "Add Mobile Variant"}
+                  {editingVariant ? "Edit Product Variant" : "Add Product Variant"}
                 </h3>
               </div>
               <button
@@ -946,10 +1078,10 @@ export default function AdminInventoryPage() {
             </div>
 
             <form onSubmit={handleVariantSubmit} className="space-y-4 text-xs">
-              {/* Target Smartphone */}
+              {/* Target Product (All Categories) */}
               <div>
                 <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                  Target Smartphone Model
+                  Target Product (All Categories: Mobiles, Fashion, Jewellery, EV, Accessories)
                 </label>
                 <select
                   required
@@ -957,70 +1089,321 @@ export default function AdminInventoryPage() {
                   disabled={!!editingVariant}
                   onChange={(e) => {
                     const found = products.find((p) => p.id === e.target.value);
+                    const detected = detectVariantType(found);
+                    setVariantType(detected);
+                    let initialLabel = "8GB + 256GB";
+                    if (detected === "fashion") initialLabel = "Size M";
+                    else if (detected === "jewellery") initialLabel = "22K Gold (4g)";
+                    else if (detected === "accessories") initialLabel = "65W Fast Charger";
+                    else if (detected === "custom") initialLabel = "Standard";
+
                     setVariantForm({
                       ...variantForm,
                       product_id: e.target.value,
                       price: found ? Number(found.price) || variantForm.price : variantForm.price,
                       original_price: found ? Number(found.original_price) || variantForm.original_price : variantForm.original_price,
                       image_url: found ? (found.image_url || "") : variantForm.image_url,
+                      storage_label: initialLabel,
                     });
                   }}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600"
                 >
-                  <option value="">Select Smartphone...</option>
+                  <option value="">Select Target Product...</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} (Base: ₹{p.price?.toLocaleString("en-IN")})
+                      [{p.category_name || p.category || "General"}] {p.name} (Base: ₹{p.price?.toLocaleString("en-IN")})
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* RAM & ROM Selection */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                    RAM Capacity
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {RAM_OPTIONS.map((ram) => (
-                      <button
-                        key={ram}
-                        type="button"
-                        onClick={() => setVariantForm({ ...variantForm, ram })}
-                        className={`px-2.5 py-1.5 rounded-lg font-mono font-bold text-xs cursor-pointer border ${
-                          variantForm.ram === ram
-                            ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {ram}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Variant Configuration Type Selector */}
+              <div>
+                <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Variant Configuration Type
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantType("mobile");
+                      setVariantForm({ ...variantForm, storage_label: `${variantForm.ram || "8GB"} + ${variantForm.rom || "256GB"}` });
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                      variantType === "mobile"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faMobileScreen} className="text-[11px]" />
+                    <span>Mobile (RAM+ROM)</span>
+                  </button>
 
-                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantType("fashion");
+                      setVariantForm({ ...variantForm, storage_label: "Size M" });
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                      variantType === "fashion"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faTshirt} className="text-[11px]" />
+                    <span>Fashion Sizes</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantType("jewellery");
+                      setVariantForm({ ...variantForm, storage_label: "22K Gold (4g)" });
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                      variantType === "jewellery"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faGem} className="text-[11px]" />
+                    <span>Jewellery & Metal</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantType("accessories");
+                      setVariantForm({ ...variantForm, storage_label: "65W Fast Charger" });
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                      variantType === "accessories"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faBolt} className="text-[11px]" />
+                    <span>Accessories & EV</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantType("custom");
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                      variantType === "custom"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faSliders} className="text-[11px]" />
+                    <span>Custom Config</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic Preset Inputs */}
+              {variantType === "mobile" && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      RAM Capacity
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {RAM_OPTIONS.map((ram) => (
+                        <button
+                          key={ram}
+                          type="button"
+                          onClick={() => {
+                            setVariantForm({
+                              ...variantForm,
+                              ram,
+                              storage_label: `${ram} + ${variantForm.rom || "256GB"}`,
+                            });
+                          }}
+                          className={`px-2.5 py-1.5 rounded-lg font-mono font-bold text-xs cursor-pointer border ${
+                            variantForm.ram === ram
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {ram}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      ROM / Internal Storage
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ROM_OPTIONS.map((rom) => (
+                        <button
+                          key={rom}
+                          type="button"
+                          onClick={() => {
+                            setVariantForm({
+                              ...variantForm,
+                              rom,
+                              storage_label: `${variantForm.ram || "8GB"} + ${rom}`,
+                            });
+                          }}
+                          className={`px-2.5 py-1.5 rounded-lg font-mono font-bold text-xs cursor-pointer border ${
+                            variantForm.rom === rom
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {rom}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {variantType === "fashion" && (
+                <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Apparel Sizes
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {FASHION_SIZES.map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => setVariantForm({ ...variantForm, storage_label: `Size ${sz}` })}
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer border ${
+                            variantForm.storage_label === `Size ${sz}`
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Footwear / Shoe Sizes
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SHOE_SIZES.map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => setVariantForm({ ...variantForm, storage_label: sz })}
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer border ${
+                            variantForm.storage_label === sz
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {variantType === "jewellery" && (
+                <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Gold & Silver Purity
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {JEWELLERY_PURITIES.map((purity) => (
+                        <button
+                          key={purity}
+                          type="button"
+                          onClick={() => setVariantForm({ ...variantForm, storage_label: purity })}
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer border ${
+                            variantForm.storage_label === purity
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {purity}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Weight Options
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {JEWELLERY_WEIGHTS.map((wt) => (
+                        <button
+                          key={wt}
+                          type="button"
+                          onClick={() => {
+                            const base = variantForm.storage_label.includes("(") ? variantForm.storage_label.split("(")[0].trim() : (variantForm.storage_label || "22K Gold");
+                            setVariantForm({ ...variantForm, storage_label: `${base} (${wt})` });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer border ${
+                            variantForm.storage_label.includes(wt)
+                              ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {wt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {variantType === "accessories" && (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
                   <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                    ROM / Internal Storage
+                    Specs & Power Capacity Presets
                   </label>
                   <div className="flex flex-wrap gap-1.5">
-                    {ROM_OPTIONS.map((rom) => (
+                    {ACCESSORY_PRESETS.map((spec) => (
                       <button
-                        key={rom}
+                        key={spec}
                         type="button"
-                        onClick={() => setVariantForm({ ...variantForm, rom })}
-                        className={`px-2.5 py-1.5 rounded-lg font-mono font-bold text-xs cursor-pointer border ${
-                          variantForm.rom === rom
+                        onClick={() => setVariantForm({ ...variantForm, storage_label: spec })}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer border ${
+                          variantForm.storage_label === spec
                             ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
                         }`}
                       >
-                        {rom}
+                        {spec}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Editable Configuration / Label Field */}
+              <div>
+                <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Variant Configuration Label (Shown to Shopper)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 8GB + 256GB, Size L, 22K Gold (4g), 65W GaN Charger"
+                  value={variantForm.storage_label}
+                  onChange={(e) => setVariantForm({ ...variantForm, storage_label: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-600"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  This label is displayed on the product page and customer variant cards.
+                </p>
               </div>
 
               {/* Colour Name & Colour Hex Swatch */}
@@ -1060,7 +1443,7 @@ export default function AdminInventoryPage() {
                     <input
                       type="text"
                       required
-                      placeholder="Colour Name (e.g. Titanium Violet)"
+                      placeholder="Colour Name (e.g. Titanium Violet, Ruby Red, etc.)"
                       value={variantForm.color}
                       onChange={(e) => setVariantForm({ ...variantForm, color: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-emerald-600"
