@@ -19,11 +19,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function directGuestLoginAction(name?: string) {
+export async function directGuestLoginAction(name: string = "Rahul Sharma", email: string = "rahul.sharma@example.com", phone: string = "+919876543210") {
   try {
-    const guestEmail = `customer_${Math.floor(1000 + Math.random() * 9000)}@myshop.local`;
+    const customerName = name || "Rahul Sharma";
+    const customerEmail = email || "rahul.sharma@example.com";
+    const customerPhone = phone || "+919876543210";
+
     const token = jwt.sign(
-      { email: guestEmail, sub: guestEmail, name: name || "Customer" },
+      { email: customerEmail, phone: customerPhone, sub: customerEmail, name: customerName },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -37,7 +40,16 @@ export async function directGuestLoginAction(name?: string) {
       path: "/",
     });
 
-    return { success: true, email: guestEmail };
+    try {
+      await mysql.query(
+        "INSERT INTO users (email, phone, full_name, role) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), phone = VALUES(phone)",
+        [customerEmail, customerPhone, customerName, "customer"]
+      );
+    } catch {
+      // Local fallback
+    }
+
+    return { success: true, email: customerEmail, name: customerName, phone: customerPhone };
   } catch (error: any) {
     console.error("Direct login error:", error);
     return { success: false, error: error.message || "Failed to login directly" };
@@ -51,19 +63,21 @@ export async function phoneLoginAction(phone: string, name?: string) {
       return { success: false, error: "Please enter a valid 10-digit mobile number" };
     }
     const formattedPhone = `+91${cleanPhone}`;
-    const userIdentifier = `${formattedPhone}@myshop.local`;
+    const isDemoPhone = cleanPhone === "9876543210";
+    const customerName = name || (isDemoPhone ? "Rahul Sharma" : `Customer ${cleanPhone.slice(-4)}`);
+    const userIdentifier = isDemoPhone ? "rahul.sharma@example.com" : `${formattedPhone}@myshop.local`;
     
     try {
       await mysql.query(
-        "INSERT INTO users (id, name, email, phone, role) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE phone = VALUES(phone)",
-        [`user_${cleanPhone}`, name || `User ${cleanPhone.slice(-4)}`, userIdentifier, formattedPhone, "customer"]
+        "INSERT INTO users (email, phone, full_name, role) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), phone = VALUES(phone)",
+        [userIdentifier, formattedPhone, customerName, "customer"]
       );
     } catch (dbErr) {
       // Local fallback
     }
 
     const token = jwt.sign(
-      { email: userIdentifier, phone: formattedPhone, sub: formattedPhone, name: name || `Customer ${cleanPhone.slice(-4)}` },
+      { email: userIdentifier, phone: formattedPhone, sub: formattedPhone, name: customerName },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -77,7 +91,7 @@ export async function phoneLoginAction(phone: string, name?: string) {
       path: "/",
     });
 
-    return { success: true, phone: formattedPhone };
+    return { success: true, phone: formattedPhone, name: customerName };
   } catch (error: any) {
     console.error("Phone login error:", error);
     return { success: false, error: error.message || "Failed to log in with phone" };
@@ -129,9 +143,12 @@ export async function sendOtpAction(email: string) {
 
 export async function verifyOtpAction(email: string, code: string) {
   try {
+    const isDemo = email === "rahul.sharma@example.com" || email === "customer@example.com";
+    const name = isDemo ? "Rahul Sharma" : (email.split("@")[0] || "Customer");
+
     // Code is valid! Create JWT
     const token = jwt.sign(
-      { email, sub: email },
+      { email, sub: email, name },
       JWT_SECRET,
       { expiresIn: "7d" }
     );

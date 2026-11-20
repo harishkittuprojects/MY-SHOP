@@ -9,10 +9,141 @@ import { matchProductSearch } from './searchUtils';
 const globalStore = (globalThis as any);
 
 if (!globalStore.__myShopFallbackOrders) {
-  globalStore.__myShopFallbackOrders = [];
+  globalStore.__myShopFallbackOrders = [
+    {
+      id: "ORD-98214-721",
+      customer_id: "cust_rahul_sharma",
+      customer_name: "Rahul Sharma",
+      customer_email: "rahul.sharma@example.com",
+      customer_phone: "+91 9876543210",
+      shipping_address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
+      items: [
+        {
+          id: "prod-1",
+          name: "Samsung Galaxy S24 Ultra 5G",
+          price: 129999,
+          quantity: 1,
+          selected_color: "Titanium Gray",
+          selected_storage: "256GB"
+        }
+      ],
+      total_amount: 129999,
+      payment_method: "upi",
+      payment_status: "paid",
+      order_status: "delivered",
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ORD-87341-112",
+      customer_id: "cust_priya_patel",
+      customer_name: "Priya Patel",
+      customer_email: "priya.patel@example.com",
+      customer_phone: "+91 9812345678",
+      shipping_address: "Flat 12B, Marine View Apartments, Nariman Point, Mumbai, Maharashtra - 400021",
+      items: [
+        {
+          id: "prod-2",
+          name: "Apple iPhone 15 Pro",
+          price: 119900,
+          quantity: 1,
+          selected_color: "Natural Titanium",
+          selected_storage: "128GB"
+        }
+      ],
+      total_amount: 119900,
+      payment_method: "card",
+      payment_status: "paid",
+      order_status: "processing",
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ORD-76512-890",
+      customer_id: "cust_vikram_singh",
+      customer_name: "Vikram Singh",
+      customer_email: "vikram.singh@example.com",
+      customer_phone: "+91 9765432109",
+      shipping_address: "B-204, Sector 62, Noida, Uttar Pradesh - 201301",
+      items: [
+        {
+          id: "prod-3",
+          name: "OnePlus 12 5G",
+          price: 64999,
+          quantity: 1,
+          selected_color: "Emerald Green",
+          selected_storage: "256GB"
+        }
+      ],
+      total_amount: 64999,
+      payment_method: "cod",
+      payment_status: "pending",
+      order_status: "pending",
+      created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+    }
+  ];
 }
 if (!globalStore.__myShopFallbackCustomers) {
-  globalStore.__myShopFallbackCustomers = [];
+  globalStore.__myShopFallbackCustomers = [
+    {
+      id: "cust_rahul_sharma",
+      full_name: "Rahul Sharma",
+      email: "rahul.sharma@example.com",
+      phone: "+91 9876543210",
+      address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
+      total_orders: 3,
+      total_spent: 184999,
+      status: "active",
+      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: "cust_priya_patel",
+      full_name: "Priya Patel",
+      email: "priya.patel@example.com",
+      phone: "+91 9812345678",
+      address: "Flat 12B, Marine View Apartments, Nariman Point, Mumbai, Maharashtra - 400021",
+      total_orders: 2,
+      total_spent: 129999,
+      status: "active",
+      created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: "cust_vikram_singh",
+      full_name: "Vikram Singh",
+      email: "vikram.singh@example.com",
+      phone: "+91 9765432109",
+      address: "B-204, Sector 62, Noida, Uttar Pradesh - 201301",
+      total_orders: 1,
+      total_spent: 64999,
+      status: "active",
+      created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: "cust_ananya_reddy",
+      full_name: "Ananya Reddy",
+      email: "ananya.reddy@example.com",
+      phone: "+91 9988776655",
+      address: "Plot 88, Road No. 36, Jubilee Hills, Hyderabad, Telangana - 500033",
+      total_orders: 4,
+      total_spent: 215000,
+      status: "active",
+      created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: "cust_arjun_mehta",
+      full_name: "Arjun Mehta",
+      email: "arjun.mehta@example.com",
+      phone: "+91 9822334455",
+      address: "15, Alipore Road, Kolkata, West Bengal - 700027",
+      total_orders: 2,
+      total_spent: 78500,
+      status: "active",
+      created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ];
 }
 if (!globalStore.__myShopFallbackPayments) {
   globalStore.__myShopFallbackPayments = [];

@@ -114,7 +114,7 @@ function LoginContent() {
     setIsInstantLoading(true);
     setError("");
     try {
-      const res = await directGuestLoginAction("Valued Customer");
+      const res = await directGuestLoginAction("Rahul Sharma", "rahul.sharma@example.com", "+919876543210");
       if (res.success) {
         router.push(redirect);
         router.refresh();
@@ -201,9 +201,43 @@ function LoginContent() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
               Log in for the best experience
             </h1>
-            <p className="text-sm text-gray-500 font-normal mt-1 mb-8">
+            <p className="text-sm text-gray-500 font-normal mt-1 mb-5">
               {mode === "phone" ? "Enter your phone number to continue" : "Enter your email to continue"}
             </p>
+
+            {/* Demo Customer Profile Card */}
+            <div className="mb-6 p-4 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl text-left shadow-xs">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                    Demo Customer Profile
+                  </span>
+                </div>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">
+                  SAMPLE PROFILE
+                </span>
+              </div>
+
+              <div className="bg-white/95 border border-emerald-100 rounded-xl p-3 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[11px] font-medium">Customer Name:</span>
+                  <span className="font-bold text-slate-900">Rahul Sharma</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[11px] font-medium">Demo Mobile:</span>
+                  <span className="font-mono font-semibold text-slate-800">+91 9876543210</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[11px] font-medium">Demo Email:</span>
+                  <span className="font-mono text-slate-800">rahul.sharma@example.com</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[11px] font-medium">Demo OTP:</span>
+                  <span className="font-mono font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">1234</span>
+                </div>
+              </div>
+            </div>
 
             {error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-5 flex items-start gap-2 border border-red-100 text-xs font-semibold">
@@ -325,10 +359,10 @@ function LoginContent() {
                 type="button"
                 onClick={handleDirectLogin}
                 disabled={isInstantLoading}
-                className="w-full mt-3 py-2.5 px-4 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] shadow-sm"
+                className="w-full mt-3 py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] shadow-xs"
               >
                 <FontAwesomeIcon icon={faBolt} className="text-emerald-600 text-xs" />
-                <span>{isInstantLoading ? "Entering Store..." : "⚡ 1-Click Auto Fill & Instant Login"}</span>
+                <span>{isInstantLoading ? "Entering as Rahul Sharma..." : "⚡ 1-Click Login as Rahul Sharma (Demo Customer)"}</span>
               </button>
 
               {/* Quick Auto-Fill Selector */}
@@ -344,7 +378,7 @@ function LoginContent() {
                       setPhone("9876543210");
                       setError("");
                     }}
-                    className="py-2 px-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="py-2.5 px-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     title="Fill dummy mobile number 9876543210"
                   >
                     <FontAwesomeIcon icon={faMobileScreen} className="text-[#2874f0] text-xs" />
@@ -354,11 +388,11 @@ function LoginContent() {
                     type="button"
                     onClick={() => {
                       setMode("email");
-                      setEmail("customer@example.com");
+                      setEmail("rahul.sharma@example.com");
                       setError("");
                     }}
-                    className="py-2 px-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                    title="Fill dummy email customer@example.com"
+                    className="py-2.5 px-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Fill dummy email rahul.sharma@example.com"
                   >
                     <FontAwesomeIcon icon={faEnvelope} className="text-[#2874f0] text-xs" />
                     <span>Auto-Fill Email</span>
@@ -392,7 +426,7 @@ function LoginContent() {
             {/* Demo OTP Helper Banner */}
             <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 mb-5 flex items-center justify-between text-xs">
               <div className="text-emerald-900">
-                <span className="font-bold">💡 Demo OTP:</span> Use <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-300">1234</span>
+                <span className="font-bold">💡 Demo OTP:</span> Use <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-300">1234</span> <span className="text-[11px] text-emerald-700 hidden sm:inline">(Rahul Sharma)</span>
               </div>
               <button
                 type="button"
