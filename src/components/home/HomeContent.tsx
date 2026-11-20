@@ -373,7 +373,14 @@ export default function HomeContent() {
         const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
         const sub = (p.sub_category || "").toLowerCase();
         const name = (p.name || "").toLowerCase();
-        return cat.includes("tv") || cat.includes("audio") || sub.includes("tv") || sub.includes("audio") || name.includes("tv") || name.includes("soundbar") || name.includes("speaker");
+        // Exclude electric vehicles (e.g. TVS iQube scooter) and appliances
+        if (cat.includes("ev") || cat.includes("vehicle") || sub.includes("scooter") || sub.includes("bike") || name.includes("scooter")) return false;
+        return (
+          cat === "tv-audio" || cat === "tv & audio" || p.category_id === "tv-audio" ||
+          sub.includes("tv") || sub.includes("soundbar") || sub.includes("headphone") ||
+          name.includes("smart tv") || name.includes("crystal 4k") || name.includes("ultra hd") ||
+          name.includes("soundbar") || name.includes("speaker") || name.includes("wh-1000xm5")
+        );
       });
     }
 
