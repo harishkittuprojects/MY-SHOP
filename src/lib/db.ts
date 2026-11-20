@@ -907,7 +907,7 @@ export const OrdersDB = {
       }
 
       const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         const map = new Map<string, any>();
         data.forEach(item => map.set(item.id, item));
         fallbackOrders.forEach(item => {

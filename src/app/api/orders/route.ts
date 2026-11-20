@@ -9,11 +9,20 @@ export async function GET(request: Request) {
   const status = searchParams.get('status') || undefined;
   const search = searchParams.get('search') || undefined;
   const email = searchParams.get('email') || undefined;
+  const phone = searchParams.get('phone') || undefined;
 
   try {
     let orders = await OrdersDB.getAll({ status, search });
-    if (email) {
-      orders = orders.filter(o => (o.customer_email || '').toLowerCase() === email.toLowerCase());
+    if (email || phone) {
+      const eLower = (email || '').toLowerCase().trim();
+      const pClean = (phone || email || '').replace(/[^0-9]/g, '');
+      orders = orders.filter(o => {
+        const oEmail = (o.customer_email || '').toLowerCase().trim();
+        const oPhone = (o.customer_phone || '').replace(/[^0-9]/g, '');
+        if (eLower && oEmail === eLower) return true;
+        if (pClean.length >= 10 && oPhone.length >= 10 && (pClean.includes(oPhone) || oPhone.includes(pClean))) return true;
+        return false;
+      });
     }
     return NextResponse.json(orders, {
       headers: {
