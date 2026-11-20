@@ -501,8 +501,8 @@ export default function AdminInventoryPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
               Live Stock Engine
@@ -510,7 +510,7 @@ export default function AdminInventoryPage() {
             <span className="text-xs text-slate-400 font-mono">Real-Time Sync Active</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
-            Product Variants & Inventory Management
+            Product Variants &amp; Inventory Management
           </h1>
           <p className="text-slate-500 text-sm mt-0.5">
             Configure storage, sizes, specifications, colour availability, dynamic pricing, and stock quotas across all product categories.
@@ -557,7 +557,7 @@ export default function AdminInventoryPage() {
 
           <button
             onClick={handleOpenAddVariant}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-600/25 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-600/25 flex items-center gap-2 cursor-pointer transition-all active:scale-95 whitespace-nowrap"
           >
             <FontAwesomeIcon icon={faPlus} />
             <span>Add Product Variant</span>
@@ -612,9 +612,10 @@ export default function AdminInventoryPage() {
       {activeTab === "variants" && (
         <div className="space-y-4">
           {/* Filter Bar */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-4 justify-between items-center shadow-xs">
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="relative w-full sm:w-64">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3.5 shadow-xs">
+            {/* Top Row: Search + Category + Product Selectors */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1 min-w-[200px]">
                 <FontAwesomeIcon
                   icon={faSearch}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
@@ -623,8 +624,8 @@ export default function AdminInventoryPage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search variant, colour, SKU..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+                  placeholder="Search variant, colour, SKU, Item Code..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -635,7 +636,7 @@ export default function AdminInventoryPage() {
                   setSelectedCategoryFilter(e.target.value);
                   setSelectedProductFilter("all");
                 }}
-                className="w-full sm:w-44 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600"
+                className="w-full sm:w-44 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600 focus:bg-white cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 {categories.map((c) => (
@@ -649,7 +650,7 @@ export default function AdminInventoryPage() {
               <select
                 value={selectedProductFilter}
                 onChange={(e) => setSelectedProductFilter(e.target.value)}
-                className="w-full sm:w-56 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600"
+                className="w-full sm:w-56 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-emerald-600 focus:bg-white cursor-pointer"
               >
                 <option value="all">All Products</option>
                 {displayedProductsForFilter.map((p) => (
@@ -660,35 +661,47 @@ export default function AdminInventoryPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-1.5 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0">
+            {/* Bottom Row: Stock Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">
+                Stock Status:
+              </span>
               <button
                 onClick={() => setStockFilter("all")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap ${
-                  stockFilter === "all" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "all"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
                 All Variants ({variants.length})
               </button>
               <button
                 onClick={() => setStockFilter("in_stock")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap ${
-                  stockFilter === "in_stock" ? "bg-emerald-600 text-white" : "text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "in_stock"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
                 }`}
               >
                 In Stock ({variants.length - outOfStockVariants.length})
               </button>
               <button
                 onClick={() => setStockFilter("low")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap ${
-                  stockFilter === "low" ? "bg-amber-600 text-white" : "text-amber-700 bg-amber-50 hover:bg-amber-100"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "low"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
                 }`}
               >
                 Low Stock ({lowStockVariants.length})
               </button>
               <button
                 onClick={() => setStockFilter("out")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap ${
-                  stockFilter === "out" ? "bg-rose-600 text-white" : "text-rose-700 bg-rose-50 hover:bg-rose-100"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "out"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200"
                 }`}
               >
                 Out of Stock ({outOfStockVariants.length})
@@ -872,42 +885,42 @@ export default function AdminInventoryPage() {
       {/* TAB 2: PRODUCTS STOCK OVERVIEW */}
       {activeTab === "inventory" && (
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-xs">
-            <div className="relative w-full sm:w-80">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center shadow-xs">
+            <div className="relative flex-1 max-w-md">
               <FontAwesomeIcon
                 icon={faSearch}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
               />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search stock by name, SKU..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+                placeholder="Search stock by name, SKU, Item Code..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setStockFilter("all")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
-                  stockFilter === "all" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "all" ? "bg-slate-900 text-white shadow-xs" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                All
+                All Products ({products.length})
               </button>
               <button
                 onClick={() => setStockFilter("low")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
-                  stockFilter === "low" ? "bg-amber-50 text-amber-700 border border-amber-200" : "text-slate-500 hover:text-slate-900"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "low" ? "bg-amber-600 text-white shadow-xs" : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
                 }`}
               >
                 Low Stock ({lowStockProducts.length})
               </button>
               <button
                 onClick={() => setStockFilter("out")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
-                  stockFilter === "out" ? "bg-rose-50 text-rose-700 border border-rose-200" : "text-slate-500 hover:text-slate-900"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  stockFilter === "out" ? "bg-rose-600 text-white shadow-xs" : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200"
                 }`}
               >
                 Out of Stock ({outOfStockProducts.length})
