@@ -60,6 +60,22 @@ const PREDEFINED_CATEGORIES: CategoryConfig[] = [
     categoryQuery: "Smart Technology",
   },
   {
+    id: "tv-audio",
+    name: "Smart 4K TVs & Audio",
+    badge: "Cinema Visuals",
+    icon: "📺",
+    tagColor: "bg-purple-50 text-purple-800 border-purple-200",
+    categoryQuery: "TV & Audio",
+  },
+  {
+    id: "appliances",
+    name: "Home & Kitchen Appliances",
+    badge: "Smart Home",
+    icon: "🏠",
+    tagColor: "bg-amber-50 text-amber-800 border-amber-200",
+    categoryQuery: "Kitchen Appliances",
+  },
+  {
     id: "fashion",
     name: "Fashion & Apparel",
     badge: "Top Brands",
@@ -339,7 +355,34 @@ export default function HomeContent() {
         const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
         const sub = (p.sub_category || "").toLowerCase();
         const name = (p.name || "").toLowerCase();
-        return cat.includes("smart") || sub.includes("watch") || name.includes("watch") || name.includes("smart");
+        // Exclude TVs, Audio, Refrigerators, Appliances, and fashion chronograph watches
+        if (cat.includes("tv") || cat.includes("audio") || name.includes("tv") || name.includes("soundbar")) return false;
+        if (cat.includes("appliance") || name.includes("refrigerator") || name.includes("fridge") || name.includes("air fryer") || name.includes("grinder")) return false;
+        if (sub.includes("chronograph") || name.includes("chronograph") || (cat.includes("fashion") && !name.includes("smart"))) return false;
+        return (
+          cat === "smart-technology" || cat === "smart technology" || p.category_id === "smart-technology" ||
+          sub.includes("smartwatch") || sub.includes("wearable") ||
+          name.includes("apple watch") || name.includes("galaxy watch") || name.includes("smartwatch") ||
+          name.includes("smart watch") || name.includes("colorfit")
+        );
+      });
+    }
+
+    if (key === "tv-audio" || key === "tv & audio") {
+      return allProducts.filter(p => {
+        const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
+        const sub = (p.sub_category || "").toLowerCase();
+        const name = (p.name || "").toLowerCase();
+        return cat.includes("tv") || cat.includes("audio") || sub.includes("tv") || sub.includes("audio") || name.includes("tv") || name.includes("soundbar") || name.includes("speaker");
+      });
+    }
+
+    if (key === "appliances" || key === "kitchen appliances" || key === "home appliances" || key === "kitchen-appliances" || key === "home-appliances") {
+      return allProducts.filter(p => {
+        const cat = (p.category_name || p.category || p.category_id || "").toLowerCase();
+        const sub = (p.sub_category || "").toLowerCase();
+        const name = (p.name || "").toLowerCase();
+        return cat.includes("appliance") || sub.includes("appliance") || name.includes("refrigerator") || name.includes("fridge") || name.includes("air fryer") || name.includes("grinder") || name.includes("microwave");
       });
     }
 
@@ -394,6 +437,8 @@ export default function HomeContent() {
     "old-refurbished-mobiles",
     "mobile-accessories",
     "smart-technology",
+    "tv-audio",
+    "appliances",
     "fashion",
     "jewellery",
     "ev-vehicles",

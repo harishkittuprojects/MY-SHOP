@@ -12,6 +12,9 @@ import {
   faMapMarkerAlt,
   faPhone,
   faEnvelope,
+  faRotate,
+  faTrash,
+  faShareNodes,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface OrderItem {
@@ -65,13 +68,30 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/orders", { cache: "no-store" });
+      const res = await fetch(`/api/orders?_t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Fetch orders error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm(`Are you sure you want to delete order #${orderId}?`)) return;
+    try {
+      const res = await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete order");
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(null);
+        setIsDetailModalOpen(false);
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to delete order");
     }
   };
 
@@ -151,6 +171,17 @@ export default function AdminOrdersPage() {
           <p className="text-slate-500 text-sm mt-1">
             Track customer orders, manage statuses, and print invoices with real-time stock sync
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchOrders}
+            disabled={loading}
+            className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+            title="Refresh Orders"
+          >
+            <FontAwesomeIcon icon={faRotate} className={loading ? "animate-spin text-emerald-600" : "text-emerald-600"} />
+            <span>Refresh Orders</span>
+          </button>
         </div>
       </div>
 
@@ -289,13 +320,13 @@ export default function AdminOrdersPage() {
                         </select>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
                           <button
                             onClick={() => {
                               setSelectedOrder(o);
                               setTimeout(() => window.print(), 200);
                             }}
-                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200/80"
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200/80"
                             title="Print Tax Invoice"
                           >
                             <FontAwesomeIcon icon={faPrint} />
@@ -306,10 +337,19 @@ export default function AdminOrdersPage() {
                               setSelectedOrder(o);
                               setIsDetailModalOpen(true);
                             }}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-200"
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-200"
+                            title="Order Details"
                           >
                             <FontAwesomeIcon icon={faEye} />
                             <span>Details</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOrder(o.id)}
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-rose-200"
+                            title="Delete Order"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                            <span className="hidden sm:inline">Delete</span>
                           </button>
                         </div>
                       </td>
@@ -506,19 +546,44 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between no-print">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
-              >
-                <FontAwesomeIcon icon={faPrint} />
-                <span>Print Invoice</span>
-              </button>
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between no-print gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
+                >
+                  <FontAwesomeIcon icon={faPrint} />
+                  <span>Print Invoice</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `*MY SHOP ORDER UPDATE - #${selectedOrder.id}*\nStatus: *${(selectedOrder.order_status || 'Pending').toUpperCase()}*\nCustomer: ${selectedOrder.customer_name}\nTotal: ₹${Number(selectedOrder.total_amount).toLocaleString("en-IN")}\nTrack here: https://my-shop-qlut.vercel.app/account`;
+                    const phone = (selectedOrder.customer_phone || "").replace(/[^0-9]/g, "");
+                    const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                    window.open(url, "_blank");
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
+                  title="Share details via WhatsApp"
+                >
+                  <FontAwesomeIcon icon={faShareNodes} />
+                  <span>Share via WhatsApp</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteOrder(selectedOrder.id)}
+                  className="px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                  title="Delete Order"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  <span>Delete</span>
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsDetailModalOpen(false)}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer active:scale-95"
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer active:scale-95"
               >
                 Done
               </button>

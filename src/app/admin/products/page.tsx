@@ -18,6 +18,7 @@ interface Product {
   name: string;
   category_id: string;
   category_name?: string;
+  category?: string;
   sub_category?: string;
   price: number;
   original_price: number;
@@ -1011,15 +1012,21 @@ export default function AdminProductsPage() {
   };
 
   const filteredProducts = products.filter((p) => {
+    const s = searchTerm.toLowerCase().trim();
     const matchesSearch =
-      (p.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.sku || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+      !s ||
+      (p.name || "").toLowerCase().includes(s) ||
+      (p.sku || "").toLowerCase().includes(s) ||
+      (p.description || "").toLowerCase().includes(s) ||
+      (p.category_name || "").toLowerCase().includes(s) ||
+      (p.category || "").toLowerCase().includes(s) ||
+      (p.sub_category || "").toLowerCase().includes(s);
 
     const matchesCategory =
       selectedCategory === "all" ||
-      p.category_id === selectedCategory ||
-      p.category_name === selectedCategory;
+      (p.category_id && p.category_id.toLowerCase() === selectedCategory.toLowerCase()) ||
+      (p.category_name && p.category_name.toLowerCase() === selectedCategory.toLowerCase()) ||
+      (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
 
     return matchesSearch && matchesCategory;
   });
@@ -1137,7 +1144,7 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-xs font-semibold text-slate-700">
-                        {p.category_name || p.category_id}
+                        {p.category_name || p.category || p.category_id}
                         {p.sub_category && (
                           <span className="block text-[10px] text-slate-400 font-normal">
                             {p.sub_category}

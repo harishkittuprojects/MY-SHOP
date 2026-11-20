@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { OrdersDB } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || undefined;
@@ -12,7 +15,11 @@ export async function GET(request: Request) {
     if (email) {
       orders = orders.filter(o => (o.customer_email || '').toLowerCase() === email.toLowerCase());
     }
-    return NextResponse.json(orders);
+    return NextResponse.json(orders, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    });
   } catch (error: any) {
     console.error('Fetch orders error:', error);
     return NextResponse.json({ error: error.message || 'Failed to fetch orders' }, { status: 500 });
@@ -44,5 +51,20 @@ export async function PATCH(request: Request) {
   } catch (error: any) {
     console.error('Order Update Error:', error);
     return NextResponse.json({ error: error.message || 'Failed to update order' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  if (!id) {
+    return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
+  }
+  try {
+    await OrdersDB.delete(id);
+    return NextResponse.json({ success: true, deletedId: id });
+  } catch (error: any) {
+    console.error('Delete order error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete order' }, { status: 500 });
   }
 }

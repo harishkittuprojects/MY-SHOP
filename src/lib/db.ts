@@ -8,32 +8,8 @@ import { matchProductSearch } from './searchUtils';
 // ==============================================================================
 const globalStore = (globalThis as any);
 
-if (!globalStore.__myShopFallbackOrders || globalStore.__myShopFallbackOrders.length === 0) {
-  globalStore.__myShopFallbackOrders = [
-    {
-      id: "ORD-98214-721",
-      customer_id: "cust_rahul_sharma",
-      customer_name: "Rahul Sharma",
-      customer_email: "rahul.sharma@example.com",
-      customer_phone: "+91 9876543210",
-      shipping_address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
-      items: [
-        {
-          id: "prod-1",
-          name: "Samsung Galaxy S24 Ultra 5G",
-          price: 129999,
-          quantity: 1,
-          selected_color: "Titanium Gray",
-          selected_storage: "256GB"
-        }
-      ],
-      total_amount: 129999,
-      payment_method: "upi",
-      payment_status: "paid",
-      order_status: "delivered",
-      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  ];
+if (!globalStore.__myShopFallbackOrders) {
+  globalStore.__myShopFallbackOrders = [];
 }
 
 const DEFAULT_LOGGED_IN_CUSTOMER = {
@@ -42,8 +18,8 @@ const DEFAULT_LOGGED_IN_CUSTOMER = {
   email: "rahul.sharma@example.com",
   phone: "+91 9876543210",
   address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
-  total_orders: 1,
-  total_spent: 129999,
+  total_orders: 0,
+  total_spent: 0,
   status: "active",
   created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   updated_at: new Date().toISOString()
@@ -404,14 +380,24 @@ export const ProductsDB = {
     // Merge: Live DB products take priority, and all default catalog products are preserved
     const dbProductIds = new Set(dbProducts.map((p) => String(p.id)));
     const merged = [
-      ...dbProducts.map(p => ({
-        ...p,
-        stock_quantity: p.stock_quantity !== undefined && p.stock_quantity !== null && !isNaN(Number(p.stock_quantity)) ? Number(p.stock_quantity) : 25
-      })),
-      ...defaultProducts.filter((dp) => !dbProductIds.has(String(dp.id))).map(dp => ({
-        ...dp,
-        stock_quantity: (dp as any).stock_quantity !== undefined && (dp as any).stock_quantity !== null && !isNaN(Number((dp as any).stock_quantity)) ? Number((dp as any).stock_quantity) : 25
-      })),
+      ...dbProducts.map(p => {
+        const catName = p.category_name || p.category || (p.category_id ? p.category_id.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'General');
+        return {
+          ...p,
+          category_name: catName,
+          category: p.category || catName,
+          stock_quantity: p.stock_quantity !== undefined && p.stock_quantity !== null && !isNaN(Number(p.stock_quantity)) ? Number(p.stock_quantity) : 25
+        };
+      }),
+      ...defaultProducts.filter((dp) => !dbProductIds.has(String(dp.id))).map(dp => {
+        const catName = (dp as any).category_name || dp.category || (dp.category_id ? dp.category_id.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'General');
+        return {
+          ...dp,
+          category_name: catName,
+          category: dp.category || catName,
+          stock_quantity: (dp as any).stock_quantity !== undefined && (dp as any).stock_quantity !== null && !isNaN(Number((dp as any).stock_quantity)) ? Number((dp as any).stock_quantity) : 25
+        };
+      }),
     ];
 
     let list = merged;
@@ -945,8 +931,21 @@ export const OrdersDB = {
       );
     }
     const EXCLUDED_EMAILS = ['priya.patel@example.com', 'vikram.singh@example.com', 'ananya.reddy@example.com', 'arjun.mehta@example.com'];
-    list = list.filter(o => !EXCLUDED_EMAILS.includes(o.customer_email));
+    list = list.filter(o => o.id !== 'ORD-98214-721' && !EXCLUDED_EMAILS.includes(o.customer_email));
     return list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  },
+
+  async delete(id: string) {
+    const idx = fallbackOrders.findIndex(o => o.id === id);
+    if (idx >= 0) {
+      fallbackOrders.splice(idx, 1);
+    }
+    try {
+      await supabase.from('orders').delete().eq('id', id);
+    } catch (e) {
+      console.warn("Supabase order delete error:", e);
+    }
+    return true;
   },
 
   async getById(id: string) {
