@@ -60,6 +60,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [orderCount, setOrderCount] = useState<number>(1);
+
+  useEffect(() => {
+    fetch(`/api/orders?_t=${Date.now()}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setOrderCount(data.length);
+      })
+      .catch(() => {});
+  }, [pathname]);
 
   useEffect(() => {
     const isLoginPage = pathname === "/admin/login" || pathname === "/admin/login/";
@@ -192,9 +202,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <FontAwesomeIcon icon={item.icon} />
                 </div>
                 <span>{item.label}</span>
-                {isActive && (
+                {item.href === "/admin/orders" ? (
+                  <span
+                    className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-black transition-all ${
+                      isActive ? "bg-white text-emerald-700" : "bg-emerald-600 text-white shadow-xs"
+                    }`}
+                  >
+                    {orderCount}
+                  </span>
+                ) : isActive ? (
                   <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></span>
-                )}
+                ) : null}
               </Link>
             );
           })}
@@ -202,6 +220,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Current User & Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/70">
+          {/* Mini Total Orders Card matching screenshot */}
+          <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 mb-3 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800">
+                <FontAwesomeIcon icon={faShoppingBag} className="text-emerald-600 text-xs" />
+                <span>Total Orders</span>
+              </div>
+              <div className="text-base font-black text-slate-900 mt-0.5">{orderCount}</div>
+              <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1">
+                <span>↑ 100%</span>
+              </div>
+            </div>
+            <svg className="w-16 h-8 text-emerald-600" viewBox="0 0 64 32" fill="none">
+              <path d="M2 28L18 20L34 24L50 8L62 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
           <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs mb-3">
             <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm border border-emerald-200">
               {currentUser?.name?.charAt(0) || "A"}
