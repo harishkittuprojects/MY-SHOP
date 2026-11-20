@@ -1515,13 +1515,17 @@ export default function AdminInventoryPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                    SKU Code
+                    {variantType === "fashion" || variantType === "jewellery" ? "Item Code" : "SKU / Item Code"}
                   </label>
                   <input
                     type="text"
                     value={variantForm.sku}
                     onChange={(e) => setVariantForm({ ...variantForm, sku: e.target.value })}
-                    placeholder="e.g. S26U-8-256-BLK"
+                    placeholder={
+                      variantType === "fashion" || variantType === "jewellery"
+                        ? "e.g. ITEM-047647 or JWL-101"
+                        : "e.g. SKU-8-256-BLK"
+                    }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-mono focus:outline-none focus:border-emerald-600"
                   />
                 </div>

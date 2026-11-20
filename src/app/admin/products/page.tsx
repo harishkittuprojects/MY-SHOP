@@ -76,6 +76,35 @@ export default function AdminProductsPage() {
   const [customSizeInput, setCustomSizeInput] = useState("");
   const [selectedVariantPresetCategory, setSelectedVariantPresetCategory] = useState<string>("auto");
   const [imageUrlInput, setImageUrlInput] = useState("");
+  const [codeTypeOverride, setCodeTypeOverride] = useState<"auto" | "item" | "sku">("auto");
+
+  // Helper to detect retail / fashion / jewellery category
+  const isRetailCategory = (catName?: string, catId?: string, subCat?: string) => {
+    const combined = `${catName || ""} ${catId || ""} ${subCat || ""}`.toLowerCase();
+    return (
+      combined.includes("fashion") ||
+      combined.includes("jewel") ||
+      combined.includes("cloth") ||
+      combined.includes("apparel") ||
+      combined.includes("wear") ||
+      combined.includes("dress") ||
+      combined.includes("kurti") ||
+      combined.includes("gold") ||
+      combined.includes("silver") ||
+      combined.includes("watch") ||
+      combined.includes("ring") ||
+      combined.includes("necklace") ||
+      combined.includes("bangle") ||
+      combined.includes("diamond")
+    );
+  };
+
+  const activeCodeType =
+    codeTypeOverride !== "auto"
+      ? codeTypeOverride
+      : isRetailCategory(formData.category_name, formData.category_id, formData.sub_category)
+      ? "item"
+      : "sku";
 
   // Common subcategories helper
   const getSuggestedSubcategories = (catId?: string, catName?: string): string[] => {
@@ -674,8 +703,11 @@ export default function AdminProductsPage() {
 
   const handleOpenAddModal = () => {
     setIsEditing(false);
+    setCodeTypeOverride("auto");
     const defaultCat = categories[0]?.id || "mobiles-accessories";
     const defaultCatName = categories[0]?.name || "Mobiles & Accessories";
+    const isRetail = isRetailCategory(defaultCatName, defaultCat, "Mobile");
+    const codePrefix = isRetail ? "ITEM" : "SKU";
     setFormData({
       name: "",
       category_id: defaultCat,
@@ -684,7 +716,7 @@ export default function AdminProductsPage() {
       price: 0,
       original_price: 0,
       stock_quantity: 20,
-      sku: `SKU-${Date.now().toString().slice(-6)}`,
+      sku: `${codePrefix}-${Date.now().toString().slice(-6)}`,
       image_url: "",
       images: [],
       description: "",
@@ -703,6 +735,7 @@ export default function AdminProductsPage() {
 
   const handleOpenEditModal = (product: Product) => {
     setIsEditing(true);
+    setCodeTypeOverride(product.sku?.startsWith("ITEM-") ? "item" : "auto");
     const productImages = Array.isArray(product.images) && product.images.length > 0 
       ? product.images.filter(Boolean) 
       : (product.image_url ? [product.image_url] : []);
@@ -1021,7 +1054,7 @@ export default function AdminProductsPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search products by name, SKU..."
+            placeholder="Search products by name, Item Code, SKU..."
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
           />
         </div>
@@ -1094,7 +1127,12 @@ export default function AdminProductsPage() {
                           </div>
                           <div className="min-w-0">
                             <h3 className="font-bold text-slate-900 text-sm truncate max-w-xs">{p.name}</h3>
-                            <p className="text-[11px] text-slate-500 font-mono">SKU: {p.sku || p.id}</p>
+                            <p className="text-[11px] text-slate-500 font-mono">
+                              {isRetailCategory(p.category_name, p.category_id, p.sub_category) || p.sku?.startsWith("ITEM-")
+                                ? "Item Code: "
+                                : "SKU: "}
+                              {p.sku || p.id}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -1203,7 +1241,7 @@ export default function AdminProductsPage() {
 
             {/* Modal Body */}
             <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Product Title & SKU */}
+              {/* Product Title & SKU / Item Code */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -1214,20 +1252,66 @@ export default function AdminProductsPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Apple iPhone 16 Pro Max 256GB"
+                    placeholder={
+                      activeCodeType === "item"
+                        ? "e.g. 22K Gold Diamond Necklace / Silk Embroidered Kurti"
+                        : "e.g. Apple iPhone 16 Pro Max 256GB"
+                    }
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                    SKU Code
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      {activeCodeType === "item" ? "Item Code" : "SKU Code"}
+                    </label>
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-semibold text-slate-500">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCodeTypeOverride("item");
+                          const current = formData.sku || "";
+                          if (current.startsWith("SKU-")) {
+                            setFormData({ ...formData, sku: current.replace("SKU-", "ITEM-") });
+                          }
+                        }}
+                        className={`px-1.5 py-0.5 rounded cursor-pointer transition-all ${
+                          activeCodeType === "item"
+                            ? "bg-white text-emerald-700 font-bold shadow-xs"
+                            : "hover:text-slate-800"
+                        }`}
+                        title="Use Item Code for Fashion, Jewellery & Retail"
+                      >
+                        Item Code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCodeTypeOverride("sku");
+                          const current = formData.sku || "";
+                          if (current.startsWith("ITEM-")) {
+                            setFormData({ ...formData, sku: current.replace("ITEM-", "SKU-") });
+                          }
+                        }}
+                        className={`px-1.5 py-0.5 rounded cursor-pointer transition-all ${
+                          activeCodeType === "sku"
+                            ? "bg-white text-emerald-700 font-bold shadow-xs"
+                            : "hover:text-slate-800"
+                        }`}
+                        title="Use standard SKU"
+                      >
+                        SKU
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="SKU-IPH16"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
+                    placeholder={
+                      activeCodeType === "item" ? "e.g. ITEM-047647 or JWL-101" : "e.g. SKU-IPH16"
+                    }
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600 font-mono"
                   />
                 </div>
               </div>
@@ -1242,10 +1326,20 @@ export default function AdminProductsPage() {
                     value={formData.category_id}
                     onChange={(e) => {
                       const cat = categories.find((c) => c.id === e.target.value);
+                      const isRetail = isRetailCategory(cat?.name, e.target.value, formData.sub_category);
+                      let newSku = formData.sku || "";
+                      if (codeTypeOverride === "auto") {
+                        if (isRetail && newSku.startsWith("SKU-")) {
+                          newSku = newSku.replace("SKU-", "ITEM-");
+                        } else if (!isRetail && newSku.startsWith("ITEM-")) {
+                          newSku = newSku.replace("ITEM-", "SKU-");
+                        }
+                      }
                       setFormData({
                         ...formData,
                         category_id: e.target.value,
                         category_name: cat?.name || "",
+                        sku: newSku,
                       });
                       setSelectedVariantPresetCategory("auto");
                     }}
@@ -1270,8 +1364,20 @@ export default function AdminProductsPage() {
                     <input
                       type="text"
                       value={formData.sub_category}
-                      onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
-                      placeholder="e.g. Mobile, T-Shirts, Chargers, Rings"
+                      onChange={(e) => {
+                        const newSub = e.target.value;
+                        const isRetail = isRetailCategory(formData.category_name, formData.category_id, newSub);
+                        let newSku = formData.sku || "";
+                        if (codeTypeOverride === "auto") {
+                          if (isRetail && newSku.startsWith("SKU-")) {
+                            newSku = newSku.replace("SKU-", "ITEM-");
+                          } else if (!isRetail && newSku.startsWith("ITEM-")) {
+                            newSku = newSku.replace("ITEM-", "SKU-");
+                          }
+                        }
+                        setFormData({ ...formData, sub_category: newSub, sku: newSku });
+                      }}
+                      placeholder="e.g. Mobile, Jewellery, T-Shirts, Chargers, Rings"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-emerald-600"
                     />
                     {/* Quick Sub-Category Suggestions */}
@@ -1280,7 +1386,16 @@ export default function AdminProductsPage() {
                         <button
                           key={sub}
                           type="button"
-                          onClick={() => setFormData({ ...formData, sub_category: sub })}
+                          onClick={() => {
+                            const isRetail = isRetailCategory(formData.category_name, formData.category_id, sub);
+                            let newSku = formData.sku || "";
+                            if (codeTypeOverride === "auto") {
+                              if (isRetail && newSku.startsWith("SKU-")) {
+                                newSku = newSku.replace("SKU-", "ITEM-");
+                              }
+                            }
+                            setFormData({ ...formData, sub_category: sub, sku: newSku });
+                          }}
                           className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
                             formData.sub_category?.toLowerCase() === sub.toLowerCase()
                               ? "bg-emerald-600 text-white border-emerald-600 font-bold"
