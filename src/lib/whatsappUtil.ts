@@ -21,7 +21,8 @@ export const formatOrderWhatsAppMessage = (
   
   const itemDetails = items.map(item => `- ${item.name} (${item.selectedUnit || ""}) x ${item.quantity} = ₹${Math.floor(item.price * item.quantity)}`).join('\n');
   
-  const paymentText = paymentMethod.toLowerCase() === "cod" || paymentMethod === "Cash on Delivery"
+  const isCod = (paymentMethod || "").toLowerCase() === "cod" || paymentMethod === "Cash on Delivery";
+  const paymentText = isCod
     ? `*Total Amount:* ₹${Math.floor(subtotal)} + ₹${Math.floor(deliveryCharge)} (Delivery) = ₹${Math.floor(totalAmount)}\n*Payment Method:* Cash on Delivery (TO PAY)`
     : `*Paid Amount:* ₹${Math.floor(totalAmount)}\n*Payment Method:* Paid Online (Prepaid)`;
 

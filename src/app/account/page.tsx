@@ -32,7 +32,8 @@ import InvoiceModal from "@/components/common/InvoiceModal";
 interface Order {
   id: string;
   total_amount: number;
-  status: string;
+  status?: string;
+  order_status?: string;
   created_at: string;
   items?: any[];
   user_email?: string;
@@ -178,8 +179,8 @@ export default function AccountPage() {
     }
   };
 
-  const getOrderStatusStep = (status: string) => {
-    const s = status.toLowerCase();
+  const getOrderStatusStep = (status?: string) => {
+    const s = (status || "").toLowerCase();
     if (s === "completed" || s === "delivered") return 4;
     if (s === "shipped" || s === "out for delivery") return 3;
     if (s === "processing") return 2;
@@ -325,7 +326,8 @@ export default function AccountPage() {
 
                 {orders.length > 0 ? (
                   orders.map((order) => {
-                    const step = getOrderStatusStep(order.status);
+                    const orderStatus = order.order_status || order.status || "Pending";
+                    const step = getOrderStatusStep(orderStatus);
                     return (
                       <div 
                         key={order.id}
@@ -339,7 +341,7 @@ export default function AccountPage() {
                                 Order #{String(order.id).slice(-8)}
                               </span>
                               <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
-                                {order.status}
+                                {orderStatus}
                               </span>
                             </div>
                             <p className="text-[11px] text-slate-400 font-medium mt-0.5">

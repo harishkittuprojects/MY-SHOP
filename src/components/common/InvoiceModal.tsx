@@ -111,7 +111,7 @@ export default function InvoiceModal({ isOpen, onClose, order }: InvoiceModalPro
                 </div>
                 <div className="flex justify-end gap-3 text-xs">
                   <span className="font-bold text-gray-400 uppercase">Status:</span>
-                  <span className="font-black text-green-500 tracking-widest uppercase">{order.status}</span>
+                  <span className="font-black text-green-500 tracking-widest uppercase">{order.order_status || order.status || "Completed"}</span>
                 </div>
               </div>
             </div>
