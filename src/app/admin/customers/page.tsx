@@ -54,6 +54,30 @@ export default function AdminCustomersPage() {
           });
           list = Array.from(map.values());
         }
+
+        // Recalculate spending and order counts from local orders
+        const rawOrders = localStorage.getItem("myShopOrders");
+        if (rawOrders) {
+          const localOrders = JSON.parse(rawOrders);
+          list = list.map((cust) => {
+            const cEmail = (cust.email || "").toLowerCase();
+            const cPhone = (cust.phone || "").replace(/[^0-9]/g, "");
+            const custOrders = localOrders.filter((o: any) => {
+              const oEmail = (o.customer_email || "").toLowerCase();
+              const oPhone = (o.customer_phone || "").replace(/[^0-9]/g, "");
+              return (cEmail && oEmail === cEmail) || (cPhone && oPhone.includes(cPhone));
+            });
+            if (custOrders.length > 0) {
+              const spent = custOrders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
+              return {
+                ...cust,
+                total_orders: Math.max(cust.total_orders || 0, custOrders.length),
+                total_spent: Math.max(cust.total_spent || 0, spent)
+              };
+            }
+            return cust;
+          });
+        }
       } catch {
         // ignore
       }
@@ -77,9 +101,31 @@ export default function AdminCustomersPage() {
     try {
       const res = await fetch(`/api/admin/customers?id=${c.id}`);
       const data = await res.json();
-      if (data.orders) {
-        setCustomerOrders(data.orders);
-      }
+      let orders = data.orders || [];
+
+      try {
+        const rawOrders = localStorage.getItem("myShopOrders");
+        if (rawOrders) {
+          const localOrders = JSON.parse(rawOrders);
+          const cEmail = (c.email || "").toLowerCase();
+          const cPhone = (c.phone || "").replace(/[^0-9]/g, "");
+          const matching = localOrders.filter((o: any) => {
+            const oEmail = (o.customer_email || "").toLowerCase();
+            const oPhone = (o.customer_phone || "").replace(/[^0-9]/g, "");
+            return (cEmail && oEmail === cEmail) || (cPhone && oPhone.includes(cPhone));
+          });
+          const map = new Map<string, any>();
+          orders.forEach((o: any) => map.set(o.id, o));
+          matching.forEach((o: any) => {
+            if (!map.has(o.id)) map.set(o.id, o);
+          });
+          orders = Array.from(map.values()).sort(
+            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          );
+        }
+      } catch {}
+
+      setCustomerOrders(orders);
     } catch (err) {
       console.error("Failed to load customer orders:", err);
     } finally {

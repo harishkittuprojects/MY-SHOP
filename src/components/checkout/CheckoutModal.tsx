@@ -219,6 +219,63 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     }
   };
 
+  const persistOrderLocally = (orderId: string, data: any) => {
+    try {
+      const newOrder = {
+        id: orderId,
+        customer_name: data.customer_name,
+        customer_email: data.customer_email,
+        customer_phone: data.customer_phone,
+        shipping_address: data.shipping_address,
+        items: data.items,
+        total_amount: Number(data.total_amount) || 0,
+        subtotal: Number(data.total_amount) - (Number(data.delivery_charge) || 0),
+        delivery_fee: Number(data.delivery_charge) || 0,
+        discount_amount: 0,
+        payment_method: data.payment_method || "COD",
+        payment_status: data.payment_method?.toLowerCase().includes("cod") ? "pending" : "paid",
+        order_status: "pending",
+        created_at: new Date().toISOString()
+      };
+
+      // 1. Save to myShopOrders
+      const rawOrders = localStorage.getItem("myShopOrders");
+      const orders = rawOrders ? JSON.parse(rawOrders) : [];
+      const updatedOrders = [newOrder, ...orders.filter((o: any) => o.id !== orderId)];
+      localStorage.setItem("myShopOrders", JSON.stringify(updatedOrders));
+
+      // 2. Sync to myShopRegisteredCustomers
+      const rawCustomers = localStorage.getItem("myShopRegisteredCustomers");
+      const customers = rawCustomers ? JSON.parse(rawCustomers) : [];
+      const existingIdx = customers.findIndex((c: any) => 
+        (c.email && c.email.toLowerCase() === data.customer_email?.toLowerCase()) ||
+        (c.phone && c.phone === data.customer_phone)
+      );
+
+      const customerRecord = {
+        id: existingIdx >= 0 ? customers[existingIdx].id : `cust_${Date.now()}`,
+        full_name: data.customer_name,
+        email: data.customer_email,
+        phone: data.customer_phone,
+        address: data.shipping_address,
+        status: "active",
+        total_orders: existingIdx >= 0 ? (customers[existingIdx].total_orders || 0) + 1 : 1,
+        total_spent: existingIdx >= 0 ? (customers[existingIdx].total_spent || 0) + Number(data.total_amount) : Number(data.total_amount),
+        created_at: existingIdx >= 0 ? customers[existingIdx].created_at : new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      if (existingIdx >= 0) {
+        customers[existingIdx] = { ...customers[existingIdx], ...customerRecord };
+      } else {
+        customers.unshift(customerRecord);
+      }
+      localStorage.setItem("myShopRegisteredCustomers", JSON.stringify(customers));
+    } catch (e) {
+      console.warn("Local storage order save error:", e);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -264,6 +321,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       const result = await placeOrderAction(orderData);
 
       if (result.success && result.orderId) {
+        persistOrderLocally(result.orderId, orderData);
         if (paymentMethod === "Online Payment") {
           await handleOnlinePayment(result.orderId);
         } else {

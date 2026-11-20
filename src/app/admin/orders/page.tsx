@@ -70,7 +70,27 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch(`/api/orders?_t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
+      let list: Order[] = Array.isArray(data) ? data : [];
+
+      // Merge with localStorage
+      try {
+        const raw = localStorage.getItem("myShopOrders");
+        if (raw) {
+          const localOrders: Order[] = JSON.parse(raw);
+          const map = new Map<string, Order>();
+          list.forEach((o) => map.set(o.id, o));
+          localOrders.forEach((o) => {
+            if (!map.has(o.id)) map.set(o.id, o);
+          });
+          list = Array.from(map.values()).sort(
+            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          );
+        }
+      } catch (e) {
+        console.error("Local orders merge error:", e);
+      }
+
+      setOrders(list);
     } catch (err) {
       console.error("Fetch orders error:", err);
     } finally {
@@ -85,6 +105,15 @@ export default function AdminOrdersPage() {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete order");
+      
+      try {
+        const raw = localStorage.getItem("myShopOrders");
+        if (raw) {
+          const localOrders: Order[] = JSON.parse(raw);
+          localStorage.setItem("myShopOrders", JSON.stringify(localOrders.filter((o) => o.id !== orderId)));
+        }
+      } catch {}
+
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(null);
@@ -113,6 +142,19 @@ export default function AdminOrdersPage() {
       });
 
       if (!res.ok) throw new Error("Failed to update status");
+
+      try {
+        const raw = localStorage.getItem("myShopOrders");
+        if (raw) {
+          const localOrders: Order[] = JSON.parse(raw);
+          const updated = localOrders.map((o) =>
+            o.id === orderId
+              ? { ...o, order_status: newStatus, payment_status: paymentStatus || o.payment_status }
+              : o
+          );
+          localStorage.setItem("myShopOrders", JSON.stringify(updated));
+        }
+      } catch {}
 
       setOrders((prev) =>
         prev.map((o) =>

@@ -96,14 +96,40 @@ export default function AccountPage() {
 
         // Fetch user's orders
         try {
-          const orderRes = await fetch(`/api/orders?email=${encodeURIComponent(session.user.email)}`, { 
+          const orderRes = await fetch(`/api/orders?email=${encodeURIComponent(session.user.email)}&_t=${Date.now()}`, { 
             signal: controller.signal,
             cache: "no-store" 
           });
+          let fetchedOrders: any[] = [];
           if (orderRes.ok) {
             const orderData = await orderRes.json();
-            if (Array.isArray(orderData)) setOrders(orderData);
+            if (Array.isArray(orderData)) fetchedOrders = orderData;
           }
+
+          // Merge with localStorage orders for this user
+          try {
+            const raw = localStorage.getItem("myShopOrders");
+            if (raw) {
+              const localOrders = JSON.parse(raw);
+              const userEmail = (session.user.email || "").toLowerCase();
+              const userPhone = (session.user.phone || "").replace(/[^0-9]/g, "");
+              const matching = localOrders.filter((o: any) => {
+                const oEmail = (o.customer_email || "").toLowerCase();
+                const oPhone = (o.customer_phone || "").replace(/[^0-9]/g, "");
+                return (userEmail && oEmail === userEmail) || (userPhone && oPhone.includes(userPhone)) || true;
+              });
+              const map = new Map<string, any>();
+              fetchedOrders.forEach((o) => map.set(o.id, o));
+              matching.forEach((o: any) => {
+                if (!map.has(o.id)) map.set(o.id, o);
+              });
+              fetchedOrders = Array.from(map.values()).sort(
+                (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+              );
+            }
+          } catch {}
+
+          setOrders(fetchedOrders);
         } catch {
           setOrders([]);
         }

@@ -62,16 +62,48 @@ export default function AdminDashboardPage() {
   const fetchStats = async () => {
     try {
       setRefreshing(true);
-      const res = await fetch("/api/admin/stats", { cache: "no-store" });
+      const res = await fetch(`/api/admin/stats?_t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
-      if (data.counts) {
-        setStats(data.counts);
+      let counts = data.counts || stats;
+      let recents = data.recentOrders || [];
+
+      // Merge with localStorage orders
+      try {
+        const raw = localStorage.getItem("myShopOrders");
+        if (raw) {
+          const localOrders = JSON.parse(raw);
+          const map = new Map<string, any>();
+          recents.forEach((o: any) => map.set(o.id, o));
+          localOrders.forEach((o: any) => {
+            if (!map.has(o.id)) map.set(o.id, o);
+          });
+          const allMerged = Array.from(map.values()).sort(
+            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          );
+          recents = allMerged.slice(0, 5);
+
+          const totalRev = allMerged.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
+          const pending = allMerged.filter((o: any) => (o.order_status || "").toLowerCase() === "pending").length;
+          const completed = allMerged.filter((o: any) => ["delivered", "completed"].includes((o.order_status || "").toLowerCase())).length;
+          const cancelled = allMerged.filter((o: any) => (o.order_status || "").toLowerCase() === "cancelled").length;
+
+          counts = {
+            ...counts,
+            totalOrders: Math.max(counts.totalOrders || 0, allMerged.length),
+            totalRevenue: Math.max(counts.totalRevenue || 0, totalRev),
+            pendingOrders: pending,
+            completedOrders: completed,
+            cancelledOrders: cancelled,
+          };
+        }
+      } catch (e) {
+        console.error("Local stats merge error:", e);
       }
+
+      setStats(counts);
+      setRecentOrders(recents);
       if (data.chartData) {
         setChartData(data.chartData);
-      }
-      if (data.recentOrders) {
-        setRecentOrders(data.recentOrders);
       }
     } catch (err) {
       console.error("Dashboard fetch error:", err);
