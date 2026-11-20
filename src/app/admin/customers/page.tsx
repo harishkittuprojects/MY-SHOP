@@ -6,6 +6,7 @@ import {
   faSearch,
   faEye,
   faTimes,
+  faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Customer {
@@ -32,7 +33,10 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/customers", { cache: "no-store" });
+      const res = await fetch(`/api/admin/customers?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      });
       const data = await res.json();
       setCustomers(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -83,7 +87,7 @@ export default function AdminCustomersPage() {
       </div>
 
       {/* Search Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-xs">
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
         <div className="relative w-full sm:w-80">
           <FontAwesomeIcon
             icon={faSearch}
@@ -97,8 +101,19 @@ export default function AdminCustomersPage() {
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
           />
         </div>
-        <div className="text-xs font-bold text-slate-500">
-          Total Registered: <span className="text-emerald-700 font-bold">{customers.length}</span>
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={fetchCustomers}
+            disabled={loading}
+            className="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 hover:border-emerald-200"
+          >
+            <FontAwesomeIcon icon={faRotate} className={loading ? "animate-spin text-emerald-600 text-xs" : "text-slate-400 text-xs"} />
+            <span>Refresh</span>
+          </button>
+          <div className="text-xs font-bold text-slate-500">
+            Total Registered: <span className="text-emerald-700 font-bold">{customers.length}</span>
+          </div>
         </div>
       </div>
 
