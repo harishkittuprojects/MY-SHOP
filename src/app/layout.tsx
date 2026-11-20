@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 import ClientLayout from "@/components/layout/ClientLayout";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://my-shop-gamma.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://my-shop-qlut.vercel.app'),
   title: {
     default: "MY SHOP | Buy Latest Flagship Smartphones & 5G Mobiles",
     template: "%s | MY SHOP Mobiles",
