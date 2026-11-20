@@ -4,7 +4,14 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTriangleExclamation, faCheckCircle, faBolt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTriangleExclamation,
+  faCheckCircle,
+  faBolt,
+  faMobileScreen,
+  faEnvelope,
+  faKey,
+} from "@fortawesome/free-solid-svg-icons";
 import { sendOtpAction, verifyOtpAction, directGuestLoginAction, phoneLoginAction } from "@/lib/actions/auth";
 import { googleLoginAction } from "@/lib/actions/google-auth";
 
@@ -312,6 +319,52 @@ function LoginContent() {
               >
                 {isLoading ? "Processing..." : "Continue"}
               </button>
+
+              {/* ⚡ 1-Click Auto Fill & Instant Login */}
+              <button
+                type="button"
+                onClick={handleDirectLogin}
+                disabled={isInstantLoading}
+                className="w-full mt-3 py-2.5 px-4 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] shadow-sm"
+              >
+                <FontAwesomeIcon icon={faBolt} className="text-emerald-600 text-xs" />
+                <span>{isInstantLoading ? "Entering Store..." : "⚡ 1-Click Auto Fill & Instant Login"}</span>
+              </button>
+
+              {/* Quick Auto-Fill Selector */}
+              <div className="mt-5 pt-4 border-t border-gray-100">
+                <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5 text-center">
+                  Quick Auto-Fill Options
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("phone");
+                      setPhone("9876543210");
+                      setError("");
+                    }}
+                    className="py-2 px-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Fill dummy mobile number 9876543210"
+                  >
+                    <FontAwesomeIcon icon={faMobileScreen} className="text-[#2874f0] text-xs" />
+                    <span>Auto-Fill Phone</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("email");
+                      setEmail("customer@example.com");
+                      setError("");
+                    }}
+                    className="py-2 px-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Fill dummy email customer@example.com"
+                  >
+                    <FontAwesomeIcon icon={faEnvelope} className="text-[#2874f0] text-xs" />
+                    <span>Auto-Fill Email</span>
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
         ) : (
@@ -320,7 +373,7 @@ function LoginContent() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
               Verify with OTP
             </h1>
-            <div className="flex items-center justify-between text-sm text-gray-500 mt-1 mb-8">
+            <div className="flex items-center justify-between text-sm text-gray-500 mt-1 mb-4">
               <span>Sent to {mode === "phone" ? `+91 ${phone}` : email}</span>
               <button
                 type="button"
@@ -333,6 +386,21 @@ function LoginContent() {
                 className="text-xs font-bold text-[#2874f0] hover:underline uppercase"
               >
                 Change
+              </button>
+            </div>
+
+            {/* Demo OTP Helper Banner */}
+            <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 mb-5 flex items-center justify-between text-xs">
+              <div className="text-emerald-900">
+                <span className="font-bold">💡 Demo OTP:</span> Use <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-300">1234</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOtp("1234")}
+                className="font-bold text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+              >
+                <FontAwesomeIcon icon={faBolt} className="text-emerald-600 text-[10px]" />
+                <span>Auto-Fill 1234</span>
               </button>
             </div>
 
