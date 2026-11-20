@@ -49,6 +49,7 @@ export async function placeOrderAction(orderData: {
       name: i.name || 'Product',
       quantity: Number(i.quantity) || 1,
       price: Number(i.price) || 0,
+      image_url: (i as any).image_url || (i as any).image || '',
       unit: i.unit || '',
       variant_id: i.variant_id || (i as any).variantId || '',
       color: i.color || '',

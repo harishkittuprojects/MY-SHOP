@@ -16,6 +16,7 @@ import {
   faTrash,
   faShareNodes,
 } from "@fortawesome/free-solid-svg-icons";
+import { products as defaultProducts } from "@/lib/data";
 
 interface OrderItem {
   id?: string;
@@ -25,7 +26,21 @@ interface OrderItem {
   price: number;
   unit?: string;
   image?: string;
+  image_url?: string;
 }
+
+const getProductThumbnail = (item: any): string => {
+  if (item?.image_url) return item.image_url;
+  if (item?.image) return item.image;
+  const pId = String(item?.id || item?.product_id || "").toLowerCase().trim();
+  const name = String(item?.name || "").toLowerCase().trim();
+  const found = defaultProducts.find((p) => {
+    const cId = String(p.id).toLowerCase().trim();
+    const cName = String(p.name).toLowerCase().trim();
+    return cId === pId || cName === name || (pId && cId.includes(pId)) || (name && cName.includes(name));
+  });
+  return found?.image_url || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=200";
+};
 
 interface Order {
   id: string;
@@ -324,8 +339,41 @@ export default function AdminOrdersPage() {
                         <div className="font-bold text-slate-900 text-sm">{o.customer_name}</div>
                         <div className="text-[11px] text-slate-500">{o.customer_phone}</div>
                       </td>
-                      <td className="py-3.5 px-4 text-xs font-medium text-slate-600">
-                        {itemsCount} item{itemsCount !== 1 ? "s" : ""}
+                      <td className="py-3.5 px-4 min-w-[220px]">
+                        <div className="flex flex-col gap-2">
+                          {Array.isArray(o.items) && o.items.length > 0 ? (
+                            o.items.map((item, idx) => {
+                              const thumb = getProductThumbnail(item);
+                              return (
+                                <div key={idx} className="flex items-center gap-2.5">
+                                  <img
+                                    src={thumb}
+                                    alt={item.name || "Product"}
+                                    className="w-10 h-10 object-contain rounded-lg border border-slate-200 bg-white p-0.5 shrink-0"
+                                  />
+                                  <div className="min-w-0">
+                                    <div
+                                      className="font-bold text-slate-900 text-xs line-clamp-1 hover:text-emerald-700 cursor-pointer"
+                                      title={item.name}
+                                      onClick={() => {
+                                        setSelectedOrder(o);
+                                        setIsDetailModalOpen(true);
+                                      }}
+                                    >
+                                      {item.name || "Product"}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 font-medium">
+                                      Qty: <span className="font-bold text-slate-800">{item.quantity || 1}</span>
+                                      {item.unit ? ` • ${item.unit}` : ""}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <span className="text-xs text-slate-400">No items</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-black text-slate-900">
@@ -541,9 +589,11 @@ export default function AdminOrdersPage() {
                   {selectedOrder.items?.map((item, idx) => (
                     <div key={idx} className="p-3.5 bg-slate-50/40 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs shrink-0">
-                          {idx + 1}
-                        </div>
+                        <img
+                          src={getProductThumbnail(item)}
+                          alt={item.name || "Product"}
+                          className="w-12 h-12 object-contain rounded-xl border border-slate-200 bg-white p-1 shrink-0"
+                        />
                         <div>
                           <div className="font-bold text-slate-900 text-sm">{item.name}</div>
                           {item.unit && <div className="text-[11px] text-slate-500">{item.unit}</div>}

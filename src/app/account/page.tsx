@@ -28,6 +28,20 @@ import { logoutAction, updateProfileNameAction } from "@/lib/actions/auth";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import InvoiceModal from "@/components/common/InvoiceModal";
+import { products as defaultProducts } from "@/lib/data";
+
+const getProductThumbnail = (item: any): string => {
+  if (item?.image_url) return item.image_url;
+  if (item?.image) return item.image;
+  const pId = String(item?.id || item?.product_id || "").toLowerCase().trim();
+  const name = String(item?.name || "").toLowerCase().trim();
+  const found = defaultProducts.find((p) => {
+    const cId = String(p.id).toLowerCase().trim();
+    const cName = String(p.name).toLowerCase().trim();
+    return cId === pId || cName === name || (pId && cId.includes(pId)) || (name && cName.includes(name));
+  });
+  return found?.image_url || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=200";
+};
 
 interface Order {
   id: string;
@@ -438,15 +452,25 @@ export default function AccountPage() {
                           <div className="space-y-2 pt-2">
                             <p className="text-xs font-bold text-slate-700">Items Ordered:</p>
                             <div className="divide-y divide-slate-100">
-                              {order.items.map((item: any, i: number) => (
-                                <div key={i} className="py-2 flex items-center justify-between text-xs">
-                                  <div>
-                                    <p className="font-bold text-slate-900">{item.name}</p>
-                                    <p className="text-[10px] text-slate-500 font-semibold">Qty: {item.quantity} • {item.selectedUnit || item.unit || [item.ram, item.storage, item.color].filter(Boolean).join(" • ") || "Standard"}</p>
+                              {order.items.map((item: any, i: number) => {
+                                const thumb = getProductThumbnail(item);
+                                return (
+                                  <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                                    <div className="flex items-center gap-3">
+                                      <img
+                                        src={thumb}
+                                        alt={item.name || "Product"}
+                                        className="w-11 h-11 object-contain rounded-xl border border-slate-200 bg-white p-1 shrink-0"
+                                      />
+                                      <div>
+                                        <p className="font-bold text-slate-900">{item.name}</p>
+                                        <p className="text-[10px] text-slate-500 font-semibold">Qty: {item.quantity} • {item.selectedUnit || item.unit || [item.ram, item.storage, item.color].filter(Boolean).join(" • ") || "Standard"}</p>
+                                      </div>
+                                    </div>
+                                    <span className="font-black text-slate-800 shrink-0">₹{Math.floor(item.price * item.quantity).toLocaleString("en-IN")}</span>
                                   </div>
-                                  <span className="font-black text-slate-800">₹{Math.floor(item.price * item.quantity).toLocaleString("en-IN")}</span>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}

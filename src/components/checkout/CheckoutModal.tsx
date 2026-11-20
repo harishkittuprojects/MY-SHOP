@@ -307,6 +307,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
+        image_url: (item as any).image_url || (item as any).image || '',
         unit: item.selectedUnit || (item as any).unit || '',
         variant_id: item.variant_id || '',
         color: item.color || '',
