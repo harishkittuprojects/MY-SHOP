@@ -4,6 +4,7 @@ import mysql from "@/lib/mysql";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { CustomersDB } from "@/lib/db";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev-only-change-this";
 const OTP_EXPIRY_MINUTES = 10;
@@ -49,6 +50,12 @@ export async function directGuestLoginAction(name: string = "Rahul Sharma", emai
       // Local fallback
     }
 
+    try {
+      await CustomersDB.upsertUser({ name: customerName, email: customerEmail, phone: customerPhone });
+    } catch {
+      // fallback
+    }
+
     return { success: true, email: customerEmail, name: customerName, phone: customerPhone };
   } catch (error: any) {
     console.error("Direct login error:", error);
@@ -90,6 +97,12 @@ export async function phoneLoginAction(phone: string, name?: string) {
       maxAge: 7 * 24 * 60 * 60,
       path: "/",
     });
+
+    try {
+      await CustomersDB.upsertUser({ name: customerName, email: userIdentifier, phone: formattedPhone });
+    } catch {
+      // fallback
+    }
 
     return { success: true, phone: formattedPhone, name: customerName };
   } catch (error: any) {
@@ -162,6 +175,12 @@ export async function verifyOtpAction(email: string, code: string) {
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
     });
+
+    try {
+      await CustomersDB.upsertUser({ name, email });
+    } catch {
+      // fallback
+    }
 
     return { success: true };
   } catch (error: any) {

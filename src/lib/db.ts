@@ -32,119 +32,25 @@ if (!globalStore.__myShopFallbackOrders) {
       payment_status: "paid",
       order_status: "delivered",
       created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "ORD-87341-112",
-      customer_id: "cust_priya_patel",
-      customer_name: "Priya Patel",
-      customer_email: "priya.patel@example.com",
-      customer_phone: "+91 9812345678",
-      shipping_address: "Flat 12B, Marine View Apartments, Nariman Point, Mumbai, Maharashtra - 400021",
-      items: [
-        {
-          id: "prod-2",
-          name: "Apple iPhone 15 Pro",
-          price: 119900,
-          quantity: 1,
-          selected_color: "Natural Titanium",
-          selected_storage: "128GB"
-        }
-      ],
-      total_amount: 119900,
-      payment_method: "card",
-      payment_status: "paid",
-      order_status: "processing",
-      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "ORD-76512-890",
-      customer_id: "cust_vikram_singh",
-      customer_name: "Vikram Singh",
-      customer_email: "vikram.singh@example.com",
-      customer_phone: "+91 9765432109",
-      shipping_address: "B-204, Sector 62, Noida, Uttar Pradesh - 201301",
-      items: [
-        {
-          id: "prod-3",
-          name: "OnePlus 12 5G",
-          price: 64999,
-          quantity: 1,
-          selected_color: "Emerald Green",
-          selected_storage: "256GB"
-        }
-      ],
-      total_amount: 64999,
-      payment_method: "cod",
-      payment_status: "pending",
-      order_status: "pending",
-      created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
     }
   ];
 }
-if (!globalStore.__myShopFallbackCustomers) {
-  globalStore.__myShopFallbackCustomers = [
-    {
-      id: "cust_rahul_sharma",
-      full_name: "Rahul Sharma",
-      email: "rahul.sharma@example.com",
-      phone: "+91 9876543210",
-      address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
-      total_orders: 3,
-      total_spent: 184999,
-      status: "active",
-      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: "cust_priya_patel",
-      full_name: "Priya Patel",
-      email: "priya.patel@example.com",
-      phone: "+91 9812345678",
-      address: "Flat 12B, Marine View Apartments, Nariman Point, Mumbai, Maharashtra - 400021",
-      total_orders: 2,
-      total_spent: 129999,
-      status: "active",
-      created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: "cust_vikram_singh",
-      full_name: "Vikram Singh",
-      email: "vikram.singh@example.com",
-      phone: "+91 9765432109",
-      address: "B-204, Sector 62, Noida, Uttar Pradesh - 201301",
-      total_orders: 1,
-      total_spent: 64999,
-      status: "active",
-      created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: "cust_ananya_reddy",
-      full_name: "Ananya Reddy",
-      email: "ananya.reddy@example.com",
-      phone: "+91 9988776655",
-      address: "Plot 88, Road No. 36, Jubilee Hills, Hyderabad, Telangana - 500033",
-      total_orders: 4,
-      total_spent: 215000,
-      status: "active",
-      created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: "cust_arjun_mehta",
-      full_name: "Arjun Mehta",
-      email: "arjun.mehta@example.com",
-      phone: "+91 9822334455",
-      address: "15, Alipore Road, Kolkata, West Bengal - 700027",
-      total_orders: 2,
-      total_spent: 78500,
-      status: "active",
-      created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  ];
-}
+
+// Reset fallback customers to keep only the original customer who logged in
+globalStore.__myShopFallbackCustomers = [
+  {
+    id: "cust_rahul_sharma",
+    full_name: "Rahul Sharma",
+    email: "rahul.sharma@example.com",
+    phone: "+91 9876543210",
+    address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
+    total_orders: 1,
+    total_spent: 129999,
+    status: "active",
+    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
 if (!globalStore.__myShopFallbackPayments) {
   globalStore.__myShopFallbackPayments = [];
 }
@@ -1020,6 +926,8 @@ export const OrdersDB = {
         (o.customer_phone && o.customer_phone.toLowerCase().includes(s))
       );
     }
+    const EXCLUDED_EMAILS = ['priya.patel@example.com', 'vikram.singh@example.com', 'ananya.reddy@example.com', 'arjun.mehta@example.com'];
+    list = list.filter(o => !EXCLUDED_EMAILS.includes(o.customer_email));
     return list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
   },
 
@@ -1201,7 +1109,17 @@ export const CustomersDB = {
     } catch {
       // Fallback
     }
-    return list;
+    const EXCLUDED = [
+      'cust_priya_patel',
+      'cust_vikram_singh',
+      'cust_ananya_reddy',
+      'cust_arjun_mehta',
+      'priya.patel@example.com',
+      'vikram.singh@example.com',
+      'ananya.reddy@example.com',
+      'arjun.mehta@example.com'
+    ];
+    return list.filter(c => !EXCLUDED.includes(c.id) && !EXCLUDED.includes(c.email));
   },
 
   async getById(id: string) {
@@ -1212,6 +1130,48 @@ export const CustomersDB = {
       // Fallback
     }
     return fallbackCustomers.find(c => c.id === id || c.email === id || c.phone === id) || null;
+  },
+
+  async upsertUser(user: { name?: string; email?: string; phone?: string; address?: string }) {
+    const email = user.email || '';
+    const phone = user.phone || '';
+    const name = user.name || 'Customer';
+    const address = user.address || '';
+
+    if (!email && !phone) return;
+
+    const memIdx = fallbackCustomers.findIndex(c => (phone && c.phone === phone) || (email && c.email === email));
+    if (memIdx >= 0) {
+      if (name) fallbackCustomers[memIdx].full_name = name;
+      if (address) fallbackCustomers[memIdx].address = address;
+      fallbackCustomers[memIdx].updated_at = new Date().toISOString();
+    } else {
+      fallbackCustomers.unshift({
+        id: `cust_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        email,
+        phone,
+        full_name: name,
+        address,
+        total_orders: 0,
+        total_spent: 0,
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    try {
+      await supabase.from('customers').upsert([{
+        email,
+        phone,
+        full_name: name,
+        address,
+        status: 'active',
+        updated_at: new Date().toISOString()
+      }], { onConflict: 'email' });
+    } catch {
+      // ignore
+    }
   },
 
   async upsertFromOrder(order: any) {
