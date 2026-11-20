@@ -47,7 +47,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState("Online Payment");
   const [error, setError] = useState("");
 
-  const businessWhatsApp = "917416750834";
+  const businessWhatsApp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "917416750834").replace(/[^0-9]/g, "");
 
   useEffect(() => {
     if (isOpen) {

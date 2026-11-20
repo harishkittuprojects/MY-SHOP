@@ -1,4 +1,4 @@
-export const BUSINESS_WHATSAPP = "917416750834";
+export const BUSINESS_WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "917416750834").replace(/[^0-9]/g, "");
 
 interface OrderItem {
   name: string;
@@ -16,7 +16,7 @@ export const formatOrderWhatsAppMessage = (
   paymentMethod: string, 
   isSubscription: boolean = false
 ) => {
-  const title = isSubscription ? "*NEW SUBSCRIPTION PLACED!* 🥛" : "*NEW ORDER PLACED!* 🛍️";
+  const title = isSubscription ? "*[MY SHOP] NEW SUBSCRIPTION!* ⚡" : "*[MY SHOP] NEW ORDER PLACED!* 🛍️";
   const totalAmount = subtotal + deliveryCharge;
   
   const itemDetails = items.map(item => `- ${item.name} (${item.selectedUnit || ""}) x ${item.quantity} = ₹${Math.floor(item.price * item.quantity)}`).join('\n');

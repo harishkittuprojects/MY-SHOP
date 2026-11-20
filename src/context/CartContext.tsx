@@ -40,7 +40,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("madur_cart");
+    const savedCart = localStorage.getItem("my_shop_cart") || localStorage.getItem("madur_cart");
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -52,7 +52,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Save cart to localStorage on change
   useEffect(() => {
-    localStorage.setItem("madur_cart", JSON.stringify(cart));
+    localStorage.setItem("my_shop_cart", JSON.stringify(cart));
   }, [cart]);
 
   const isMatch = (a: CartItem, id: string, selectedUnit?: string, variantId?: string) => {

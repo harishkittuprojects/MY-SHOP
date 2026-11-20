@@ -14,8 +14,8 @@ export default function ContactPage() {
   });
 
   const openWhatsApp = (data = formData) => {
-    const phoneNumber = "917416750834";
-    const text = `Hi MADUR.IN, I have an enquiry:
+    const phoneNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "917416750834").replace(/[^0-9]/g, "");
+    const text = `Hi MY SHOP, I have an enquiry:
 *Name:* ${data.name}
 *Phone:* ${data.phone}
 *Email:* ${data.email || 'N/A'}
@@ -37,7 +37,7 @@ export default function ContactPage() {
         <div className="container">
           <h1 className="text-4xl md:text-5xl font-black mb-6">Get In Touch</h1>
           <p className="text-lg opacity-90 max-w-2xl mx-auto">
-            Have questions about our products or delivery? We're here to help you live a healthier, purer life.
+            Have questions about our products or orders? We're here to help you anytime.
           </p>
         </div>
       </section>

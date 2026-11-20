@@ -11,12 +11,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendAdminOrderNotification = async (orderId: string, type: 'order' | 'subscription', data: any) => {
-  const adminEmail = process.env.SMTP_USER || "madurfoods@gmail.com";
-  const subject = type === 'subscription' ? `MADUR.IN: New Subscription - #${orderId}` : `MADUR.IN: New Order - #${orderId}`;
+  const adminEmail = process.env.SMTP_USER || "myshopadmin@gmail.com";
+  const subject = type === 'subscription' ? `MY SHOP: New Subscription - #${orderId}` : `MY SHOP: New Order - #${orderId}`;
   
   const htmlContent = `
     <div style="font-family: sans-serif; padding: 20px; color: #333;">
-      <h2 style="color: #2F6B3F;">New ${type === 'subscription' ? 'Subscription' : 'Order'} Received!</h2>
+      <h2 style="color: #2E6F40;">New ${type === 'subscription' ? 'Subscription' : 'Order'} Received!</h2>
       <p><strong>ID:</strong> #${orderId}</p>
       <p><strong>Customer:</strong> ${data.customer_name || 'N/A'}</p>
       <p><strong>Phone:</strong> ${data.customer_phone || 'N/A'}</p>
@@ -29,7 +29,7 @@ export const sendAdminOrderNotification = async (orderId: string, type: 'order' 
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Madur.in Admin" <admin@madur.in>',
+      from: process.env.SMTP_FROM || '"MY SHOP Admin" <admin@my-shop.com>',
       to: adminEmail,
       subject: subject,
       html: htmlContent,

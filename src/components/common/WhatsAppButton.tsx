@@ -4,9 +4,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 export default function WhatsAppButton() {
-  const phoneNumber = "+917416750834";
-  const message = "Hello MADUR.IN! I'm interested in ordering fresh products.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+917416750834";
+  const message = "Hello MY SHOP! I'm interested in ordering products from your store.";
+  const whatsappUrl = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
 
   return (
     <a

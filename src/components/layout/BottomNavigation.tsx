@@ -22,8 +22,8 @@ export default function BottomNavigation() {
   const isCart = pathname === "/cart";
   const isProfile = pathname === "/account" || pathname === "/login";
 
-  const phoneNumber = "+917416750834";
-  const message = "Hello! I'm interested in ordering smartphones & gadgets.";
+  const phoneNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "917416750834").replace(/[^0-9]/g, "");
+  const message = "Hello MY SHOP! I'm interested in ordering products from your store.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
