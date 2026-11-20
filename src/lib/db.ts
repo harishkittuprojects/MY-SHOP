@@ -9,48 +9,28 @@ import { matchProductSearch } from './searchUtils';
 const globalStore = (globalThis as any);
 
 if (!globalStore.__myShopFallbackOrders) {
-  globalStore.__myShopFallbackOrders = [
-    {
-      id: "ORD-98214-721",
-      customer_id: "cust_rahul_sharma",
-      customer_name: "Rahul Sharma",
-      customer_email: "rahul.sharma@example.com",
-      customer_phone: "+91 9876543210",
-      shipping_address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
-      items: [
-        {
-          id: "prod-1",
-          name: "Samsung Galaxy S24 Ultra 5G",
-          price: 129999,
-          quantity: 1,
-          selected_color: "Titanium Gray",
-          selected_storage: "256GB"
-        }
-      ],
-      total_amount: 129999,
-      payment_method: "upi",
-      payment_status: "paid",
-      order_status: "delivered",
-      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  ];
+  globalStore.__myShopFallbackOrders = [];
+}
+if (!globalStore.__myShopFallbackCustomers) {
+  globalStore.__myShopFallbackCustomers = [];
 }
 
-// Reset fallback customers to keep only the original customer who logged in
-globalStore.__myShopFallbackCustomers = [
-  {
-    id: "cust_rahul_sharma",
-    full_name: "Rahul Sharma",
-    email: "rahul.sharma@example.com",
-    phone: "+91 9876543210",
-    address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
-    total_orders: 1,
-    total_spent: 129999,
-    status: "active",
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
+// Ensure no fake seeded customers exist in memory
+if (Array.isArray(globalStore.__myShopFallbackCustomers)) {
+  const EXCLUDED = [
+    'cust_priya_patel',
+    'cust_vikram_singh',
+    'cust_ananya_reddy',
+    'cust_arjun_mehta',
+    'priya.patel@example.com',
+    'vikram.singh@example.com',
+    'ananya.reddy@example.com',
+    'arjun.mehta@example.com'
+  ];
+  globalStore.__myShopFallbackCustomers = globalStore.__myShopFallbackCustomers.filter(
+    (c: any) => !EXCLUDED.includes(c.id) && !EXCLUDED.includes(c.email)
+  );
+}
 if (!globalStore.__myShopFallbackPayments) {
   globalStore.__myShopFallbackPayments = [];
 }
@@ -1172,6 +1152,19 @@ export const CustomersDB = {
     } catch {
       // ignore
     }
+  },
+
+  async delete(id: string) {
+    const idx = fallbackCustomers.findIndex(c => c.id === id || c.email === id || c.phone === id);
+    if (idx >= 0) {
+      fallbackCustomers.splice(idx, 1);
+    }
+    try {
+      await supabase.from('customers').delete().or(`id.eq.${id},email.eq.${id},phone.eq.${id}`);
+    } catch {
+      // ignore
+    }
+    return true;
   },
 
   async upsertFromOrder(order: any) {

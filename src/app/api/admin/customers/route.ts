@@ -39,3 +39,36 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message || 'Failed to fetch customers' }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    await CustomersDB.upsertUser(body);
+    return NextResponse.json({ success: true }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      }
+    });
+  } catch (error: any) {
+    console.error('Customers POST Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to record customer' }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing customer id' }, { status: 400 });
+    
+    await CustomersDB.delete(id);
+    return NextResponse.json({ success: true }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      }
+    });
+  } catch (error: any) {
+    console.error('Customers DELETE Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete customer' }, { status: 500 });
+  }
+}

@@ -7,6 +7,7 @@ import {
   faEye,
   faTimes,
   faRotate,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Customer {
@@ -64,6 +65,18 @@ export default function AdminCustomersPage() {
       console.error("Failed to load customer orders:", err);
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  const handleDeleteCustomer = async (id: string, name: string) => {
+    if (!confirm(`Remove "${name || 'Customer'}" from directory?`)) return;
+    try {
+      const res = await fetch(`/api/admin/customers?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.ok) {
+        setCustomers((prev) => prev.filter((c) => c.id !== id && c.email !== id && c.phone !== id));
+      }
+    } catch (err) {
+      console.error("Delete customer error:", err);
     }
   };
 
@@ -163,13 +176,22 @@ export default function AdminCustomersPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => handleViewCustomer(c)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold flex items-center gap-1.5 ml-auto cursor-pointer"
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                        <span>Profile & History</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleViewCustomer(c)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faEye} />
+                          <span>Profile & History</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCustomer(c.id, c.full_name)}
+                          className="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer flex items-center justify-center border border-transparent hover:border-rose-200"
+                          title="Remove customer"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

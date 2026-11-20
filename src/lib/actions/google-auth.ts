@@ -4,6 +4,7 @@ import { OAuth2Client } from "google-auth-library";
 import mysql from "@/lib/mysql";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { CustomersDB } from "@/lib/db";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev-only-change-this";
@@ -58,6 +59,12 @@ export async function googleLoginAction(idToken: string) {
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
     });
+
+    try {
+      await CustomersDB.upsertUser({ name: name || "Google User", email });
+    } catch {
+      // ignore
+    }
 
     return { success: true };
   } catch (error: any) {

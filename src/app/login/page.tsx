@@ -92,6 +92,15 @@ function LoginContent() {
       // Complete phone login
       const res = await phoneLoginAction(phone);
       if (res.success) {
+        await fetch("/api/admin/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: phone === "9876543210" ? "Rahul Sharma" : `Customer ${phone.slice(-4)}`,
+            email: phone === "9876543210" ? "rahul.sharma@example.com" : `+91${phone}@myshop.local`,
+            phone: `+91 ${phone}`,
+          }),
+        }).catch(() => {});
         router.push(redirect);
         router.refresh();
       } else {
@@ -104,6 +113,15 @@ function LoginContent() {
         setError(res.error);
         setIsLoading(false);
       } else {
+        await fetch("/api/admin/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: email === "rahul.sharma@example.com" ? "Rahul Sharma" : email.split("@")[0],
+            email,
+            phone: "",
+          }),
+        }).catch(() => {});
         router.push(redirect);
         router.refresh();
       }
@@ -116,6 +134,15 @@ function LoginContent() {
     try {
       const res = await directGuestLoginAction("Rahul Sharma", "rahul.sharma@example.com", "+919876543210");
       if (res.success) {
+        await fetch("/api/admin/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Rahul Sharma",
+            email: "rahul.sharma@example.com",
+            phone: "+91 9876543210",
+          }),
+        }).catch(() => {});
         router.push(redirect);
         router.refresh();
       } else {
