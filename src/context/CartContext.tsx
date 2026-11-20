@@ -40,7 +40,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("my_shop_cart") || localStorage.getItem("madur_cart");
+    const savedCart = localStorage.getItem("my_shop_cart");
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));

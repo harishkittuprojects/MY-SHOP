@@ -1,4 +1,4 @@
--- MADUR.IN MySQL Schema Setup
+-- MY SHOP MySQL Schema Setup
 -- Run this in Hostinger phpMyAdmin SQL tab
 
 -- 1. Categories Table
