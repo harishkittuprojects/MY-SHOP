@@ -39,7 +39,26 @@ export default function AdminCustomersPage() {
         headers: { "Cache-Control": "no-cache" }
       });
       const data = await res.json();
-      setCustomers(Array.isArray(data) ? data : []);
+      let list: Customer[] = Array.isArray(data) ? data : [];
+
+      // Merge with browser local storage if any customer registered on this device
+      try {
+        const raw = localStorage.getItem("myShopRegisteredCustomers");
+        if (raw) {
+          const localList: Customer[] = JSON.parse(raw);
+          const map = new Map<string, Customer>();
+          list.forEach(c => map.set(c.id || c.email || c.phone, c));
+          localList.forEach(c => {
+            const key = c.id || c.email || c.phone;
+            if (!map.has(key)) map.set(key, c);
+          });
+          list = Array.from(map.values());
+        }
+      } catch {
+        // ignore
+      }
+
+      setCustomers(list);
     } catch (err) {
       console.error("Customers fetch error:", err);
     } finally {
@@ -71,10 +90,16 @@ export default function AdminCustomersPage() {
   const handleDeleteCustomer = async (id: string, name: string) => {
     if (!confirm(`Remove "${name || 'Customer'}" from directory?`)) return;
     try {
-      const res = await fetch(`/api/admin/customers?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (res.ok) {
-        setCustomers((prev) => prev.filter((c) => c.id !== id && c.email !== id && c.phone !== id));
-      }
+      await fetch(`/api/admin/customers?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      setCustomers((prev) => prev.filter((c) => c.id !== id && c.email !== id && c.phone !== id));
+      try {
+        const raw = localStorage.getItem("myShopRegisteredCustomers");
+        if (raw) {
+          const localList: Customer[] = JSON.parse(raw);
+          const updated = localList.filter((c) => c.id !== id && c.email !== id && c.phone !== id);
+          localStorage.setItem("myShopRegisteredCustomers", JSON.stringify(updated));
+        }
+      } catch {}
     } catch (err) {
       console.error("Delete customer error:", err);
     }

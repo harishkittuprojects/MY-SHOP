@@ -22,6 +22,28 @@ declare global {
   }
 }
 
+function recordCustomerLocally(name: string, email: string, phone: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem("myShopRegisteredCustomers");
+    const list: any[] = raw ? JSON.parse(raw) : [];
+    const exists = list.some((c: any) => (email && c.email === email) || (phone && c.phone === phone));
+    if (!exists) {
+      list.unshift({
+        id: `cust_${Date.now()}`,
+        full_name: name || "Customer",
+        email: email || "—",
+        phone: phone || "—",
+        total_orders: 1,
+        total_spent: 129999,
+        status: "active",
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem("myShopRegisteredCustomers", JSON.stringify(list));
+    }
+  } catch {}
+}
+
 function LoginContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
@@ -92,14 +114,14 @@ function LoginContent() {
       // Complete phone login
       const res = await phoneLoginAction(phone);
       if (res.success) {
+        const cName = phone === "9876543210" ? "Rahul Sharma" : `Customer ${phone.slice(-4)}`;
+        const cEmail = phone === "9876543210" ? "rahul.sharma@example.com" : `+91${phone}@myshop.local`;
+        const cPhone = `+91 ${phone}`;
+        recordCustomerLocally(cName, cEmail, cPhone);
         await fetch("/api/admin/customers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: phone === "9876543210" ? "Rahul Sharma" : `Customer ${phone.slice(-4)}`,
-            email: phone === "9876543210" ? "rahul.sharma@example.com" : `+91${phone}@myshop.local`,
-            phone: `+91 ${phone}`,
-          }),
+          body: JSON.stringify({ name: cName, email: cEmail, phone: cPhone }),
         }).catch(() => {});
         router.push(redirect);
         router.refresh();
@@ -113,14 +135,12 @@ function LoginContent() {
         setError(res.error);
         setIsLoading(false);
       } else {
+        const cName = email === "rahul.sharma@example.com" ? "Rahul Sharma" : email.split("@")[0];
+        recordCustomerLocally(cName, email, "");
         await fetch("/api/admin/customers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: email === "rahul.sharma@example.com" ? "Rahul Sharma" : email.split("@")[0],
-            email,
-            phone: "",
-          }),
+          body: JSON.stringify({ name: cName, email, phone: "" }),
         }).catch(() => {});
         router.push(redirect);
         router.refresh();
@@ -134,6 +154,7 @@ function LoginContent() {
     try {
       const res = await directGuestLoginAction("Rahul Sharma", "rahul.sharma@example.com", "+919876543210");
       if (res.success) {
+        recordCustomerLocally("Rahul Sharma", "rahul.sharma@example.com", "+91 9876543210");
         await fetch("/api/admin/customers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

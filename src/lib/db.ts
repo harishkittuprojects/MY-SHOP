@@ -8,11 +8,49 @@ import { matchProductSearch } from './searchUtils';
 // ==============================================================================
 const globalStore = (globalThis as any);
 
-if (!globalStore.__myShopFallbackOrders) {
-  globalStore.__myShopFallbackOrders = [];
+if (!globalStore.__myShopFallbackOrders || globalStore.__myShopFallbackOrders.length === 0) {
+  globalStore.__myShopFallbackOrders = [
+    {
+      id: "ORD-98214-721",
+      customer_id: "cust_rahul_sharma",
+      customer_name: "Rahul Sharma",
+      customer_email: "rahul.sharma@example.com",
+      customer_phone: "+91 9876543210",
+      shipping_address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
+      items: [
+        {
+          id: "prod-1",
+          name: "Samsung Galaxy S24 Ultra 5G",
+          price: 129999,
+          quantity: 1,
+          selected_color: "Titanium Gray",
+          selected_storage: "256GB"
+        }
+      ],
+      total_amount: 129999,
+      payment_method: "upi",
+      payment_status: "paid",
+      order_status: "delivered",
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  ];
 }
-if (!globalStore.__myShopFallbackCustomers) {
-  globalStore.__myShopFallbackCustomers = [];
+
+const DEFAULT_LOGGED_IN_CUSTOMER = {
+  id: "cust_rahul_sharma",
+  full_name: "Rahul Sharma",
+  email: "rahul.sharma@example.com",
+  phone: "+91 9876543210",
+  address: "Flat 402, Green Glen Heights, Bellandur, Bengaluru, Karnataka - 560103",
+  total_orders: 1,
+  total_spent: 129999,
+  status: "active",
+  created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+  updated_at: new Date().toISOString()
+};
+
+if (!globalStore.__myShopFallbackCustomers || globalStore.__myShopFallbackCustomers.length === 0) {
+  globalStore.__myShopFallbackCustomers = [DEFAULT_LOGGED_IN_CUSTOMER];
 }
 
 // Ensure no fake seeded customers exist in memory
